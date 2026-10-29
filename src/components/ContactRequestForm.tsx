@@ -13,10 +13,8 @@ import {
   Mail,
   MapPin,
   MessageCircleMore,
-  MessageSquare,
   Monitor,
   MoreHorizontal,
-  Pencil,
   Phone,
   Send,
   Settings,
@@ -35,9 +33,12 @@ type Errors = Record<string, string[]>;
 
 const MAX_MESSAGE = 500;
 
+// Débuts de phrase proposés au-dessus du message (insérés en un clic)
+const STARTERS = ["Je souhaite une démonstration de…", "Nous rencontrons un problème avec…", "Nous avons un projet de…"];
+
 function MicrosoftMark() {
   return (
-    <span className="grid h-9 w-9 grid-cols-2 gap-[3px]" aria-hidden>
+    <span className="grid h-7 w-7 grid-cols-2 gap-[2px]" aria-hidden>
       <span className="bg-[#f25022]" />
       <span className="bg-[#7fba00]" />
       <span className="bg-[#00a4ef]" />
@@ -47,12 +48,12 @@ function MicrosoftMark() {
 }
 
 const products: { value: string; logo: ReactNode; line: string; strong: string }[] = [
-  { value: "Je suis un client Sage 100", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-8 w-auto" />, line: "Je suis un client", strong: "Sage 100" },
-  { value: "Je suis un client Sage 50Ciel", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-8 w-auto" />, line: "Je suis un client", strong: "Sage 50Ciel" },
-  { value: "Je suis un client Divalto", logo: <img src="/img/logos/logo-divalto.png" alt="Divalto" className="h-7 w-auto" />, line: "Je suis un client", strong: "Divalto" },
-  { value: "Je suis un client Bitrix24", logo: <img src="/img/logos/logo-bitrix24.png" alt="Bitrix24" className="h-7 w-auto" />, line: "Je suis un client", strong: "Bitrix24" },
+  { value: "Je suis un client Sage 100", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-6 w-auto" />, line: "Je suis un client", strong: "Sage 100" },
+  { value: "Je suis un client Sage 50Ciel", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-6 w-auto" />, line: "Je suis un client", strong: "Sage 50Ciel" },
+  { value: "Je suis un client Divalto", logo: <img src="/img/logos/logo-divalto.png" alt="Divalto" className="h-5 w-auto" />, line: "Je suis un client", strong: "Divalto" },
+  { value: "Je suis un client Bitrix24", logo: <img src="/img/logos/logo-bitrix24.png" alt="Bitrix24" className="h-5 w-auto" />, line: "Je suis un client", strong: "Bitrix24" },
   { value: "Je suis un client Microsoft365", logo: <MicrosoftMark />, line: "Je suis un client", strong: "Microsoft365" },
-  { value: "Je suis un client Power BI", logo: <img src="/img/logos/logo-power-bi-icon.svg" alt="Power BI" className="h-9 w-auto" />, line: "Je suis un client", strong: "Power BI" },
+  { value: "Je suis un client Power BI", logo: <img src="/img/logos/logo-power-bi-icon.svg" alt="Power BI" className="h-7 w-auto" />, line: "Je suis un client", strong: "Power BI" },
 ];
 
 const needs: { value: string; icon: ReactNode; line: string; strong?: string }[] = [
@@ -127,7 +128,7 @@ function Choice({ value, children }: { value: string; children: ReactNode }) {
   return (
     <label className="group cursor-pointer">
       <input type="checkbox" name="option[]" value={value} className="peer sr-only" />
-      <span className="flex h-full min-h-[104px] flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-white px-3 py-4 text-center text-[14.5px] leading-snug text-ink-2 shadow-[0_6px_16px_-12px_rgb(11_26_46/0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
+      <span className="flex h-full min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-3 text-center text-[13px] leading-snug text-ink-2 shadow-[0_6px_16px_-12px_rgb(11_26_46/0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
         {children}
       </span>
     </label>
@@ -286,7 +287,7 @@ export default function ContactRequestForm() {
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {products.map((p) => (
                 <Choice key={p.value} value={p.value}>
-                  <span className="grid h-10 place-items-center">{p.logo}</span>
+                  <span className="grid h-8 place-items-center">{p.logo}</span>
                   <span>
                     {p.line}
                     <br />
@@ -317,25 +318,61 @@ export default function ContactRequestForm() {
         </div>
       </Panel>
 
-      {/* Message */}
-      <Panel icon={<MessageSquare size={22} aria-hidden />} title="Message" sub="Décrivez brièvement votre besoin ou votre projet.">
-        <div className="relative">
-          <Pencil size={18} className="pointer-events-none absolute left-4 top-4 text-ink-soft" aria-hidden />
+      {/* Message : feuille lignée, sans icône ; débuts de phrase à insérer en un clic ; jauge de longueur */}
+      <section className="rounded-[22px] border border-line bg-[#f7f9fd] p-5 md:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="text-[20px] md:text-[22px]">Votre message</h3>
+          <p className="text-[14px] text-ink-soft">Décrivez brièvement votre besoin ou votre projet.</p>
+        </div>
+        <p className="mt-3 text-[13.5px] text-ink-soft">
+          Pour commencer :{" "}
+          {STARTERS.map((t, i) => (
+            <span key={t}>
+              <button
+                type="button"
+                onClick={() => {
+                  const el = document.getElementById("cf-message") as HTMLTextAreaElement | null;
+                  if (!el) return;
+                  const start = t.replace(/…$/, " ");
+                  el.value = el.value ? `${el.value.trimEnd()}
+${start}` : start;
+                  setCount(el.value.length);
+                  el.focus();
+                  el.setSelectionRange(el.value.length, el.value.length);
+                }}
+                className="font-medium text-brand underline decoration-brand/30 underline-offset-4 hover:decoration-brand"
+              >
+                {t}
+              </button>
+              {i < STARTERS.length - 1 && <span className="px-1.5 text-ink-soft/50">/</span>}
+            </span>
+          ))}
+        </p>
+        <div className="relative mt-4 overflow-hidden rounded-2xl border border-line-strong bg-white focus-within:border-brand focus-within:ring-4 focus-within:ring-brand/15">
+          <span className="pointer-events-none absolute inset-y-0 left-6 w-px bg-[#f26b2f]/35" aria-hidden />
           <textarea
             id="cf-message"
             name="message"
-            rows={5}
+            rows={6}
             maxLength={MAX_MESSAGE}
-            placeholder="Votre message…"
-            aria-label="Message"
+            placeholder="Bonjour, …"
+            aria-label="Votre message"
             onChange={(ev) => setCount(ev.currentTarget.value.length)}
-            className="w-full resize-y rounded-xl border border-line-strong bg-white py-3.5 pl-12 pr-4 text-[15px] text-ink placeholder:text-ink-soft/70 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15"
+            className="block w-full resize-y bg-transparent py-[6px] pl-10 pr-5 text-[15px] leading-[32px] text-ink placeholder:text-ink-soft/60 focus:outline-none [background-attachment:local] [background-image:repeating-linear-gradient(to_bottom,transparent_0,transparent_31px,#e3eaf3_31px,#e3eaf3_32px)] [background-position:0_6px]"
           />
         </div>
-        <p className="mt-1.5 text-right text-[13px] text-ink-soft">
-          {count} / {MAX_MESSAGE}
-        </p>
-      </Panel>
+        <div className="mt-3 flex items-center gap-3">
+          <span className="h-1 flex-1 overflow-hidden rounded-full bg-line">
+            <span
+              className="block h-full rounded-full transition-[width] duration-300"
+              style={{ width: `${(count / MAX_MESSAGE) * 100}%`, background: count > MAX_MESSAGE * 0.9 ? "#f26b2f" : "var(--brand)" }}
+            />
+          </span>
+          <span className="text-[12.5px] tabular-nums text-ink-soft">
+            {count} / {MAX_MESSAGE}
+          </span>
+        </div>
+      </section>
 
       {/* Envoi */}
       <div className="flex flex-col-reverse items-start justify-between gap-4 pt-2 sm:flex-row sm:items-center">
