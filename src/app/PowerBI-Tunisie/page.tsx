@@ -54,7 +54,7 @@ const compare = [
 export default function PowerBiPage() {
   return (
     <>
-      <Header current="microsoft" />
+      <Header current="powerbi" />
       <main id="main">
         <PageHero
           crumbs={[{ label: "Microsoft" }, { label: "Microsoft Power BI" }]}
@@ -185,7 +185,7 @@ export default function PowerBiPage() {
 
         <ListenCta label="Demander un devis" theme={{ night: PBI_NIGHT, accent: PBI_YELLOW, accentRgb: "245 206 13" }} />
       </main>
-      <Footer />
+      <Footer current="powerbi" />
     </>
   );
 }

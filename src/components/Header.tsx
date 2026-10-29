@@ -14,6 +14,8 @@ const MAP_SOUSSE = "https://www.google.com/maps?ll=35.823281,10.607302&z=16&t=m&
 
 export default function Header({ current = "" }: { current?: string }) {
   const bar = editorTheme(current);
+  // La page Power BI a ses couleurs, mais reste dans la rubrique « Microsoft » du menu
+  const section = current === "powerbi" ? "microsoft" : current;
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -110,7 +112,7 @@ export default function Header({ current = "" }: { current?: string }) {
                 <DesktopItem
                   key={item.key}
                   item={item}
-                  active={current === item.key}
+                  active={section === item.key}
                   open={open === item.key}
                   onEnter={() => enter(item.key)}
                   onLeave={leave}
@@ -151,7 +153,7 @@ export default function Header({ current = "" }: { current?: string }) {
         <nav aria-label="Navigation mobile" className="container-x pb-10 pt-4">
           <ul className="divide-y divide-line">
             {nav.map((item) => (
-              <MobileItem key={item.key} item={item} active={current === item.key} />
+              <MobileItem key={item.key} item={item} active={section === item.key} />
             ))}
           </ul>
           <div className="mt-8 grid gap-3">

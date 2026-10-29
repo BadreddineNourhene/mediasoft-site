@@ -12,6 +12,7 @@ function editorOf(path: string) {
   if (path.startsWith("/sage.tn")) return "sage";
   if (path.startsWith("/divalto.tn")) return "divalto";
   if (path.startsWith("/bitrix24.tn")) return "bitrix24";
+  if (path.startsWith("/PowerBI-Tunisie")) return "powerbi";
   return "";
 }
 
@@ -26,7 +27,7 @@ export default function FloatingContact() {
         href={links.whatsapp}
         aria-label="Nous écrire sur WhatsApp"
         className={`${tab} w-12 hover:w-[150px]`}
-        style={{ background: editor ? theme.accent : "#25b4e6" }}
+        style={{ background: editor ? theme.accent : "#25b4e6", color: editor === "powerbi" ? "#0f0d05" : undefined }}
       >
         <span className="grid h-12 w-12 shrink-0 place-items-center">
           <WhatsappIcon width={20} height={20} />
