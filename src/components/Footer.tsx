@@ -107,7 +107,6 @@ export default function Footer({ current = "" }: { current?: string }) {
                 </span>
               ))}
             </span>
-            <a href={links.privacy} className="hover:text-white">Politique de confidentialité</a>
           </p>
         </div>
       </div>
