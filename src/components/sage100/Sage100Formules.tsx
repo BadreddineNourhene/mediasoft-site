@@ -34,7 +34,7 @@ export default function Sage100Formules() {
                 >
                   {x.name}
                   {x.popular && (
-                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide" style={{ background: SAGE_GREEN, color: "#03100a" }}>
+                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide" style={{ background: SAGE_GREEN, color: "#ffffff" }}>
                       Populaire
                     </span>
                   )}
