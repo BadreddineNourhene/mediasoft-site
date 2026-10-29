@@ -63,5 +63,5 @@ export const b24services = [
   { t: "Analyse de vos processus", d: "Nous étudions comment vous vendez et travaillez avant de paramétrer quoi que ce soit." },
   { t: "Mise en œuvre", d: "Configuration du CRM, des pipelines, des automatisations et des intégrations." },
   { t: "Formation", d: "Vos équipes sont formées pour adopter Bitrix24 dès le premier jour." },
-  { t: "Support et site web", d: "Support technique, création de votre site et accompagnement marketing." },
+  { t: "Support", d: "Support technique et accompagnement au quotidien, après la mise en service." },
 ];
