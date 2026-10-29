@@ -35,7 +35,7 @@ const MAX_MESSAGE = 500;
 
 function MicrosoftMark() {
   return (
-    <span className="grid h-7 w-7 grid-cols-2 gap-[2px]" aria-hidden>
+    <span className="grid h-5 w-5 grid-cols-2 gap-[2px]" aria-hidden>
       <span className="bg-[#f25022]" />
       <span className="bg-[#7fba00]" />
       <span className="bg-[#00a4ef]" />
@@ -45,24 +45,24 @@ function MicrosoftMark() {
 }
 
 const products: { value: string; logo: ReactNode; line: string; strong: string }[] = [
-  { value: "Je suis un client Sage 100", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-6 w-auto" />, line: "Je suis un client", strong: "Sage 100" },
-  { value: "Je suis un client Sage 50Ciel", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-6 w-auto" />, line: "Je suis un client", strong: "Sage 50Ciel" },
-  { value: "Je suis un client Divalto", logo: <img src="/img/logos/logo-divalto.png" alt="Divalto" className="h-5 w-auto" />, line: "Je suis un client", strong: "Divalto" },
-  { value: "Je suis un client Bitrix24", logo: <img src="/img/logos/logo-bitrix24.png" alt="Bitrix24" className="h-5 w-auto" />, line: "Je suis un client", strong: "Bitrix24" },
+  { value: "Je suis un client Sage 100", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-[18px] w-auto" />, line: "Je suis un client", strong: "Sage 100" },
+  { value: "Je suis un client Sage 50Ciel", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-[18px] w-auto" />, line: "Je suis un client", strong: "Sage 50Ciel" },
+  { value: "Je suis un client Divalto", logo: <img src="/img/logos/logo-divalto.png" alt="Divalto" className="h-4 w-auto" />, line: "Je suis un client", strong: "Divalto" },
+  { value: "Je suis un client Bitrix24", logo: <img src="/img/logos/logo-bitrix24.png" alt="Bitrix24" className="h-4 w-auto" />, line: "Je suis un client", strong: "Bitrix24" },
   { value: "Je suis un client Microsoft365", logo: <MicrosoftMark />, line: "Je suis un client", strong: "Microsoft365" },
-  { value: "Je suis un client Power BI", logo: <img src="/img/logos/logo-power-bi-icon.svg" alt="Power BI" className="h-7 w-auto" />, line: "Je suis un client", strong: "Power BI" },
+  { value: "Je suis un client Power BI", logo: <img src="/img/logos/logo-power-bi-icon.svg" alt="Power BI" className="h-5 w-auto" />, line: "Je suis un client", strong: "Power BI" },
 ];
 
 const needs: { value: string; icon: ReactNode; line: string; strong?: string }[] = [
-  { value: "Hébergement Cloud", icon: <Cloud size={24} strokeWidth={1.7} className="text-brand" />, line: "Hébergement", strong: "Cloud" },
+  { value: "Hébergement Cloud", icon: <Cloud size={19} strokeWidth={1.7} className="text-brand" />, line: "Hébergement", strong: "Cloud" },
   {
     value: "Je souhaite une solution sur mesure (site, application, agent IA)",
-    icon: <Settings size={23} strokeWidth={1.8} className="text-ink" />,
+    icon: <Settings size={18} strokeWidth={1.8} className="text-ink" />,
     line: "Je souhaite une solution sur mesure (application web, agent IA)",
   },
-  { value: "Je souhaite une démonstration", icon: <Monitor size={23} strokeWidth={1.7} className="text-brand" />, line: "Je souhaite une démonstration" },
-  { value: "Je souhaite être contacté", icon: <Phone size={22} strokeWidth={1.8} className="text-brand" />, line: "Je souhaite être", strong: "contacté" },
-  { value: "Autre", icon: <MoreHorizontal size={24} className="text-ink" />, line: "", strong: "Autre" },
+  { value: "Je souhaite une démonstration", icon: <Monitor size={18} strokeWidth={1.7} className="text-brand" />, line: "Je souhaite une démonstration" },
+  { value: "Je souhaite être contacté", icon: <Phone size={17} strokeWidth={1.8} className="text-brand" />, line: "Je souhaite être", strong: "contacté" },
+  { value: "Autre", icon: <MoreHorizontal size={19} className="text-ink" />, line: "", strong: "Autre" },
 ];
 
 function Panel({ icon, title, sub, aside, children }: { icon: ReactNode; title: string; sub?: string; aside?: ReactNode; children: ReactNode }) {
@@ -125,7 +125,7 @@ function Choice({ value, children }: { value: string; children: ReactNode }) {
   return (
     <label className="group cursor-pointer">
       <input type="checkbox" name="option[]" value={value} className="peer sr-only" />
-      <span className="flex h-full min-h-[84px] flex-col items-center justify-center gap-1.5 rounded-xl border border-line bg-white px-2 py-3 text-center text-[13px] leading-snug text-ink-2 shadow-[0_6px_16px_-12px_rgb(11_26_46/0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
+      <span className="flex h-full min-h-[66px] flex-col items-center justify-center gap-1 rounded-lg border border-line bg-white px-2 py-2 text-center text-[11.5px] leading-snug text-ink-2 shadow-[0_6px_16px_-12px_rgb(11_26_46/0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
         {children}
       </span>
     </label>
@@ -274,10 +274,10 @@ export default function ContactRequestForm() {
         {client === "oui" && (
           <div className="mt-5">
             <p className="mb-2 text-[13px] font-medium text-ink-soft">Quel(s) produit(s) utilisez-vous ?</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {products.map((p) => (
                 <Choice key={p.value} value={p.value}>
-                  <span className="grid h-8 place-items-center">{p.logo}</span>
+                  <span className="grid h-6 place-items-center">{p.logo}</span>
                   <span>
                     {p.line}
                     <br />
@@ -290,10 +290,10 @@ export default function ContactRequestForm() {
         )}
 
         <p className="mb-2 mt-5 text-[13px] font-medium text-ink-soft">{client === "oui" ? "Et votre besoin :" : "Votre besoin :"}</p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {needs.map((n) => (
             <Choice key={n.value} value={n.value}>
-              <span className="grid h-7 place-items-center">{n.icon}</span>
+              <span className="grid h-5 place-items-center">{n.icon}</span>
               <span>
                 {n.line}
                 {n.strong && (
