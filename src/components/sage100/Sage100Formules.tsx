@@ -59,7 +59,7 @@ export default function Sage100Formules() {
             </ul>
             <SmartLink href={f.href} className="group mt-10 inline-flex items-center gap-3 rounded-full bg-[#03100a] py-2 pl-6 pr-2 text-[15px] font-semibold text-white transition-transform duration-300 hover:scale-[1.03]">
               {f.cta}
-              <span className="grid h-9 w-9 place-items-center rounded-full transition-transform duration-300 group-hover:translate-x-1" style={{ background: SAGE_GREEN, color: "#03100a" }}>
+              <span className="grid h-9 w-9 place-items-center rounded-full transition-transform duration-300 group-hover:translate-x-1" style={{ background: SAGE_GREEN, color: "#ffffff" }}>
                 <Arrow size={16} />
               </span>
             </SmartLink>
@@ -86,7 +86,7 @@ export default function Sage100Formules() {
                     >
                       <span className={`font-display text-[17px] font-semibold tracking-[-0.02em] transition-colors duration-500 ${on ? "text-white" : "text-white/30"}`}>Sage 100 {m}</span>
                       <span className="grid h-7 w-7 place-items-center rounded-full transition-all duration-500" style={{ background: on ? SAGE_GREEN : "rgba(255,255,255,0.06)" }} aria-hidden>
-                        <span className={`h-2 w-2 rounded-full ${on ? "bg-[#03100a]" : "bg-white/20"}`} />
+                        <span className={`h-2 w-2 rounded-full ${on ? "bg-white" : "bg-white/20"}`} />
                       </span>
                       <span className="sr-only">{on ? "inclus" : "non inclus"}</span>
                     </li>
