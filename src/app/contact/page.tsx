@@ -43,8 +43,11 @@ export default function ContactPage() {
         <section className="section !pt-16 bg-mist">
           {/* Formulaire à gauche, présentation et plans des agences à droite */}
           <div className="container-x grid grid-cols-1 gap-8 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)]">
-            <div className="card p-5 shadow-[0_30px_60px_-40px_rgb(11_26_46/0.4)] md:p-8">
-              <ContactRequestForm />
+            <div className="relative overflow-hidden rounded-[var(--radius)] bg-[#00193a] p-5 md:p-8">
+              <div className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand-sky opacity-20 blur-[100px]" aria-hidden />
+              <div className="relative">
+                <ContactRequestForm />
+              </div>
             </div>
 
             <aside className="grid content-start gap-5">

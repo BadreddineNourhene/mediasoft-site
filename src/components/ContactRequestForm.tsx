@@ -67,13 +67,13 @@ const needs: { value: string; icon: ReactNode; line: string; strong?: string }[]
 
 function Panel({ icon, title, sub, aside, children }: { icon: ReactNode; title: string; sub?: string; aside?: ReactNode; children: ReactNode }) {
   return (
-    <section className="rounded-[18px] border border-line bg-[#f7f9fd] p-4 md:p-5">
+    <section className="rounded-[18px] border border-white/10 bg-white/[0.05] p-4 md:p-5">
       <div className="mb-4 flex items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">{icon}</span>
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/10 text-[#7cc4f5]">{icon}</span>
           <div>
-            <h3 className="text-[17px] md:text-[18px]">{title}</h3>
-            {sub && <p className="mt-0.5 text-[13px] text-ink-soft">{sub}</p>}
+            <h3 className="text-[17px] !text-white md:text-[18px]">{title}</h3>
+            {sub && <p className="mt-0.5 text-[13px] text-white/65">{sub}</p>}
           </div>
         </div>
         {aside}
@@ -100,8 +100,8 @@ function Field({
 }) {
   return (
     <div className="min-w-0">
-      <label htmlFor={id} className="mb-1.5 block text-[13px] font-semibold text-ink">
-        {label} {required && <span className="text-[#e5383b]">*</span>}
+      <label htmlFor={id} className="mb-1.5 block text-[13px] font-semibold text-white">
+        {label} {required && <span className="text-[#ff7a7a]">*</span>}
       </label>
       <div className="relative">
         <span className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft" aria-hidden>
@@ -110,7 +110,7 @@ function Field({
         {children}
       </div>
       {error && (
-        <p className="mt-1.5 text-[13px] font-medium text-[#b42318]" id={`${id}-err`}>
+        <p className="mt-1.5 text-[13px] font-medium text-[#ff9a9a]" id={`${id}-err`}>
           {error}
         </p>
       )}
@@ -125,7 +125,7 @@ function Choice({ value, children }: { value: string; children: ReactNode }) {
   return (
     <label className="group cursor-pointer">
       <input type="checkbox" name="option[]" value={value} className="peer sr-only" />
-      <span className="flex h-full min-h-[66px] flex-col items-center justify-center gap-1 rounded-lg border border-line bg-white px-2 py-2 text-center text-[11.5px] leading-snug text-ink-2 shadow-[0_6px_16px_-12px_rgb(11_26_46/0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
+      <span className="flex h-full min-h-[66px] flex-col items-center justify-center gap-1 rounded-lg border border-line bg-white px-2 py-2 text-center text-[11.5px] leading-snug text-ink-2 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
         {children}
       </span>
     </label>
@@ -193,9 +193,9 @@ export default function ContactRequestForm() {
         <span className="icon-tile !h-14 !w-14">
           <CheckCircle2 size={28} aria-hidden />
         </span>
-        <h3 className="text-[26px]">Merci !</h3>
-        <p className="text-ink-soft">Votre demande a été effectuée et sera traitée dans les 48h.</p>
-        <a href={links.home} className="link-arrow">
+        <h3 className="text-[26px] !text-white">Merci !</h3>
+        <p className="text-white/70">Votre demande a été effectuée et sera traitée dans les 48h.</p>
+        <a href={links.home} className="link-arrow !text-[#7cc4f5]">
           Retour à l’accueil
         </a>
       </div>
@@ -213,8 +213,8 @@ export default function ContactRequestForm() {
       {/* En-tête */}
       <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
         <div>
-          <h2 id="votre-demande" className="scroll-mt-28 text-[clamp(24px,2vw,30px)]">Votre demande</h2>
-          <p className="mt-1 text-[14px] text-ink-soft">Remplissez le formulaire ci-dessous, notre équipe vous répond rapidement.</p>
+          <h2 id="votre-demande" className="scroll-mt-28 text-[clamp(24px,2vw,30px)] !text-white">Votre demande</h2>
+          <p className="mt-1 text-[14px] text-white/65">Remplissez le formulaire ci-dessous, notre équipe vous répond rapidement.</p>
         </div>
       </div>
 
@@ -223,8 +223,8 @@ export default function ContactRequestForm() {
         icon={<User size={18} aria-hidden />}
         title="Vos coordonnées"
         aside={
-          <p className="text-[13.5px] text-ink-soft">
-            <span className="text-[#e5383b]">*</span> Champs obligatoires
+          <p className="text-[13px] text-white/60">
+            <span className="text-[#ff7a7a]">*</span> Champs obligatoires
           </p>
         }
       >
@@ -258,7 +258,7 @@ export default function ContactRequestForm() {
       {/* Demande */}
       <Panel icon={<Layers size={18} aria-hidden />} title="Quelle est votre demande ?" sub="Sélectionnez la ou les solutions concernées par votre demande.">
         <fieldset>
-          <legend className="mb-2 text-[13.5px] font-semibold text-ink">Êtes-vous déjà client Mediasoft ?</legend>
+          <legend className="mb-2 text-[13.5px] font-semibold text-white">Êtes-vous déjà client Mediasoft ?</legend>
           <div className="inline-grid grid-cols-2 gap-1 rounded-full border border-line bg-white p-1" role="radiogroup">
             {(["oui", "non"] as const).map((v) => (
               <label key={v} className="cursor-pointer">
@@ -273,7 +273,7 @@ export default function ContactRequestForm() {
 
         {client === "oui" && (
           <div className="mt-5">
-            <p className="mb-2 text-[13px] font-medium text-ink-soft">Quel(s) produit(s) utilisez-vous ?</p>
+            <p className="mb-2 text-[13px] font-medium text-white/70">Quel(s) produit(s) utilisez-vous ?</p>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {products.map((p) => (
                 <Choice key={p.value} value={p.value}>
@@ -289,7 +289,7 @@ export default function ContactRequestForm() {
           </div>
         )}
 
-        <p className="mb-2 mt-5 text-[13px] font-medium text-ink-soft">{client === "oui" ? "Et votre besoin :" : "Votre besoin :"}</p>
+        <p className="mb-2 mt-5 text-[13px] font-medium text-white/70">{client === "oui" ? "Et votre besoin :" : "Votre besoin :"}</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {needs.map((n) => (
             <Choice key={n.value} value={n.value}>
@@ -309,8 +309,7 @@ export default function ContactRequestForm() {
       </Panel>
 
       {/* Message : carte bleu nuit (comme l'en-tête de la page), zone de saisie claire, envoi intégré en bas */}
-      <section className="relative overflow-hidden rounded-[18px] bg-[#00193a] p-4 text-white md:p-5">
-        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-sky opacity-25 blur-[80px]" aria-hidden />
+      <section className="relative overflow-hidden rounded-[18px] border border-white/10 bg-white/[0.05] p-4 text-white md:p-5">
         <div className="relative">
           <h3 className="text-[17px] !text-white md:text-[18px]">Votre message</h3>
           <p className="mt-0.5 text-[13px] text-white/65">Décrivez brièvement votre besoin ou votre projet.</p>
@@ -344,7 +343,7 @@ export default function ContactRequestForm() {
           </div>
         </div>
       </section>
-      <p aria-live="polite" className={`text-[14px] font-medium ${status === "error" ? "text-[#b42318]" : ""}`}>
+      <p aria-live="polite" className={`text-[14px] font-medium ${status === "error" ? "text-[#ff9a9a]" : "text-white"}`}>
         {message}
       </p>
     </form>
