@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Check } from "lucide-react";
 import AppWindow from "@/components/visual/AppWindow";
 import Laptop from "@/components/visual/Laptop";
 import { caps, questions, SAGE_GREEN, type Question } from "@/lib/sage100";
@@ -88,9 +89,11 @@ export default function Sage100Questions() {
                       <span className={`grid transition-[grid-template-rows,opacity] duration-500 ${on ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
                         <span className="overflow-hidden">
                           <span className="block pt-3 text-[16px] leading-relaxed text-ink-soft">{it.answer}</span>
-                          <span className="flex flex-wrap gap-2 pt-4">
+                          {/* Les fonctions concernées : une ligne de texte avec un trait vert, plutôt que des pastilles */}
+                          <span className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 border-l-2 border-[#00d639] pl-3 text-[14px] font-semibold text-ink">
                             {it.tags.map((t) => (
-                              <span key={t} className="rounded-full border border-[#066b1f]/20 bg-[#e9fbee] px-3 py-1 text-[12.5px] font-semibold text-[#0a6e22]">
+                              <span key={t} className="inline-flex items-center gap-1.5">
+                                <Check size={15} strokeWidth={3} className="text-[#0a8a2a]" aria-hidden />
                                 {t}
                               </span>
                             ))}
