@@ -78,7 +78,7 @@ export default function PowerBiPage() {
           lead="Power BI relie vos données de gestion et les transforme en tableaux de bord partagés, de la direction jusqu’aux équipes."
           actions={
             <>
-              <a href={links.contact} className="btn transition-transform duration-300 hover:scale-[1.03]" style={{ background: PBI_YELLOW, color: PBI_NIGHT }}>
+              <a href={links.contact} className="btn !shadow-none transition-transform duration-300 hover:scale-[1.03]" style={{ background: PBI_YELLOW, color: PBI_NIGHT }}>
                 Demander un devis <Arrow />
               </a>
               <a href="#solutions-powerbi" className="btn btn-outline-light">
@@ -92,7 +92,7 @@ export default function PowerBiPage() {
         {/* Vidéo de présentation reprise de l'ancienne page (même vidéo YouTube, même titre et même texte) */}
         <section className="section bg-mist" aria-labelledby="video-title">
           <div className="container-x grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
-            <div className="overflow-hidden rounded-[24px] p-1.5 shadow-[0_40px_80px_-50px_rgb(11_26_46/0.55)]" style={{ background: PBI_NIGHT }}>
+            <div className="overflow-hidden rounded-[24px] p-1.5" style={{ background: PBI_NIGHT }}>
               <div className="relative aspect-video overflow-hidden rounded-[18px] bg-black">
                 <iframe
                   src="https://www.youtube-nocookie.com/embed/TYHS_HImQQw"
@@ -133,9 +133,8 @@ export default function PowerBiPage() {
             <SectionHead className="[&_.eyebrow]:w-fit [&_.eyebrow]:rounded-full [&_.eyebrow]:bg-[#0f0d05] [&_.eyebrow]:px-3.5 [&_.eyebrow]:py-1.5 [&_.eyebrow]:!text-[#f5ce0d]" eyebrow="Nos solutions" title={<span id="licences-title">Nos solutions Microsoft Power BI</span>} />
             <AnimatedContent stagger={0.1} distance={36} className="mt-14 grid gap-5 lg:grid-cols-2">
               {licences.map((l, i) => (
-                <SpotlightCard key={l.name} theme="light" spotlightColor={i ? "rgba(245,206,13,0.28)" : "rgba(70,157,214,0.3)"} className="h-full !rounded-[24px] !p-0">
+                <SpotlightCard key={l.name} theme="light" spotlightColor={i ? "rgba(245,206,13,0.28)" : "rgba(70,157,214,0.3)"} className="h-full !rounded-[24px] !p-0 ![box-shadow:none]">
                   <article className="flex h-full flex-col p-7 md:p-10">
-                    <span className={`absolute inset-x-0 top-0 h-1.5 ${i ? "" : "bg-brand"}`} style={i ? { background: PBI_YELLOW } : undefined} aria-hidden />
                     <span className={`w-fit rounded-full px-3 py-1 text-[12px] font-semibold ${i ? "" : "bg-brand-soft text-brand"}`} style={i ? { background: "#fdf6d3", color: "#8a6a00" } : undefined}>
                       Licence
                     </span>
@@ -155,7 +154,7 @@ export default function PowerBiPage() {
                       ))}
                     </ul>
                     <div className="mt-auto pt-9">
-                      <a href={links.contact} className={`btn ${i ? "" : "btn-brand"}`} style={i ? { background: PBI_YELLOW, color: PBI_NIGHT } : undefined}>
+                      <a href={links.contact} className={`btn !shadow-none ${i ? "" : "btn-brand"}`} style={i ? { background: PBI_YELLOW, color: PBI_NIGHT } : undefined}>
                         Demander un devis <Arrow />
                       </a>
                     </div>
@@ -173,7 +172,7 @@ export default function PowerBiPage() {
               <CompareTable caption="Comparatif Power BI Pro et Power BI Premium" columns={["Power BI Pro", "Power BI Premium"]} rows={compare} lastColor={PBI_YELLOW} />
             </div>
             <div className="mt-10 flex flex-wrap justify-center gap-3">
-              <a href={links.contact} className="btn btn-primary">
+              <a href={links.contact} className="btn btn-primary !shadow-none">
                 Demander un devis <Arrow />
               </a>
               <a href={links.m365} className="btn btn-ghost">
