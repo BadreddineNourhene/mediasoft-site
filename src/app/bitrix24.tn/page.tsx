@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title,
   description,
   alternates: { canonical: "/bitrix24.tn/" },
-  openGraph: { url: "/bitrix24.tn/", title, description, images: [{ url: "/img/produits/b24-crm.webp" }] },
+  openGraph: { url: "/bitrix24.tn/", title, description, images: [{ url: "/img/produits/b24-transactions-1.webp" }] },
 };
 
 export default function Bitrix24Page() {

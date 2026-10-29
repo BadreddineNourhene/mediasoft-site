@@ -79,7 +79,7 @@ export function B24Hero() {
         <div className="relative mx-auto w-full max-w-[640px]">
           <img data-s src={b24caps.crm.src} alt={b24caps.crm.alt} className="relative block h-auto w-full rounded-[16px] shadow-[0_50px_90px_-30px_rgba(0,0,0,0.7)] ring-1 ring-white/10" fetchPriority="high" />
           <div data-s className="absolute -bottom-[16%] -left-[6%] hidden w-[48%] -rotate-[4deg] sm:block">
-            <AppWindow src={b24caps.contact.src} alt={b24caps.contact.alt} title="Bitrix24 · Centre de contact" eager />
+            <AppWindow src={b24caps.crm2.src} alt={b24caps.crm2.alt} title="Bitrix24 · Transactions" eager />
           </div>
           {notes.map(({ icon: Icon, k, t, pos }, i) => (
             <div key={t} className={`div-note absolute ${pos} hidden items-center gap-3 rounded-2xl border border-white/10 bg-[#0d2a4d]/85 px-3.5 py-2.5 shadow-[0_18px_40px_-14px_rgba(0,0,0,0.6)] backdrop-blur-md md:flex`} style={{ animationDelay: `${1.2 + i * 2.6}s` }}>
@@ -105,7 +105,7 @@ function Mini({ children }: { children: React.ReactNode }) {
 }
 
 function ToolVisual({ v }: { v: B24Tool["visual"] }) {
-  if (v === "crm" || v === "contact" || v === "funnel" || v === "mobile") return <AppWindow src={b24caps[v].src} alt={b24caps[v].alt} title="Bitrix24" />;
+  if (v === "crm" || v === "crm2" || v === "contact" || v === "funnel" || v === "mobile") return <AppWindow src={b24caps[v].src} alt={b24caps[v].alt} title="Bitrix24" />;
   if (v === "kanban")
     return (
       <Mini>

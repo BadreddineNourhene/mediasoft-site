@@ -9,7 +9,9 @@ export const B24_NIGHT = "#071a33";
 const WP = "/bitrix24.tn";
 
 export const b24caps = {
-  crm: { src: "/img/produits/b24-crm.webp", alt: "Bitrix24 : pipeline des transactions du CRM" },
+  // Captures fournies par Mediasoft (oct. 2026), noms des clients et contacts floutés
+  crm: { src: "/img/produits/b24-transactions-1.webp", alt: "Bitrix24 : pipeline des transactions du CRM" },
+  crm2: { src: "/img/produits/b24-transactions-2.webp", alt: "Bitrix24 : transactions en Kanban" },
   contact: { src: "/img/produits/b24-centre-contact.webp", alt: "Bitrix24 : centre de contact (WhatsApp, Facebook, Instagram, chat du site…)" },
   funnel: { src: "/img/produits/b24-funnel.webp", alt: "Bitrix24 : funnel de vente avec conversions" },
   mobile: { src: "/img/produits/b24-crm-mobile.webp", alt: "Bitrix24 : catalogue et application mobile" },
@@ -21,7 +23,7 @@ export type B24Tool = {
   line: string;
   features: string[];
   href: string;
-  visual: "crm" | "contact" | "funnel" | "mobile" | "chat" | "kanban" | "team" | "site";
+  visual: "crm" | "crm2" | "contact" | "funnel" | "mobile" | "chat" | "kanban" | "team" | "site";
 };
 
 export const b24tools: B24Tool[] = [
@@ -35,7 +37,7 @@ export const b24tools: B24Tool[] = [
 
 export const b24benefits = [
   { t: "Un seul outil à la place de dix", d: "CRM, tâches, messagerie, documents, site web : Bitrix24 remplace les abonnements qui s’empilent.", visual: "crm" as const },
-  { t: "Commencez gratuitement", d: "Une offre gratuite existe, pour un nombre illimité d’utilisateurs. Vous montez en gamme quand vous en avez besoin.", visual: "funnel" as const },
+  { t: "Commencez gratuitement", d: "Une offre gratuite existe, pour un nombre illimité d’utilisateurs. Vous montez en gamme quand vous en avez besoin.", visual: "crm2" as const },
   { t: "Des coûts prévisibles", d: "Des forfaits à prix fixe, sans facturation par utilisateur : votre équipe grandit, pas votre facture.", visual: "mobile" as const },
   { t: "Vos données vous suivent", d: "La migration depuis vos outils actuels est simple, et Bitrix24 s’intègre aux services que vous utilisez déjà.", visual: "contact" as const },
 ];
