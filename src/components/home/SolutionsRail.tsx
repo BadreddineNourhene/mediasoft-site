@@ -88,7 +88,7 @@ function Screens({ s }: { s: Showcase }) {
       {b && (
         <div data-par="0.9" className="absolute bottom-[6%] right-[0%] w-[56%]">
           <Zoomable src={b.src} alt={b.alt}>
-            <Shot src={b.src} alt={b.alt} box />
+            <Shot src={b.src} alt={b.alt} box={!b.fit} />
           </Zoomable>
         </div>
       )}

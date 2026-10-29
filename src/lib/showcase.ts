@@ -17,7 +17,8 @@ export type Showcase = {
   bg: string;
   ink: string;
   accent: string;
-  screens?: { src: string; alt: string; kind?: "mobile" | "laptop" }[];
+  /** fit : capture affichée entière (sans recadrage) dans la vignette secondaire */
+  screens?: { src: string; alt: string; kind?: "mobile" | "laptop"; fit?: boolean }[];
   visual?: "m365";
   videoStart: number;
 };
@@ -95,8 +96,8 @@ export const showcases: Showcase[] = [
     accent: "#2fc6f6",
     screens: [
       // Captures fournies par Mediasoft (oct. 2026), noms des clients et contacts floutés
-      { src: "/img/produits/b24-crm-2026.webp", alt: "Bitrix24 : transactions du CRM en Kanban" },
       { src: "/img/produits/b24-crm-2026b.webp", alt: "Bitrix24 : pipeline des prospects" },
+      { src: "/img/produits/b24-crm-2026.webp", alt: "Bitrix24 : transactions du CRM en Kanban", fit: true },
     ],
     videoStart: 20.02,
   },
