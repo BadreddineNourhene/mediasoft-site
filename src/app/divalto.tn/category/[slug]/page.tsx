@@ -28,7 +28,7 @@ export default async function DivaltoCategoryPage({ params }: { params: Promise<
       <main id="main">
         <CategoryView slug={slug} />
       </main>
-      <Footer />
+      <Footer current="divalto" />
     </>
   );
 }

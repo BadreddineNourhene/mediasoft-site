@@ -33,7 +33,7 @@ export default function Sage100Page() {
         <Sage100Mediasoft />
         <Sage100Cta />
       </main>
-      <Footer />
+      <Footer current="sage" />
     </>
   );
 }

@@ -36,7 +36,7 @@ export default async function DivaltoInnerPage({ params }: { params: Promise<{ s
         {p.kind === "famille" && <FamilyView p={p} />}
         {p.kind === "ressource" && <ResourceView p={p} />}
       </main>
-      <Footer />
+      <Footer current="divalto" />
     </>
   );
 }

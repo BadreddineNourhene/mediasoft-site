@@ -23,7 +23,7 @@ export default function DivaltoPage() {
         <DivaltoMetiers />
         <DivaltoAccompagnement />
       </main>
-      <Footer />
+      <Footer current="divalto" />
     </>
   );
 }

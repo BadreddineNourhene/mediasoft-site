@@ -26,7 +26,7 @@ export default function Bitrix24Page() {
         <B24Editions />
         <B24Mediasoft />
       </main>
-      <Footer />
+      <Footer current="bitrix24" />
     </>
   );
 }

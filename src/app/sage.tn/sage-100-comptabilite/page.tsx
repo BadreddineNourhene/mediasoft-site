@@ -23,7 +23,7 @@ export default function SageComptabilitePage() {
         <Sage100Mediasoft />
         <Sage100Cta />
       </main>
-      <Footer />
+      <Footer current="sage" />
     </>
   );
 }

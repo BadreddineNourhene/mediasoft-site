@@ -28,7 +28,7 @@ export default function GestionCommercialePage() {
         <GcDetails />
         <DivaltoAccompagnement />
       </main>
-      <Footer />
+      <Footer current="divalto" />
     </>
   );
 }

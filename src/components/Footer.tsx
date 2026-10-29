@@ -1,4 +1,5 @@
 import { Mail, Phone, Star } from "lucide-react";
+import { DEFAULT_THEME, editorTheme } from "@/lib/editorTheme";
 import { links, offices, site } from "@/lib/site";
 import { FacebookIcon, LinkedinIcon, SmartLink, WhatsappIcon } from "@/components/ui";
 
@@ -18,9 +19,15 @@ const company = [
   { label: "Télécharger Mediasoft Support", href: links.supportDownload },
 ];
 
-export default function Footer() {
+/* `current` : rubrique de la page. Sur les pages Sage, Divalto et Bitrix24, le pied de page prend les couleurs de l'éditeur. */
+export default function Footer({ current = "" }: { current?: string }) {
+  const theme = editorTheme(current);
+  const themed = theme !== DEFAULT_THEME;
   return (
-    <footer className="relative overflow-hidden bg-night text-white/70">
+    <footer
+      className={`relative overflow-hidden text-white/70 ${themed ? "" : "bg-night"}`}
+      style={themed ? { background: theme.bg, ["--ft-accent" as string]: theme.accent } : { ["--ft-accent" as string]: "var(--brand-sky)" }}
+    >
       <div className="grid-lines pointer-events-none absolute inset-0 opacity-[0.35] [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" aria-hidden />
       <div className="container-x relative pb-10 pt-20">
         <div className="grid gap-12 lg:grid-cols-12">
@@ -60,10 +67,10 @@ export default function Footer() {
                   {site.legalName} {o.address}
                 </p>
                 <p className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-[13px]">
-                  <a href={o.telHref} className="inline-flex items-center gap-2 text-white hover:text-brand-sky">
+                  <a href={o.telHref} className="inline-flex items-center gap-2 text-white hover:text-[var(--ft-accent)]">
                     <Phone size={13} aria-hidden /> {o.tel}
                   </a>
-                  <a href={`mailto:${o.email}`} className="inline-flex items-center gap-2 text-white hover:text-brand-sky">
+                  <a href={`mailto:${o.email}`} className="inline-flex items-center gap-2 text-white hover:text-[var(--ft-accent)]">
                     <Mail size={13} aria-hidden /> {o.email}
                   </a>
                 </p>
@@ -76,7 +83,7 @@ export default function Footer() {
           <img src="/img/photos/avisgoogle.png" alt="QR code vers la page d’avis Google de Mediasoft" width={96} height={96} className="h-24 w-24 rounded-xl bg-white p-1.5" loading="lazy" />
           <div>
             <h3 className="flex items-center gap-2 text-[16px] !text-white">
-              <Star size={18} className="text-[#3d8bff]" fill="currentColor" aria-hidden /> Votre avis compte
+              <Star size={18} className="text-[var(--ft-accent)]" fill="currentColor" aria-hidden /> Votre avis compte
             </h3>
             <p className="mt-2 max-w-xl text-[13.5px]">
               Si vous avez apprécié notre service, nous serions ravis que vous preniez un instant pour partager votre
@@ -96,7 +103,7 @@ export default function Footer() {
               {site.techPhones.map((p, i) => (
                 <span key={p.href}>
                   {i > 0 && " · "}
-                  <a href={p.href} className="text-white hover:text-brand-sky">{p.label}</a>
+                  <a href={p.href} className="text-white hover:text-[var(--ft-accent)]">{p.label}</a>
                 </span>
               ))}
             </span>
