@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { MessageCircle, UserPlus, CheckCircle2, Phone, Video, Paperclip, Globe, ShoppingBag, CalendarDays, Clock3, Check, ShoppingCart, LayoutGrid, Type, Image as ImageIcon, MousePointer2, Plus } from "lucide-react";
+import { Search, Settings2, GraduationCap, Headset, MessageCircle, UserPlus, CheckCircle2, Phone, Video, Paperclip, Globe, ShoppingBag, CalendarDays, Clock3, Check, ShoppingCart, LayoutGrid, Type, Image as ImageIcon, MousePointer2, Plus } from "lucide-react";
 import { Arrow } from "@/components/ui";
 import AppWindow from "@/components/visual/AppWindow";
 import { links, site } from "@/lib/site";
@@ -517,33 +517,74 @@ export function B24Editions() {
 }
 
 /* ---------- Mediasoft + contact ---------- */
+/* Accompagnement Mediasoft : parcours en 4 étapes sur fond bleu nuit, une ligne qui se dessine au défilement
+   relie les étapes, qui s'allument tour à tour. Le badge « Bitrix24 Partner » devient un tampon au-dessus du titre. */
+const JOURNEY_ICONS = [Search, Settings2, GraduationCap, Headset];
+function B24Journey() {
+  const root = useRef<HTMLElement>(null);
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        const tl = gsap.timeline({ scrollTrigger: { trigger: root.current, start: "top 65%", end: "bottom 75%", scrub: 0.6 } });
+        tl.fromTo("[data-jline]", { scaleX: 0 }, { scaleX: 1, ease: "none", duration: 4 });
+        gsap.utils.toArray<HTMLElement>("[data-jstep]").forEach((el, i) => {
+          tl.fromTo(el, { opacity: 0.25, y: 24 }, { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" }, i * 1.1);
+          tl.fromTo(el.querySelector("[data-jdot]"), { scale: 0.6, backgroundColor: "rgba(255,255,255,0.08)" }, { scale: 1, backgroundColor: CYAN, duration: 0.4 }, i * 1.1 + 0.1);
+        });
+      });
+    },
+    { scope: root }
+  );
+  return (
+    <section ref={root} className="relative overflow-hidden py-[clamp(80px,10vw,130px)] text-white" style={{ background: NIGHT }} aria-labelledby="b24-ms-title">
+      <div className="pointer-events-none absolute -left-[10%] top-[-30%] h-[80%] w-[55vw] rounded-full opacity-[0.18] blur-[120px]" style={{ background: CYAN }} aria-hidden />
+      <div className="grid-lines pointer-events-none absolute inset-0 opacity-[0.06]" aria-hidden />
+      <div className="container-x relative">
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <span className="inline-flex -rotate-2 items-center gap-2 rounded-xl bg-white px-3 py-2 shadow-[0_18px_40px_-18px_rgba(47,198,246,0.7)]">
+              <img src="/img/logos/logo-bitrix24.png" alt="Bitrix24" className="h-5 w-auto" />
+              <span className="border-l border-black/15 pl-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#071a33]">Partner</span>
+            </span>
+            <h2 id="b24-ms-title" className="mt-6 font-display text-[clamp(32px,4vw,56px)] font-bold leading-[1.03] tracking-[-0.045em] !text-white">
+              Un outil puissant, <span style={{ color: CYAN }}>bien installé et vraiment utilisé.</span>
+            </h2>
+          </div>
+          <p className="max-w-sm text-[16px] leading-relaxed text-white/65">Mediasoft, partenaire Bitrix24 en Tunisie, vous accompagne de l’analyse jusqu’au support.</p>
+        </div>
+
+        <ol className="relative mt-16 grid gap-10 md:grid-cols-4 md:gap-6">
+          {/* La ligne qui relie les étapes (ordinateur) */}
+          <span className="absolute left-[28px] right-[calc(25%-28px)] top-[28px] hidden h-[2px] bg-white/10 md:block" aria-hidden>
+            <span data-jline className="block h-full origin-left" style={{ background: `linear-gradient(90deg, ${CYAN}, #0b6fd6)` }} />
+          </span>
+          {b24services.map((s, i) => {
+            const Icon = JOURNEY_ICONS[i];
+            return (
+              <li key={s.t} data-jstep className="relative">
+                <span data-jdot className="relative grid h-14 w-14 place-items-center rounded-2xl ring-1 ring-white/15" style={{ background: CYAN, color: NIGHT }}>
+                  <Icon size={24} aria-hidden />
+                </span>
+                <p className="mt-6 font-display text-[13px] font-bold tracking-[0.14em]" style={{ color: CYAN }}>
+                  ÉTAPE {String(i + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-2 font-display text-[clamp(21px,1.8vw,26px)] font-bold leading-tight tracking-[-0.03em] !text-white">{s.t}</h3>
+                <p className="mt-3 text-[15px] leading-relaxed text-white/65">{s.d}</p>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
 export function B24Mediasoft() {
   const phone = site.techPhones[0];
   return (
     <>
-      <section className="bg-[#f3f9fd] py-[clamp(80px,10vw,130px)]" aria-labelledby="b24-ms-title">
-        <div className="container-x grid items-center gap-14 lg:grid-cols-[0.85fr_1.15fr]">
-          <div>
-            <img src="/img/bitrix24/bitrix24-partner.webp" alt="Mediasoft, partenaire Bitrix24" className="w-full max-w-[380px] rounded-[24px] bg-white shadow-[0_30px_60px_-30px_rgba(11,26,46,0.4)]" loading="lazy" />
-          </div>
-          <div>
-            <p className="eyebrow">Mediasoft, partenaire Bitrix24 en Tunisie</p>
-            <h2 id="b24-ms-title" className="mt-4 font-display text-[clamp(30px,3.6vw,50px)] font-bold leading-[1.04] tracking-[-0.04em]">
-              Un outil puissant, <span style={{ color: "#0b6fd6" }}>bien installé et vraiment utilisé.</span>
-            </h2>
-            <ol className="mt-9 grid gap-4 sm:grid-cols-2">
-              {b24services.map((s, i) => (
-                <li key={s.t} className="relative overflow-hidden rounded-[22px] bg-white p-6 shadow-[0_18px_40px_-28px_rgba(11,26,46,0.45)] ring-1 ring-line">
-                  <span className="absolute inset-x-0 top-0 h-1.5" style={{ background: i % 2 ? "#0b6fd6" : CYAN }} aria-hidden />
-                  <span className="font-display text-[13px] font-bold text-ink-soft">{String(i + 1).padStart(2, "0")}</span>
-                  <p className="mt-1 font-display text-[19px] font-bold tracking-[-0.02em] text-ink">{s.t}</p>
-                  <p className="mt-1.5 text-[14.5px] leading-relaxed text-ink-soft">{s.d}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-      </section>
+      <B24Journey />
       <section className="bg-white py-[clamp(70px,9vw,120px)]" aria-labelledby="b24-cta-title">
         <div className="container-x">
           <div className="relative overflow-hidden rounded-[40px] px-8 py-14 text-white md:px-16 md:py-20" style={{ background: NIGHT }}>
