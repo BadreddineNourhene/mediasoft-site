@@ -17,12 +17,12 @@ const pillars = [
 export default function HeroDigital() {
   return (
     <section className="relative isolate overflow-hidden bg-[#00193a] text-white" aria-labelledby="hero-title">
-      {/* L'image fournie en fond de l'en-tête (ordinateur) : elle couvre toute la zone, son visuel à droite,
+      {/* L'image fournie en fond de l'en-tête (ordinateur) : sur toute la largeur de la page, son visuel à droite,
           le texte posé sur sa partie vide à gauche. Sur mobile, le visuel recadré suit le texte. */}
       <img
         src="/img/hero/hero-digital.webp"
         alt=""
-        className="absolute right-[3%] top-[max(240px,calc((100svh-100px)/2))] -z-10 hidden h-[min(calc(max(480px,calc(100svh-100px))*1.2),941px,53vw)] w-auto max-w-none -translate-y-1/2 lg:block"
+        className="absolute inset-0 -z-10 hidden h-full w-full object-cover object-right lg:block"
         fetchPriority="high"
       />
       <div className="container-x grid items-center gap-8 pb-6 pt-14 lg:min-h-[max(480px,calc(100svh-100px))] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:py-8">
