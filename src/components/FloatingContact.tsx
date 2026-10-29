@@ -38,7 +38,8 @@ export default function FloatingContact() {
         </span>
         <span className="whitespace-nowrap pr-4 text-[13px] font-bold uppercase tracking-wide">WhatsApp</span>
       </SmartLink>
-      <SmartLink
+      {/* Lien simple, dans le même onglet (pas de nouvel onglet), comme sur mediasoft.tn : le téléchargement démarre directement */}
+      <a
         href={SUPPORT_EXE}
         download
         aria-label="Assistance : télécharger Mediasoft Support (TeamViewer)"
@@ -47,7 +48,7 @@ export default function FloatingContact() {
       >
         <span className="grid h-12 w-12 shrink-0 place-items-center text-[20px] font-extrabold">?</span>
         <span className="whitespace-nowrap pr-4 text-[13px] font-bold uppercase tracking-wide">Assistance</span>
-      </SmartLink>
+      </a>
     </div>
   );
 }
