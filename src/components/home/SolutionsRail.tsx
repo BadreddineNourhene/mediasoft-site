@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Maximize2, X } from "lucide-react";
-import { createPortal } from "react-dom";
+import { useRef, type ReactNode } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -33,47 +31,11 @@ function Shot({ src, alt, box = false }: { src: string; alt: string; box?: boole
 }
 
 /* Agrandir une capture au clic : la vignette du panneau est réduite, le clic l'ouvre en pleine qualité. */
-const ZOOM_EVENT = "ms-zoom";
-function Zoomable({ src, alt, children }: { src: string; alt: string; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={() => window.dispatchEvent(new CustomEvent(ZOOM_EVENT, { detail: { src, alt } }))}
-      className="group/z relative block w-full cursor-zoom-in text-left"
-      aria-label={`Agrandir : ${alt}`}
-    >
-      {children}
-      <span className="pointer-events-none absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink opacity-0 shadow-lg transition-opacity duration-200 group-hover/z:opacity-100" aria-hidden>
-        <Maximize2 size={16} />
-      </span>
-    </button>
-  );
+/* Captures fixes dans le panneau : pas d'agrandissement au clic (demande de Mediasoft). */
+function Zoomable({ children }: { src: string; alt: string; children: ReactNode }) {
+  return <div className="relative block w-full">{children}</div>;
 }
 
-function Lightbox() {
-  const [shot, setShot] = useState<{ src: string; alt: string } | null>(null);
-  useEffect(() => {
-    const open = (e: Event) => setShot((e as CustomEvent<{ src: string; alt: string }>).detail);
-    const key = (e: KeyboardEvent) => e.key === "Escape" && setShot(null);
-    window.addEventListener(ZOOM_EVENT, open);
-    window.addEventListener("keydown", key);
-    return () => {
-      window.removeEventListener(ZOOM_EVENT, open);
-      window.removeEventListener("keydown", key);
-    };
-  }, []);
-  if (!shot) return null;
-  // Portail dans <body> : la section est déplacée par l'épinglage GSAP, React ne peut pas insérer à côté d'elle.
-  return createPortal(
-    <div role="dialog" aria-modal="true" aria-label={shot.alt} className="fixed inset-0 z-[100] grid cursor-zoom-out place-items-center bg-[#020814]/85 p-4 backdrop-blur-sm md:p-10" onClick={() => setShot(null)}>
-      <img src={shot.src} alt={shot.alt} className="block h-auto max-h-[88vh] w-auto max-w-full rounded-xl shadow-[0_40px_80px_rgba(0,0,0,0.6)]" />
-      <button type="button" onClick={() => setShot(null)} className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white text-ink md:right-8 md:top-8" aria-label="Fermer">
-        <X size={20} />
-      </button>
-    </div>,
-    document.body
-  );
-}
 
 function Screens({ s }: { s: Showcase }) {
   if (s.visual === "m365") return <M365Orbit className="mx-auto lg:!max-w-[min(540px,calc(100svh-215px))]" />;
@@ -198,7 +160,6 @@ export default function SolutionsRail() {
 
   return (
     <>
-      <Lightbox />
     <section id="solutions" ref={root} className="relative overflow-hidden bg-paper py-16 lg:flex lg:h-[calc(100svh-60px)] lg:flex-col lg:py-0" aria-labelledby="solutions-title">
       <div className="container-x flex shrink-0 items-end justify-between gap-6 lg:pb-6 lg:pt-8">
         <h2 id="solutions-title" className="font-display text-[clamp(30px,3.4vw,50px)] font-bold leading-[1.05] tracking-[-0.035em]">
