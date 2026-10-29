@@ -10,15 +10,16 @@ const MAP_TUNIS = "https://www.google.com/maps?ll=36.85705,10.160652&z=15&t=m&hl
 const MAP_SOUSSE = "https://www.google.com/maps?ll=35.823281,10.607302&z=16&t=m&hl=fr&gl=US&mapclient=embed&q=Immeuble+Marwa,+Avenue+Yasser+Arafat,+Sahloul,+Sousse,+Tunisie";
 
 // Fond des barres : le même dégradé que l'en-tête de la page (brun-orangé Divalto, vert nuit Sage, bleu nuit Bitrix24),
-// pour que barres et en-tête ne fassent qu'un. `ink` sert au texte du bouton blanc « Contactez-nous ».
-const BAR: Record<string, { bg: string; ink: string }> = {
-  sage: { bg: "linear-gradient(90deg,#03100a 0%,#02120a 30%,#022910 55%,#022d10 100%)", ink: "#022d10" },
-  divalto: { bg: "linear-gradient(90deg,#140902 0%,#170a01 30%,#341301 55%,#381401 100%)", ink: "#381401" },
-  bitrix24: { bg: "linear-gradient(90deg,#071a33 0%,#071c35 30%,#0c314d 55%,#0d3450 100%)", ink: "#0d3450" },
+// pour que barres et en-tête ne fassent qu'un. `ink` sert au texte du bouton blanc « Contactez-nous »,
+// `accent` au trait sous la rubrique active (vert Sage, orange Divalto, cyan Bitrix24).
+const BAR: Record<string, { bg: string; ink: string; accent: string }> = {
+  sage: { bg: "linear-gradient(90deg,#03100a 0%,#02120a 30%,#022910 55%,#022d10 100%)", ink: "#022d10", accent: "#00d639" },
+  divalto: { bg: "linear-gradient(90deg,#140902 0%,#170a01 30%,#341301 55%,#381401 100%)", ink: "#381401", accent: "#ff5500" },
+  bitrix24: { bg: "linear-gradient(90deg,#071a33 0%,#071c35 30%,#0c314d 55%,#0d3450 100%)", ink: "#0d3450", accent: "#2fc6f6" },
 };
 
 export default function Header({ current = "" }: { current?: string }) {
-  const bar = BAR[current] ?? { bg: "#00193a", ink: "#00193a" };
+  const bar = BAR[current] ?? { bg: "#00193a", ink: "#00193a", accent: "#3d8bff" };
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -65,7 +66,7 @@ export default function Header({ current = "" }: { current?: string }) {
 
       {/* Bandeau d'informations et menu forment un seul bloc collant : en défilant, le bandeau (40 px) sort par le haut
           et seul le menu reste fixé en haut de l’écran. */}
-      <div className="sticky top-0 z-50 lg:top-[-40px]" style={{ ["--bar" as string]: bar.ink, ["--bar-bg" as string]: bar.bg }}>
+      <div className="sticky top-0 z-50 lg:top-[-40px]" style={{ ["--bar" as string]: bar.ink, ["--bar-bg" as string]: bar.bg, ["--bar-accent" as string]: bar.accent }}>
       <div className="hidden [background:var(--bar-bg)] text-[13.5px] text-white/70 lg:block">
         <div className="container-x flex h-10 items-center justify-between gap-6">
           <div className="flex items-center gap-6">
@@ -197,7 +198,7 @@ function DesktopItem({
     "relative inline-flex h-10 items-center gap-1.5 rounded-full px-4 text-[15px] font-medium transition-colors duration-200";
   const tone = active ? "text-white" : "text-white/75 hover:text-white";
   const dot = active ? (
-    <span className="absolute bottom-1 left-1/2 h-[3px] w-4 -translate-x-1/2 rounded-full bg-[#3d8bff]" aria-hidden />
+    <span className="absolute bottom-1 left-1/2 h-[3px] w-4 -translate-x-1/2 rounded-full bg-[var(--bar-accent)]" aria-hidden />
   ) : null;
 
   if (!item.children) {
