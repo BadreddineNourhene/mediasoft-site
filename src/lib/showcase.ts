@@ -97,7 +97,7 @@ export const showcases: Showcase[] = [
     screens: [
       // Captures fournies par Mediasoft (oct. 2026), noms des clients et contacts floutés
       { src: "/img/produits/b24-crm-2026b.webp", alt: "Bitrix24 : pipeline des prospects" },
-      { src: "/img/produits/b24-crm-2026.webp", alt: "Bitrix24 : transactions du CRM en Kanban", fit: true },
+      { src: "/img/produits/b24-crm-2026-vignette.webp", alt: "Bitrix24 : transactions du CRM en Kanban" },
     ],
     videoStart: 20.02,
   },
