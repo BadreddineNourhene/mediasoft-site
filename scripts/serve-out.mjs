@@ -42,8 +42,13 @@ createServer(async (req, res) => {
   let file = normalize(join(root, decodeURIComponent(path)));
   if (!file.startsWith(normalize(root))) return res.writeHead(403).end();
   try {
-    if ((await stat(file)).isDirectory()) file = join(file, "index.html");
+    // Dossier sans index.html (ex. out/PowerBI-Tunisie/ à côté de PowerBI-Tunisie.html) : servir le .html voisin
+    if ((await stat(file)).isDirectory()) {
+      file = join(file, "index.html");
+      await stat(file);
+    }
   } catch {
+    file = file.replace(/[\\/]index\.html$/, "");
     try {
       await stat(file + ".html");
       file += ".html";
