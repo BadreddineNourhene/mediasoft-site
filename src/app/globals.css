@@ -591,3 +591,41 @@ html.lenis body {
 @media (prefers-reduced-motion: reduce) {
   .s100-g .s100-g-line, .s100-g .s100-g-vline, .s100-g .s100-g-num, .s100-g .s100-g-bar, .s100-g .s100-g-txt { transform: none; opacity: 1; translate: 0 0; transition: none; }
 }
+
+/* Pages des univers Bitrix24 : apparition des éléments de la fenêtre dessinée */
+.b24u-in {
+  animation: b24u-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes b24u-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.b24u-bar {
+  transform-origin: left;
+  animation: b24u-bar 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes b24u-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+.b24u-ring {
+  animation: b24u-ring 1.4s ease-out infinite;
+}
+@keyframes b24u-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgb(47 198 246 / 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 16px rgb(47 198 246 / 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .b24u-in,
+  .b24u-bar,
+  .b24u-ring {
+    animation: none;
+  }
+}

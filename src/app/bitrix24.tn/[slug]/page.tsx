@@ -19,9 +19,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const url = `/bitrix24.tn/${u.slug}/`;
   return {
     title: `Bitrix24 ${u.name} en Tunisie`,
-    description: `${u.title} ${u.lead}`,
+    description: `${u.title} ${u.accent} ${u.lead}`,
     alternates: { canonical: url },
-    openGraph: { url, images: [{ url: u.hero }] },
+    openGraph: { url, images: [{ url: "/img/produits/b24-crm.webp" }] },
   };
 }
 
