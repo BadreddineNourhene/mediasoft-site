@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { Check, Download } from "lucide-react";
 import { Arrow, SmartLink } from "@/components/ui";
 import AppWindow from "@/components/visual/AppWindow";
 import Laptop from "@/components/visual/Laptop";
@@ -138,9 +138,11 @@ function Features({ m }: { m: SageModule }) {
                       <span className={`grid transition-[grid-template-rows,opacity] duration-500 ${on ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"}`}>
                         <span className="overflow-hidden">
                           <span className="block pt-2 text-[15px] leading-relaxed text-ink-soft">{it.d}</span>
-                          <span className="flex flex-wrap gap-2 pt-3">
+                          {/* Même présentation que la page Sage 100 : ligne cochée avec un trait vert, pas de pastilles */}
+                          <span className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2 border-l-2 border-[#00d639] pl-3 text-[14px] font-semibold text-ink">
                             {it.items.map((x) => (
-                              <span key={x} className="rounded-full border border-[#066b1f]/20 bg-[#e9fbee] px-3 py-1 text-[12.5px] font-semibold text-[#066b1f]">
+                              <span key={x} className="inline-flex items-center gap-1.5">
+                                <Check size={15} strokeWidth={3} className="text-[#0a8a2a]" aria-hidden />
                                 {x}
                               </span>
                             ))}
