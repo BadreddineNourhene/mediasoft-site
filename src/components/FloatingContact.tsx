@@ -8,9 +8,9 @@ import { SmartLink, WhatsappIcon } from "@/components/ui";
 /* Boutons fixes à droite de l'écran, sur toutes les pages, comme sur mediasoft.tn :
    WhatsApp et Assistance (téléchargement de TeamViewer Mediasoft). Au survol, l'onglet s'ouvre et affiche son libellé.
    Sur les pages Sage, Divalto et Bitrix24, ils prennent les couleurs de l'éditeur (lib/editorTheme). */
-// Comme sur mediasoft.tn : « Assistance » télécharge TeamViewer Mediasoft. Adresse complète, pour que le lien
-// marche aussi sur l'aperçu Render (le dossier /telechargement/ n'existe que sur le serveur IIS).
-const SUPPORT_EXE = "https://www.mediasoft.tn/telechargement/TeamViewer%20Mediasoft2.exe";
+// « ? » ouvre la page Assistance, qui lance le téléchargement de TeamViewer Mediasoft et explique quoi faire
+// si le navigateur le bloque (un clic direct sur un .exe ne donne souvent aucun signe dans Edge).
+const SUPPORT_PAGE = "/assistance.html";
 
 function editorOf(path: string) {
   if (path.startsWith("/sage.tn")) return "sage";
@@ -40,8 +40,7 @@ export default function FloatingContact() {
       </SmartLink>
       {/* Lien simple, dans le même onglet (pas de nouvel onglet), comme sur mediasoft.tn : le téléchargement démarre directement */}
       <a
-        href={SUPPORT_EXE}
-        download
+        href={SUPPORT_PAGE}
         aria-label="Assistance : télécharger Mediasoft Support (TeamViewer)"
         className={`${tab} w-12 ring-1 ring-white/15 hover:w-[160px]`}
         style={{ background: editor ? theme.ink : "#00193a" }}
