@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Section « Qui sommes-nous » : informatique + gestion = Mediasoft (fichier fourni, éléments masqués retirés) -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1127.488" height="1034.571" viewBox="0 0 1127.488 1034.571">
+  <title>Mediasoft : informatique et gestion</title>
+  <defs>
+    <radialGradient id="radial-gradient-4" cx="304.007" cy="465.981" r="345.737" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#c4e4ff" stop-opacity="0.85"/>
+      <stop offset="0.302" stop-color="#c4e4ff" stop-opacity="0.741"/>
+      <stop offset="1" stop-color="#c4e4ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="radial-gradient-5" cx="808.399" cy="466.633" r="345.737" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd8be" stop-opacity="0.9"/>
+      <stop offset="0.3018" stop-color="#ffd8be" stop-opacity="0.776"/>
+      <stop offset="1" stop-color="#ffd8be" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="filter-1" filterUnits="userSpaceOnUse" x="144.317" y="628.286" width="822" height="168" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="18"/></filter>
+    <linearGradient id="linear-gradient-1" x1="205.317" y1="250.286" x2="649.317" y2="694.286" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#258de8"/>
+      <stop offset="1" stop-color="#0870d3"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="463.317" y1="250.286" x2="907.317" y2="694.286" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ff9455"/>
+      <stop offset="1" stop-color="#ff5b32"/>
+    </linearGradient>
+    <clipPath id="clip-path-4">
+      <path d="M649.317 472.286 C649.317 594.893 549.924 694.286 427.317 694.286 C304.709 694.286 205.317 594.893 205.317 472.286 C205.317 349.679 304.709 250.286 427.317 250.286 C549.924 250.286 649.317 349.679 649.317 472.286 Z"/>
+    </clipPath>
+    <linearGradient id="linear-gradient-3" x1="463.317" y1="250.286" x2="907.317" y2="694.286" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#103b79"/>
+      <stop offset="1" stop-color="#06295f"/>
+    </linearGradient>
+    <!-- Trait sous « mediasoft » : dégradé bleu vers bleu très clair -->
+    <linearGradient id="swoosh" x1="498.888" y1="0" x2="613.16" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0071bc"/>
+      <stop offset="0.5" stop-color="#77badf"/>
+      <stop offset="1" stop-color="#e2fbff"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Halos -->
+  <path d="M649.744 465.981 C649.744 557.676 613.318 645.616 548.48 710.454 C483.642 775.292 395.702 811.718 304.007 811.718 C212.312 811.718 124.372 775.292 59.534 710.454 C-5.304 645.616 -41.73 557.676 -41.73 465.981 C-41.73 374.286 -5.304 286.346 59.534 221.508 C124.372 156.67 212.312 120.244 304.007 120.244 C395.702 120.244 483.642 156.67 548.48 221.508 C613.318 286.346 649.744 374.286 649.744 465.981 Z" fill="url(#radial-gradient-4)"/>
+  <path d="M1154.136 466.633 C1154.136 558.328 1117.71 646.268 1052.872 711.106 C988.034 775.944 900.094 812.37 808.399 812.37 C716.704 812.37 628.764 775.944 563.926 711.106 C499.088 646.268 462.662 558.328 462.662 466.633 C462.662 374.938 499.088 286.999 563.926 222.16 C628.764 157.322 716.704 120.896 808.399 120.896 C900.094 120.896 988.034 157.322 1052.872 222.16 C1117.71 286.999 1154.136 374.938 1154.136 466.633 Z" fill="url(#radial-gradient-5)"/>
+  <g filter="url(#filter-1)">
+    <path d="M910.317 712.286 C910.317 727.75 751.378 740.286 555.317 740.286 C359.256 740.286 200.317 727.75 200.317 712.286 C200.317 696.822 359.256 684.286 555.317 684.286 C751.378 684.286 910.317 696.822 910.317 712.286 Z" fill="#14365f" opacity="0.1"/>
+  </g>
+
+  <!-- Orbite et points -->
+  <path d="M923.398 422.85 C941.369 594.867 800.405 756.759 608.546 784.445 C416.687 812.132 246.587 695.129 228.616 523.112 C210.645 351.095 351.609 189.204 543.468 161.517 C735.327 133.83 905.427 250.833 923.398 422.85 Z" fill="none" stroke="#8dbcf0" stroke-width="1.3" opacity="0.9"/>
+  <path d="M594.697 164.422 C700.548 169.608 784.391 234.434 837.841 317.411" fill="none" stroke="#ffb38b" stroke-width="1.3"/>
+  <circle cx="393.007" cy="229.981" r="5" fill="#075ab5"/>
+  <circle cx="747.007" cy="201.981" r="5" fill="#ff6b2e"/>
+  <circle cx="415.007" cy="752.981" r="5" fill="#075ab5"/>
+  <circle cx="737.007" cy="720.981" r="5" fill="#ff6b2e"/>
+
+  <!-- Les deux cercles et leur intersection -->
+  <circle cx="427.317" cy="472.286" r="222" fill="url(#linear-gradient-1)"/>
+  <circle cx="685.317" cy="472.286" r="222" fill="url(#linear-gradient-2)"/>
+  <g clip-path="url(#clip-path-4)">
+    <circle cx="685.317" cy="472.286" r="222" fill="url(#linear-gradient-3)"/>
+  </g>
+  <circle cx="427.317" cy="472.286" r="222" fill="none" stroke="#ffffff" stroke-opacity="0.78" stroke-width="2"/>
+  <circle cx="685.317" cy="472.286" r="222" fill="none" stroke="#ffffff" stroke-opacity="0.78" stroke-width="2"/>
+
+  <!-- Pictogramme ordinateur -->
+  <g fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M342.317 367.286 L382.317 367.286 C383.421 367.286 384.317 368.181 384.317 369.286 L384.317 396.286 C384.317 397.391 383.421 398.286 382.317 398.286 L342.317 398.286 C341.212 398.286 340.317 397.391 340.317 396.286 L340.317 369.286 C340.317 368.181 341.212 367.286 342.317 367.286 Z"/>
+    <path d="M335.317 403.286 L389.317 403.286 L385.317 408.286 L339.317 408.286 Z"/>
+  </g>
+  <!-- Pictogramme graphique -->
+  <g fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linejoin="round">
+    <rect x="765.317" y="390.286" width="9" height="18" rx="1"/>
+    <rect x="780.317" y="378.286" width="9" height="30" rx="1"/>
+    <rect x="795.317" y="366.286" width="9" height="42" rx="1"/>
+  </g>
+
+  <!-- Textes -->
+  <g font-family="Arial, Helvetica, sans-serif" fill="#ffffff" text-anchor="middle">
+    <text x="360.317" y="439.286" font-size="27" font-weight="bold">Informatique</text>
+    <text x="360.317" y="493.286" font-size="18">Développement,</text>
+    <text x="360.317" y="518.286" font-size="18">systèmes, réseaux, IA,</text>
+    <text x="782.317" y="439.286" font-size="27" font-weight="bold">Gestion</text>
+    <text x="782.317" y="480.286" font-size="18">Comptabilité,</text>
+    <text x="782.317" y="505.286" font-size="18">finance, commerce,</text>
+    <text x="782.317" y="530.286" font-size="18">production, paie</text>
+    <text x="555.317" y="471.411" font-size="29" font-weight="600" letter-spacing="0.3">mediasoft</text>
+  </g>
+  <path d="M502.034 485.197 C538.057 502.588 573.99 502.588 610.013 485.197 C611.008 484.717 612.204 485.134 612.684 486.129 C613.164 487.123 612.747 488.319 611.752 488.799 C574.63 506.72 537.417 506.72 500.295 488.799 C499.3 488.319 498.883 487.123 499.363 486.129 C499.843 485.134 501.039 484.717 502.034 485.197" fill="url(#swoosh)"/>
+
+  <!-- Quatre tuiles blanches -->
+  <g fill="#ffffff">
+    <rect x="127.195" y="417.967" width="108.541" height="108.541" rx="25.242"/>
+    <rect x="500.649" y="120.896" width="108.541" height="108.541" rx="25.242"/>
+    <rect x="875.753" y="418.685" width="108.541" height="108.541" rx="25.242"/>
+    <rect x="501.911" y="724.134" width="108.541" height="108.541" rx="25.242"/>
+  </g>
+  <!-- Serveurs -->
+  <g fill="none" stroke="#12417c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="156.223" y="441.995" width="50.484" height="15.145" rx="3.786"/>
+    <rect x="156.223" y="463.451" width="50.484" height="15.145" rx="3.786"/>
+    <rect x="156.223" y="484.907" width="50.484" height="15.145" rx="3.786"/>
+    <path d="M166.32 449.568 L168.844 449.568 M175.155 449.568 L177.679 449.568 M166.32 471.023 L168.844 471.023 M175.155 471.023 L177.679 471.023 M166.32 492.479 L168.844 492.479 M175.155 492.479 L177.679 492.479"/>
+  </g>
+  <!-- Nuage -->
+  <path d="M533.988 185.264 C520.105 185.264 521.367 162.546 539.036 162.546 C542.823 144.876 570.589 149.925 571.851 166.332 C589.521 166.332 588.258 186.526 573.113 186.526 Z" fill="none" stroke="#12417c" stroke-width="3.5" stroke-linejoin="round"/>
+  <!-- Équipe -->
+  <g fill="none" stroke="#12417c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="930.664" cy="459.975" r="10.097"/>
+    <circle cx="953.382" cy="466.286" r="8.835"/>
+    <circle cx="910.471" cy="466.286" r="8.835"/>
+    <path d="M912.995 492.79 L912.995 485.217 C912.995 475.12 921.83 470.072 930.664 470.072 C939.499 470.072 948.334 475.12 948.334 485.217 L948.334 492.79 M896.587 494.052 L896.587 487.741 C896.587 481.431 901.636 476.382 909.209 475.12 M967.265 494.052 L967.265 487.741 C967.265 481.431 962.217 476.382 954.644 475.12"/>
+  </g>
+  <!-- Bouclier -->
+  <path d="M556.182 753.162 L580.162 761.997 L580.162 780.928 C580.162 796.074 567.541 804.908 556.182 811.219 C544.823 804.908 532.202 796.074 532.202 780.928 L532.202 761.997 Z" fill="none" stroke="#12417c" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M544.823 780.928 L552.395 788.501 L567.541 770.832" fill="none" stroke="#12417c" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

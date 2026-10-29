@@ -1,0 +1,31 @@
+# Render : aperçu du nouveau site Mediasoft pour l'équipe (site statique, dossier out/).
+# Reprend les réécritures de public/web.config (IIS) qui sont utiles sur Render.
+# Le formulaire de contact poste vers /site/send.php (PHP) : il ne fonctionne que sur le serveur IIS.
+services:
+  - type: web
+    name: mediasoft-site
+    runtime: static
+    # npm run build lance aussi scripts/postbuild.mjs (pages /divalto.tn/, /bitrix24.tn/, /sage.tn/sage-100/)
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./out
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+    headers:
+      # Aperçu interne : ne pas indexer cette copie dans Google (le vrai site reste mediasoft.tn)
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex, nofollow
+    routes:
+      - type: redirect
+        source: /Presentation
+        destination: /
+      - type: redirect
+        source: /Presentation.html
+        destination: /
+      - type: rewrite
+        source: /site/formulaire.php
+        destination: /contact.html
+      - type: rewrite
+        source: /Politique de confidentialité.html
+        destination: /politique-de-confidentialite.html
