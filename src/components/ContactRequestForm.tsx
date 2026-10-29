@@ -127,7 +127,7 @@ function Choice({ value, children }: { value: string; children: ReactNode }) {
   return (
     <label className="group cursor-pointer">
       <input type="checkbox" name="option[]" value={value} className="peer sr-only" />
-      <span className="flex h-full min-h-[118px] flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-white px-3 py-4 text-center text-[14.5px] leading-snug text-ink-2 shadow-[0_6px_16px_-12px_rgb(11_26_46/0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
+      <span className="flex h-full min-h-[104px] flex-col items-center justify-center gap-2 rounded-2xl border border-line bg-white px-3 py-4 text-center text-[14.5px] leading-snug text-ink-2 shadow-[0_6px_16px_-12px_rgb(11_26_46/0.25)] transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
         {children}
       </span>
     </label>
@@ -213,12 +213,12 @@ export default function ContactRequestForm() {
   return (
     <form onSubmit={onSubmit} noValidate className="grid min-w-0 gap-5">
       {/* En-tête */}
-      <div className="flex flex-col justify-between gap-5 md:flex-row md:items-start">
+      <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-start">
         <div>
-          <h2 id="votre-demande" className="scroll-mt-28 text-[clamp(30px,3vw,42px)]">Votre demande</h2>
+          <h2 id="votre-demande" className="scroll-mt-28 text-[clamp(28px,2.4vw,36px)]">Votre demande</h2>
           <p className="mt-1.5 text-[15.5px] text-ink-soft">Remplissez le formulaire ci-dessous, notre équipe vous répond rapidement.</p>
         </div>
-        <div className="flex max-w-[310px] shrink-0 items-start gap-3 rounded-2xl border border-line bg-[#f2f6fc] p-4">
+        <div className="flex max-w-[300px] shrink-0 items-start gap-3 rounded-2xl border border-line bg-[#f2f6fc] p-4">
           <MessageCircleMore size={34} strokeWidth={1.7} className="shrink-0 text-brand" aria-hidden />
           <p className="text-[14px] leading-snug text-ink-soft">
             <span className="block font-semibold text-ink">Une question ?</span>
@@ -283,7 +283,7 @@ export default function ContactRequestForm() {
         {client === "oui" && (
           <div className="mt-5">
             <p className="mb-3 text-[14px] font-medium text-ink-soft">Quel(s) produit(s) utilisez-vous ?</p>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
               {products.map((p) => (
                 <Choice key={p.value} value={p.value}>
                   <span className="grid h-10 place-items-center">{p.logo}</span>
@@ -299,7 +299,7 @@ export default function ContactRequestForm() {
         )}
 
         <p className="mb-3 mt-6 text-[14px] font-medium text-ink-soft">{client === "oui" ? "Et votre besoin :" : "Votre besoin :"}</p>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {needs.map((n) => (
             <Choice key={n.value} value={n.value}>
               <span className="grid h-10 place-items-center">{n.icon}</span>
@@ -345,7 +345,7 @@ export default function ContactRequestForm() {
         <button
           type="submit"
           disabled={status === "sending"}
-          className="inline-flex min-h-[58px] items-center gap-3 rounded-2xl bg-[#1f6bff] px-8 text-[17px] font-semibold text-white shadow-[0_18px_34px_-16px_rgb(31_107_255/0.8)] transition-transform duration-200 hover:scale-[1.02] disabled:opacity-70"
+          className="inline-flex min-h-[58px] shrink-0 items-center gap-3 whitespace-nowrap rounded-2xl bg-[#1f6bff] px-7 text-[17px] font-semibold text-white shadow-[0_18px_34px_-16px_rgb(31_107_255/0.8)] transition-transform duration-200 hover:scale-[1.02] disabled:opacity-70"
         >
           {status === "sending" ? <Loader2 size={20} className="animate-spin" aria-hidden /> : <Send size={20} aria-hidden />}
           {status === "sending" ? "Envoi en cours…" : "Envoyer ma demande"}

@@ -41,13 +41,13 @@ export default function ContactPage() {
         />
 
         <section className="section !pt-16 bg-mist">
-          {/* Le formulaire (maquette Mediasoft) occupe toute la largeur ; les coordonnées des agences suivent en dessous */}
-          <div className="container-x grid grid-cols-1 gap-10 [&>*]:min-w-0">
+          {/* Formulaire à gauche, présentation et plans des agences à droite */}
+          <div className="container-x grid grid-cols-1 gap-8 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,0.75fr)]">
             <div className="card p-5 shadow-[0_30px_60px_-40px_rgb(11_26_46/0.4)] md:p-8">
               <ContactRequestForm />
             </div>
 
-            <aside className="grid content-start gap-5 md:grid-cols-3">
+            <aside className="grid content-start gap-5">
               <div className="card p-7">
                 <p className="text-[15px] leading-relaxed text-ink-soft">
                   Nos partenariats stratégiques avec les éditeurs Sage, Divalto, Bitrix24 et Microsoft et notre savoir-faire

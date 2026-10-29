@@ -6,8 +6,12 @@ import { editorTheme } from "@/lib/editorTheme";
 import { SmartLink, WhatsappIcon } from "@/components/ui";
 
 /* Boutons fixes à droite de l'écran, sur toutes les pages, comme sur mediasoft.tn :
-   WhatsApp et Assistance (vers le Help desk). Au survol, l'onglet s'ouvre et affiche son libellé.
+   WhatsApp et Assistance (téléchargement de TeamViewer Mediasoft). Au survol, l'onglet s'ouvre et affiche son libellé.
    Sur les pages Sage, Divalto et Bitrix24, ils prennent les couleurs de l'éditeur (lib/editorTheme). */
+// Comme sur mediasoft.tn : « Assistance » télécharge TeamViewer Mediasoft. Adresse complète, pour que le lien
+// marche aussi sur l'aperçu Render (le dossier /telechargement/ n'existe que sur le serveur IIS).
+const SUPPORT_EXE = "https://www.mediasoft.tn/telechargement/TeamViewer%20Mediasoft2.exe";
+
 function editorOf(path: string) {
   if (path.startsWith("/sage.tn")) return "sage";
   if (path.startsWith("/divalto.tn")) return "divalto";
@@ -35,8 +39,9 @@ export default function FloatingContact() {
         <span className="whitespace-nowrap pr-4 text-[13px] font-bold uppercase tracking-wide">WhatsApp</span>
       </SmartLink>
       <SmartLink
-        href={links.helpdesk}
-        aria-label="Assistance : Help desk Mediasoft"
+        href={SUPPORT_EXE}
+        download
+        aria-label="Assistance : télécharger Mediasoft Support (TeamViewer)"
         className={`${tab} w-12 ring-1 ring-white/15 hover:w-[160px]`}
         style={{ background: editor ? theme.ink : "#00193a" }}
       >
