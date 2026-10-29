@@ -5,7 +5,16 @@ import { ChevronDown, Headset, Mail, MapPin, Menu, X } from "lucide-react";
 import { links, nav, site, type NavItem } from "@/lib/site";
 import { Arrow, FacebookIcon, LinkedinIcon, SmartLink, WhatsappIcon } from "@/components/ui";
 
+// Plans Google Maps des deux agences (bandeau du haut)
+const MAP_TUNIS = "https://www.google.com/maps?ll=36.85705,10.160652&z=15&t=m&hl=fr&gl=TN&mapclient=embed&cid=14338673014987496657";
+const MAP_SOUSSE = "https://www.google.com/maps?ll=35.823281,10.607302&z=16&t=m&hl=fr&gl=US&mapclient=embed&q=Immeuble+Marwa,+Avenue+Yasser+Arafat,+Sahloul,+Sousse,+Tunisie";
+
+// Couleur des barres : la couleur de l'éditeur de la page (vert Sage, orange Divalto, bleu Bitrix24), bleu nuit ailleurs.
+// Teintes assez soutenues pour que le texte blanc reste lisible.
+const BAR: Record<string, string> = { sage: "#007a2a", divalto: "#d9580b", bitrix24: "#0b66c3" };
+
 export default function Header({ current = "" }: { current?: string }) {
+  const bar = BAR[current] ?? "#00193a";
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -52,15 +61,18 @@ export default function Header({ current = "" }: { current?: string }) {
 
       {/* Bandeau d'informations et menu forment un seul bloc collant : en défilant, le bandeau (40 px) sort par le haut
           et seul le menu reste fixé en haut de l’écran. */}
-      <div className="sticky top-0 z-50 lg:top-[-40px]">
-      <div className="hidden bg-[#00193a] text-[13.5px] text-white/70 lg:block">
+      <div className="sticky top-0 z-50 lg:top-[-40px]" style={{ ["--bar" as string]: bar }}>
+      <div className="hidden bg-[var(--bar)] text-[13.5px] text-white/70 lg:block">
         <div className="container-x flex h-10 items-center justify-between gap-6">
           <div className="flex items-center gap-6">
             <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 hover:text-white">
               <Mail size={15} aria-hidden /> {site.email}
             </a>
             <span className="inline-flex items-center gap-2">
-              <MapPin size={15} aria-hidden /> Ennasr II, Ariana · Sahloul, Sousse
+              <MapPin size={15} aria-hidden />
+              <SmartLink href={MAP_TUNIS} className="hover:text-white" aria-label="Agence d’Ennasr II, Ariana sur Google Maps">Ennasr II, Ariana</SmartLink>
+              ·
+              <SmartLink href={MAP_SOUSSE} className="hover:text-white" aria-label="Agence de Sahloul, Sousse sur Google Maps">Sahloul, Sousse</SmartLink>
             </span>
           </div>
           <div className="flex items-center gap-5">
@@ -84,8 +96,8 @@ export default function Header({ current = "" }: { current?: string }) {
       <header
         className={`relative transition-[background-color,box-shadow] duration-300 ${
           scrolled || mobile
-            ? "border-t border-white/[0.08] bg-[#00193a] shadow-[0_14px_30px_-18px_rgb(0_0_0/0.6)]"
-            : "border-t border-white/[0.08] bg-[#00193a]"
+            ? "border-t border-white/[0.08] bg-[var(--bar)] shadow-[0_14px_30px_-18px_rgb(0_0_0/0.6)]"
+            : "border-t border-white/[0.08] bg-[var(--bar)]"
         }`}
       >
         <div className="container-x flex h-[var(--header-h)] items-center justify-between gap-6">
@@ -110,7 +122,7 @@ export default function Header({ current = "" }: { current?: string }) {
           </nav>
 
           <div className="flex items-center gap-2">
-            <a href={links.contact} className="btn hidden !min-h-[32px] !gap-1 !bg-white !px-3.5 !py-0 !text-[12.5px] !text-[#00193a] hover:!bg-[#e6f0ff] sm:inline-flex">
+            <a href={links.contact} className="btn hidden !min-h-[32px] !gap-1 !bg-white !px-3.5 !py-0 !text-[12.5px] !text-[var(--bar)] hover:!bg-[#e6f0ff] sm:inline-flex">
               Contactez-nous <Arrow size={12} />
             </a>
             <button
