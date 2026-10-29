@@ -29,7 +29,8 @@ export const links = {
   m365: "/microsoft-365-PowerBI.html",
   m365PowerBi: "/microsoft-365-PowerBI.html#powerBI",
   powerbi: "/PowerBI-Tunisie.html",
-  privacy: "/Politique%20de%20confidentialit%C3%A9.html",
+  // Lien vers le fichier de la nouvelle page (marche partout) ; l'ancienne adresse reste réécrite par IIS (web.config)
+  privacy: "/politique-de-confidentialite.html",
   login: "/login.html",
   helpdesk: "https://helpdesk-ms.com/",
   supportDownload: "https://www.mediasoft.tn/telechargement/TeamViewer%20Mediasoft2.exe",
