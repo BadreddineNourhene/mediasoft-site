@@ -44,7 +44,7 @@ const products: { value: string; logo: ReactNode; name: string; sub: string }[] 
   { value: "Je suis un client Sage 50Ciel", logo: logo("/img/logos/logo-ciel.png", "Ciel", "max-h-8"), name: "Sage 50 Ciel", sub: "Gestion des TPE" },
   { value: "Je suis un client Divalto", logo: logo("/img/logos/logo-divalto.png", "Divalto", "max-h-5"), name: "Divalto", sub: "ERP" },
   { value: "Je suis un client Bitrix24", logo: logo("/img/logos/logo-bitrix24.png", "Bitrix24", "max-h-5"), name: "Bitrix24", sub: "CRM" },
-  { value: "Je suis un client Microsoft365", logo: logo("/img/logos/logo-microsoft-365.png", "Microsoft 365", "max-h-8"), name: "Microsoft 365", sub: "Bureautique" },
+  { value: "Je suis un client Microsoft365", logo: logo("/img/logos/logo-microsoft-365.png", "Microsoft 365", "max-h-6"), name: "Microsoft 365", sub: "Bureautique" },
   { value: "Je suis un client Power BI", logo: logo("/img/logos/logo-power-bi-icon.svg", "Power BI", "max-h-8"), name: "Power BI", sub: "Tableaux de bord" },
 ];
 
