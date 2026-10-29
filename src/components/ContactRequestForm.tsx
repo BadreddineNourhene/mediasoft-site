@@ -35,7 +35,7 @@ const MAX_MESSAGE = 500;
 
 function MicrosoftMark() {
   return (
-    <span className="grid h-5 w-5 grid-cols-2 gap-[2px]" aria-hidden>
+    <span className="grid h-7 w-7 grid-cols-2 gap-[2px]" aria-hidden>
       <span className="bg-[#f25022]" />
       <span className="bg-[#7fba00]" />
       <span className="bg-[#00a4ef]" />
@@ -44,25 +44,26 @@ function MicrosoftMark() {
   );
 }
 
-const products: { value: string; logo: ReactNode; line: string; strong: string }[] = [
-  { value: "Je suis un client Sage 100", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-[18px] w-auto" />, line: "Je suis un client", strong: "Sage 100" },
-  { value: "Je suis un client Sage 50Ciel", logo: <img src="/img/logos/logo-sage.svg" alt="Sage" className="h-[18px] w-auto" />, line: "Je suis un client", strong: "Sage 50Ciel" },
-  { value: "Je suis un client Divalto", logo: <img src="/img/logos/logo-divalto.png" alt="Divalto" className="h-4 w-auto" />, line: "Je suis un client", strong: "Divalto" },
-  { value: "Je suis un client Bitrix24", logo: <img src="/img/logos/logo-bitrix24.png" alt="Bitrix24" className="h-4 w-auto" />, line: "Je suis un client", strong: "Bitrix24" },
-  { value: "Je suis un client Microsoft365", logo: <MicrosoftMark />, line: "Je suis un client", strong: "Microsoft365" },
-  { value: "Je suis un client Power BI", logo: <img src="/img/logos/logo-power-bi-icon.svg" alt="Power BI" className="h-5 w-auto" />, line: "Je suis un client", strong: "Power BI" },
+/* Cartes : logo dans un cadre de taille fixe à gauche, nom en gras et précision courte à droite.
+   La question au-dessus (« Quel(s) produit(s) utilisez-vous ? ») remplace la répétition « Je suis un client ».
+   `value` garde le libellé d'origine envoyé dans option[]. */
+const logo = (src: string, alt: string, cls = "max-h-7") => <img src={src} alt={alt} className={`${cls} max-w-full object-contain`} />;
+
+const products: { value: string; logo: ReactNode; name: string; sub: string }[] = [
+  { value: "Je suis un client Sage 100", logo: logo("/img/logos/logo-sage.svg", "Sage", "max-h-6"), name: "Sage 100", sub: "Compta & gestion" },
+  { value: "Je suis un client Sage 50Ciel", logo: logo("/img/logos/logo-ciel.png", "Ciel", "max-h-8"), name: "Sage 50 Ciel", sub: "Gestion des TPE" },
+  { value: "Je suis un client Divalto", logo: logo("/img/logos/logo-divalto.png", "Divalto", "max-h-5"), name: "Divalto", sub: "ERP" },
+  { value: "Je suis un client Bitrix24", logo: logo("/img/logos/logo-bitrix24.png", "Bitrix24", "max-h-5"), name: "Bitrix24", sub: "CRM" },
+  { value: "Je suis un client Microsoft365", logo: <MicrosoftMark />, name: "Microsoft 365", sub: "Bureautique" },
+  { value: "Je suis un client Power BI", logo: logo("/img/logos/logo-power-bi-icon.svg", "Power BI", "max-h-8"), name: "Power BI", sub: "Tableaux de bord" },
 ];
 
-const needs: { value: string; icon: ReactNode; line: string; strong?: string }[] = [
-  { value: "Hébergement Cloud", icon: <Cloud size={19} strokeWidth={1.7} className="text-brand" />, line: "Hébergement", strong: "Cloud" },
-  {
-    value: "Je souhaite une solution sur mesure (site, application, agent IA)",
-    icon: <Settings size={18} strokeWidth={1.8} className="text-ink" />,
-    line: "Je souhaite une solution sur mesure (application web, agent IA)",
-  },
-  { value: "Je souhaite une démonstration", icon: <Monitor size={18} strokeWidth={1.7} className="text-brand" />, line: "Je souhaite une démonstration" },
-  { value: "Je souhaite être contacté", icon: <Phone size={17} strokeWidth={1.8} className="text-brand" />, line: "Je souhaite être", strong: "contacté" },
-  { value: "Autre", icon: <MoreHorizontal size={19} className="text-ink" />, line: "", strong: "Autre" },
+const needs: { value: string; icon: ReactNode; name: string; sub: string }[] = [
+  { value: "Hébergement Cloud", icon: <Cloud size={20} strokeWidth={1.8} />, name: "Hébergement Cloud", sub: "Vos logiciels en ligne" },
+  { value: "Je souhaite une solution sur mesure (site, application, agent IA)", icon: <Settings size={20} strokeWidth={1.8} />, name: "Solution sur mesure", sub: "Web, agent IA" },
+  { value: "Je souhaite une démonstration", icon: <Monitor size={20} strokeWidth={1.8} />, name: "Démonstration", sub: "Voir le logiciel en action" },
+  { value: "Je souhaite être contacté", icon: <Phone size={19} strokeWidth={1.8} />, name: "Être contacté", sub: "On vous rappelle" },
+  { value: "Autre", icon: <MoreHorizontal size={20} />, name: "Autre", sub: "À préciser" },
 ];
 
 function Panel({ icon, title, sub, aside, children }: { icon: ReactNode; title: string; sub?: string; aside?: ReactNode; children: ReactNode }) {
@@ -125,7 +126,7 @@ function Choice({ value, children }: { value: string; children: ReactNode }) {
   return (
     <label className="group cursor-pointer">
       <input type="checkbox" name="option[]" value={value} className="peer sr-only" />
-      <span className="flex h-full min-h-[66px] flex-col items-center justify-center gap-1 rounded-lg border border-line bg-white px-2 py-2 text-center text-[11.5px] leading-snug text-ink-2 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
+      <span className="flex h-full min-h-[60px] items-center gap-3 rounded-xl border border-line bg-white px-3 py-2.5 text-left leading-tight text-ink-2 transition-all duration-200 hover:-translate-y-0.5 hover:border-brand/40 peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:ring-2 peer-checked:ring-brand/40 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand">
         {children}
       </span>
     </label>
@@ -277,11 +278,10 @@ export default function ContactRequestForm() {
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {products.map((p) => (
                 <Choice key={p.value} value={p.value}>
-                  <span className="grid h-6 place-items-center">{p.logo}</span>
-                  <span>
-                    {p.line}
-                    <br />
-                    <strong className="font-semibold text-ink">{p.strong}</strong>
+                  <span className="grid h-10 w-[68px] shrink-0 place-items-center">{p.logo}</span>
+                  <span className="min-w-0">
+                    <span className="block text-[13.5px] font-semibold text-ink">{p.name}</span>
+                    <span className="block text-[11.5px] text-ink-soft">{p.sub}</span>
                   </span>
                 </Choice>
               ))}
@@ -293,15 +293,10 @@ export default function ContactRequestForm() {
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {needs.map((n) => (
             <Choice key={n.value} value={n.value}>
-              <span className="grid h-5 place-items-center">{n.icon}</span>
-              <span>
-                {n.line}
-                {n.strong && (
-                  <>
-                    {n.line && <br />}
-                    <strong className="font-semibold text-ink">{n.strong}</strong>
-                  </>
-                )}
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-brand-soft text-brand">{n.icon}</span>
+              <span className="min-w-0">
+                <span className="block text-[13.5px] font-semibold text-ink">{n.name}</span>
+                <span className="block text-[11.5px] text-ink-soft">{n.sub}</span>
               </span>
             </Choice>
           ))}
