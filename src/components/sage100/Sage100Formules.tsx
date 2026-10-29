@@ -14,14 +14,14 @@ export default function Sage100Formules() {
   return (
     <section id="formules" className="scroll-mt-24 bg-white py-[clamp(80px,10vw,140px)]" aria-labelledby="s100-f-title">
       <div className="container-x">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-col items-center text-center">
           <div className="max-w-2xl">
             <p className="eyebrow">Formules</p>
             <h2 id="s100-f-title" className="mt-4 font-display text-[clamp(32px,3.8vw,56px)] font-bold leading-[1.04] tracking-[-0.04em]">
               Commencez par ce dont vous avez besoin.
             </h2>
           </div>
-          <div role="tablist" aria-label="Formules Sage 100" className="inline-flex w-fit flex-wrap gap-1 rounded-full border border-line bg-mist p-1.5">
+          <div role="tablist" aria-label="Formules Sage 100" className="mt-10 grid w-full max-w-3xl grid-cols-1 gap-1 rounded-[28px] border border-line bg-mist p-1.5 sm:grid-cols-3 sm:rounded-full">
             {formules.map((x) => {
               const on = x.key === k;
               return (
@@ -30,7 +30,7 @@ export default function Sage100Formules() {
                   role="tab"
                   aria-selected={on}
                   onClick={() => setK(x.key)}
-                  className={`relative rounded-full px-5 py-2.5 text-[14.5px] font-semibold transition-all duration-300 ${on ? "bg-[#03100a] text-white shadow-lg" : "text-ink-soft hover:text-ink"}`}
+                  className={`relative inline-flex items-center justify-center whitespace-nowrap rounded-full px-5 py-3 text-[15px] font-semibold transition-all duration-300 ${on ? "bg-[#03100a] text-white shadow-lg" : "text-ink-soft hover:text-ink"}`}
                 >
                   {x.name}
                   {x.popular && (
@@ -44,7 +44,7 @@ export default function Sage100Formules() {
           </div>
         </div>
 
-        <div className="mt-14 grid gap-10 overflow-hidden rounded-[36px] border border-line lg:grid-cols-[1.05fr_0.95fr] lg:gap-0">
+        <div className="mt-8 grid gap-10 overflow-hidden rounded-[36px] border border-line lg:grid-cols-[1.05fr_0.95fr] lg:gap-0">
           <div key={f.key} className="s100-swap p-8 md:p-12 lg:p-14">
             {f.popular && <p className="text-[12px] font-bold uppercase tracking-[0.14em] text-[#0a8a2a]">La plus populaire</p>}
             <h3 className="mt-2 font-display text-[clamp(30px,3vw,44px)] font-bold tracking-[-0.04em]">Sage 100 {f.name}</h3>

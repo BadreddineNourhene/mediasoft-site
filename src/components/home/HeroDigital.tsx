@@ -3,7 +3,7 @@ import { links } from "@/lib/site";
 import { Arrow } from "@/components/ui";
 
 /* En-tête de l'accueil : « Des solutions qui font avancer votre entreprise. »
-   Fond : visuel fourni par Mediasoft (tableau de bord, éditeurs partenaires, processus, IA & Web), calé à droite.
+   À droite : visuel détouré fourni par Mediasoft (tableau de bord, éditeurs partenaires, processus, IA & Web).
    En bas, les cinq métiers de Mediasoft. */
 
 const pillars = [
@@ -17,14 +17,8 @@ const pillars = [
 export default function HeroDigital() {
   return (
     <section className="relative isolate overflow-hidden bg-[#00193a] text-white" aria-labelledby="hero-title">
-      {/* L'image fournie en fond de l'en-tête (ordinateur) : sur toute la largeur de la page, son visuel à droite,
-          le texte posé sur sa partie vide à gauche. Sur mobile, le visuel recadré suit le texte. */}
-      <img
-        src="/img/hero/hero-digital.webp"
-        alt=""
-        className="absolute inset-0 -z-10 hidden h-full w-full object-cover object-right lg:block"
-        fetchPriority="high"
-      />
+      {/* Halo bleu derrière le visuel (le visuel fourni est détouré, sur fond transparent) */}
+      <div className="pointer-events-none absolute right-[-8%] top-[10%] -z-10 h-[80%] w-[60vw] rounded-full bg-[#1f5fff] opacity-25 blur-[140px]" aria-hidden />
       <div className="container-x grid items-center gap-8 pb-6 pt-14 lg:min-h-[max(480px,calc(100svh-100px))] lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:py-8">
         <div className="hd-in">
           <p className="inline-flex items-center gap-4 text-[12.5px] lg:text-[max(11px,0.78vw)] font-semibold uppercase tracking-[0.22em] text-white/85">
@@ -47,16 +41,16 @@ export default function HeroDigital() {
             </a>
           </div>
         </div>
-        <div className="flex items-center justify-center lg:hidden">
+        <div className="flex items-center justify-center">
           <img
-            src="/img/hero/hero-digital-visuel.webp"
-            srcSet="/img/hero/hero-digital-visuel-720.webp 720w, /img/hero/hero-digital-visuel.webp 1071w"
-            sizes="(min-width: 1024px) 55vw, 100vw"
-            width={1071}
-            height={780}
+            src="/img/hero/hero-visuel-v3.webp"
+            srcSet="/img/hero/hero-visuel-v3-960.webp 960w, /img/hero/hero-visuel-v3.webp 1304w"
+            sizes="(min-width: 1024px) 58vw, 100vw"
+            width={1304}
+            height={769}
             alt="Tableau de bord de gestion relié à Sage, Divalto, Microsoft et Bitrix24, avec l’intégration de systèmes et l’IA & Web"
-            className="block h-auto w-full max-w-[min(100%,1071px)] [mask-composite:intersect] [mask-image:linear-gradient(90deg,transparent,black_6%,black_97%,transparent),linear-gradient(180deg,transparent,black_6%,black_94%,transparent)] lg:max-w-[min(100%,1071px,calc((100svh-170px)*1.373))]"
-            loading="lazy"
+            className="block h-auto w-full max-w-[1304px] lg:w-[112%] lg:max-w-none"
+            fetchPriority="high"
           />
         </div>
       </div>
