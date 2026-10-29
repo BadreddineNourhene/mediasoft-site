@@ -24,11 +24,12 @@ export default function Sage100Page() {
       <Header current="sage" />
       <main id="main">
         <Sage100Hero />
+        {/* Les formules (produits) juste après l'ouverture */}
+        <Sage100Formules />
         <Sage100Questions />
         <Sage100Chain />
         <Sage100Scenes />
         <Sage100Gains />
-        <Sage100Formules />
         <Sage100Mediasoft />
         <Sage100Cta />
       </main>

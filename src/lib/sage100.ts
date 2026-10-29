@@ -91,7 +91,8 @@ export const formules: Formule[] = [
       "Rapprochement bancaire manuel et automatisé",
       "Factures archivées et traduites en écritures automatisées",
     ],
-    modules: ["Comptabilité"],
+    // La formule Comptabilité comprend aussi les moyens de paiement, les immobilisations et la trésorerie
+    modules: ["Comptabilité", "Moyens de paiement", "Immobilisations", "Trésorerie"],
     href: sage100Links.comptabilite,
     cta: "Découvrir Sage 100 Comptabilité",
   },
