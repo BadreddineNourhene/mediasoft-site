@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Check, Mail, MapPin, Phone } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
@@ -51,17 +51,21 @@ export default function ContactPage() {
             </div>
 
             <aside className="grid content-start gap-5">
-              <div className="card p-7">
-                <p className="text-[15px] leading-relaxed text-ink-soft">
-                  Nos partenariats stratégiques avec les éditeurs Sage, Divalto, Bitrix24 et Microsoft et notre savoir-faire
-                  nous permettent de vous offrir des solutions et des services innovants adaptés aux exigences digitales de
-                  demain : logiciels de gestion, applications web, agents IA et automatisation.
+              {/* Présentation courte : une phrase, puis l'accompagnement en liste cochée */}
+              <div className="card p-6">
+                <p className="text-[15px] leading-relaxed text-ink-2">
+                  Partenaire de <strong className="font-semibold text-ink">Sage, Divalto, Bitrix24 et Microsoft</strong>, Mediasoft met
+                  en place vos logiciels de gestion et crée vos applications web et agents IA.
                 </p>
-                <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">
-                  Et grâce à l’expertise de nos consultants certifiés, nous vous accompagnons dans chaque étape de votre
-                  processus de transformation digitale : Audit, Conseil, Développement sur mesure, Personnalisation, Formation,
-                  Support.
-                </p>
+                <p className="mt-4 text-[13px] font-semibold text-ink">Nos consultants certifiés vous accompagnent :</p>
+                <ul className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 text-[14px] text-ink-soft">
+                  {["Audit", "Conseil", "Développement", "Personnalisation", "Formation", "Support"].map((t) => (
+                    <li key={t} className="flex items-center gap-2">
+                      <Check size={14} strokeWidth={3} className="shrink-0 text-brand" aria-hidden />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
               </div>
 
               {contactOffices.map((o, i) => (
