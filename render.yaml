@@ -23,9 +23,10 @@ services:
       - type: redirect
         source: /Presentation.html
         destination: /
-      - type: rewrite
+      # Les réécritures (rewrite) ne s'appliquent pas sur Render : redirections à la place
+      - type: redirect
         source: /site/formulaire.php
-        destination: /contact.html
-      - type: rewrite
+        destination: /contact
+      - type: redirect
         source: /Politique de confidentialité.html
-        destination: /politique-de-confidentialite.html
+        destination: /politique-de-confidentialite
