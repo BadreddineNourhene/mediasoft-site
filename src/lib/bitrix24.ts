@@ -5,8 +5,8 @@ export const B24_CYAN = "#2fc6f6";
 export const B24_BLUE = "#0b6fd6";
 export const B24_NIGHT = "#071a33";
 
-// Pages WordPress des univers Bitrix24 : adresse complète, pour qu'elles s'ouvrent aussi depuis l'aperçu (Render, local)
-const WP = "https://mediasoft.tn/bitrix24.tn";
+// Pages des univers dans le nouveau site (app/bitrix24.tn/[slug])
+const WP = "/bitrix24.tn";
 
 export const b24caps = {
   crm: { src: "/img/produits/b24-crm.webp", alt: "Bitrix24 : pipeline des transactions du CRM" },

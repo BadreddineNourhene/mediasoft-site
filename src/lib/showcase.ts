@@ -94,8 +94,9 @@ export const showcases: Showcase[] = [
     ink: "#ffffff",
     accent: "#2fc6f6",
     screens: [
-      { src: "/img/produits/b24-crm.webp", alt: "Bitrix24 : CRM et transactions" },
-      { src: "/img/produits/b24-centre-contact.webp", alt: "Bitrix24 : centre de contact" },
+      // Captures fournies par Mediasoft (oct. 2026), noms des clients et contacts floutés
+      { src: "/img/produits/b24-crm-2026.webp", alt: "Bitrix24 : transactions du CRM en Kanban" },
+      { src: "/img/produits/b24-crm-2026b.webp", alt: "Bitrix24 : pipeline des prospects" },
     ],
     videoStart: 20.02,
   },

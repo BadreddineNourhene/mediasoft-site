@@ -8,9 +8,9 @@ export const sage100Links = {
   comptabilite: "/sage.tn/sage-100-comptabilite/",
   gestion: "/sage.tn/sage-100-gestion-commerciale/",
   entreprise: "/sage.tn/sage-100-entreprise/",
-  // Pages WordPress du site sage.tn : adresse complète, pour qu'elles s'ouvrent aussi depuis l'aperçu (Render, local)
-  tpe: "https://mediasoft.tn/sage.tn/petites-entreprises/",
-  pme: "https://mediasoft.tn/sage.tn/moyennes-et-grandes-entreprises/",
+  // Petites / moyennes entreprises : pages du nouveau site ; les autres restent des pages WordPress de sage.tn
+  tpe: "/sage.tn/petites-entreprises/",
+  pme: "/sage.tn/moyennes-et-grandes-entreprises/",
   conseil: "https://mediasoft.tn/sage.tn/conseil-et-accompagnement/",
   assistance: "https://mediasoft.tn/sage.tn/assistance/",
   formation: "https://mediasoft.tn/sage.tn/formation/",

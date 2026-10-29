@@ -25,5 +25,5 @@ async function walk(dir) {
 
 await copyAsIndex(join(out, "divalto.tn.html"));
 await copyAsIndex(join(out, "bitrix24.tn.html"));
-for (const site of ["divalto.tn", "sage.tn"]) await walk(join(out, site));
-console.log(`postbuild : ${n} pages servies en dossier (divalto.tn, sage.tn)`);
+for (const site of ["divalto.tn", "sage.tn", "bitrix24.tn"]) await walk(join(out, site));
+console.log(`postbuild : ${n} pages servies en dossier (divalto.tn, sage.tn, bitrix24.tn)`);
