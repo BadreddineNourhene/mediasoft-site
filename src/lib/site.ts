@@ -32,7 +32,7 @@ export const links = {
   privacy: "/Politique%20de%20confidentialit%C3%A9.html",
   login: "/login.html",
   helpdesk: "https://helpdesk-ms.com/",
-  supportDownload: "/telechargement/TeamViewer%20Mediasoft2.exe",
+  supportDownload: "https://www.mediasoft.tn/telechargement/TeamViewer%20Mediasoft2.exe",
   teamviewer: "https://898.tv/MEDIASOFTSUPPORT",
   sage50: "http://www.ciel.tn/",
   sage100: "/sage.tn/sage-100/",

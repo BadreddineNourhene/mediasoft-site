@@ -2,7 +2,7 @@ import type { AnchorHTMLAttributes, ReactNode, SVGProps } from "react";
 import { ArrowRight } from "lucide-react";
 import { isExternal } from "@/lib/site";
 
-/* Lien : nouvel onglet pour les sites externes, lien simple pour les pages du site
+/* Lien : nouvel onglet pour les sites externes, même onglet pour les fichiers à télécharger, lien simple pour les pages du site
    (URL d'origine en .html, servies comme fichiers statiques). */
 export function SmartLink({
   href,
@@ -10,8 +10,10 @@ export function SmartLink({
   ...rest
 }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children: ReactNode }) {
   const ext = isExternal(href);
+  // Fichier à télécharger (ex. TeamViewer Mediasoft) : même onglet, sinon le navigateur bloque souvent le téléchargement
+  const file = /\.(exe|msi|zip)$/i.test(href);
   return (
-    <a href={href} {...(ext ? { target: "_blank", rel: "noopener" } : {})} {...rest}>
+    <a href={href} {...(file ? { download: "" } : ext ? { target: "_blank", rel: "noopener" } : {})} {...rest}>
       {children}
     </a>
   );

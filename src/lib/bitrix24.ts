@@ -5,7 +5,8 @@ export const B24_CYAN = "#2fc6f6";
 export const B24_BLUE = "#0b6fd6";
 export const B24_NIGHT = "#071a33";
 
-const W = "/bitrix24.tn";
+// Pages WordPress des univers Bitrix24 : adresse complète, pour qu'elles s'ouvrent aussi depuis l'aperçu (Render, local)
+const WP = "https://mediasoft.tn/bitrix24.tn";
 
 export const b24caps = {
   crm: { src: "/img/produits/b24-crm.webp", alt: "Bitrix24 : pipeline des transactions du CRM" },
@@ -24,12 +25,12 @@ export type B24Tool = {
 };
 
 export const b24tools: B24Tool[] = [
-  { key: "crm", name: "CRM", line: "Chaque prospect suivi, chaque vente relancée au bon moment.", features: ["Gestion de la relation client", "Devis et factures", "Paiements en ligne", "Automatisation des ventes", "Règles et déclencheurs", "Marketing"], href: `${W}/crm/`, visual: "crm" },
-  { key: "contact", name: "Centre de contact", line: "WhatsApp, Instagram, Facebook, e-mail, téléphone : une seule boîte de réception.", features: ["Réseaux sociaux et messageries", "Chat en direct sur votre site", "E-mails, SMS et appels", "Téléphonie", "Instagram relié au CRM"], href: `${W}/centre-de-contact/`, visual: "contact" },
-  { key: "taches", name: "Tâches et projets", line: "Des projets qui avancent, et tout le monde sait qui fait quoi.", features: ["Tâches et projets", "Diagramme de Gantt", "Tableau Kanban", "Gestion du temps", "Modèles de tâches", "Automatisation des tâches"], href: `${W}/taches-et-projets/`, visual: "kanban" },
-  { key: "collab", name: "Collaboration", line: "Discuter, se réunir et partager ses documents, sans changer d’outil.", features: ["Chats et visioconférences", "Réunions en ligne", "Actualités", "Calendrier", "Documents et Drive", "Groupes de travail"], href: `${W}/collaboration/`, visual: "chat" },
-  { key: "rh", name: "RH et automatisation", line: "Les demandes internes se traitent toutes seules.", features: ["Répertoire des employés", "Suivi du temps de travail", "Gestion des absences", "Workflows sans code (RPA)", "Processus d’entreprise", "Bases de connaissances"], href: `${W}/rh-et-automatisation/`, visual: "team" },
-  { key: "sites", name: "Sites et boutiques", line: "Votre site et votre boutique, reliés directement au CRM.", features: ["Créateur de sites", "Boutique en ligne", "Modèles prêts à l’emploi", "Adapté au mobile et au SEO", "Formulaires et widgets", "Google Analytics"], href: `${W}/sites-et-boutiques/`, visual: "site" },
+  { key: "crm", name: "CRM", line: "Chaque prospect suivi, chaque vente relancée au bon moment.", features: ["Gestion de la relation client", "Devis et factures", "Paiements en ligne", "Automatisation des ventes", "Règles et déclencheurs", "Marketing"], href: `${WP}/crm/`, visual: "crm" },
+  { key: "contact", name: "Centre de contact", line: "WhatsApp, Instagram, Facebook, e-mail, téléphone : une seule boîte de réception.", features: ["Réseaux sociaux et messageries", "Chat en direct sur votre site", "E-mails, SMS et appels", "Téléphonie", "Instagram relié au CRM"], href: `${WP}/centre-de-contact/`, visual: "contact" },
+  { key: "taches", name: "Tâches et projets", line: "Des projets qui avancent, et tout le monde sait qui fait quoi.", features: ["Tâches et projets", "Diagramme de Gantt", "Tableau Kanban", "Gestion du temps", "Modèles de tâches", "Automatisation des tâches"], href: `${WP}/taches-et-projets/`, visual: "kanban" },
+  { key: "collab", name: "Collaboration", line: "Discuter, se réunir et partager ses documents, sans changer d’outil.", features: ["Chats et visioconférences", "Réunions en ligne", "Actualités", "Calendrier", "Documents et Drive", "Groupes de travail"], href: `${WP}/collaboration/`, visual: "chat" },
+  { key: "rh", name: "RH et automatisation", line: "Les demandes internes se traitent toutes seules.", features: ["Répertoire des employés", "Suivi du temps de travail", "Gestion des absences", "Workflows sans code (RPA)", "Processus d’entreprise", "Bases de connaissances"], href: `${WP}/rh-et-automatisation/`, visual: "team" },
+  { key: "sites", name: "Sites et boutiques", line: "Votre site et votre boutique, reliés directement au CRM.", features: ["Créateur de sites", "Boutique en ligne", "Modèles prêts à l’emploi", "Adapté au mobile et au SEO", "Formulaires et widgets", "Google Analytics"], href: `${WP}/sites-et-boutiques/`, visual: "site" },
 ];
 
 export const b24benefits = [
