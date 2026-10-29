@@ -4,7 +4,7 @@ import { Mail, MapPin, Phone } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PageHero from "@/components/PageHero";
-import ContactForm from "@/components/ContactForm";
+import ContactRequestForm from "@/components/ContactRequestForm";
 import { Arrow, SmartLink } from "@/components/ui";
 import { offices, site } from "@/lib/site";
 
@@ -41,15 +41,13 @@ export default function ContactPage() {
         />
 
         <section className="section !pt-16 bg-mist">
-          <div className="container-x grid grid-cols-1 gap-10 [&>*]:min-w-0 lg:grid-cols-[1.25fr_0.75fr]">
-            <div className="card p-6 shadow-[0_30px_60px_-40px_rgb(11_26_46/0.4)] md:p-10">
-              <h2 id="votre-demande" className="scroll-mt-28 text-[30px]">Votre demande</h2>
-              <div className="mt-6">
-                <ContactForm variant="full" />
-              </div>
+          {/* Le formulaire (maquette Mediasoft) occupe toute la largeur ; les coordonnées des agences suivent en dessous */}
+          <div className="container-x grid grid-cols-1 gap-10 [&>*]:min-w-0">
+            <div className="card p-5 shadow-[0_30px_60px_-40px_rgb(11_26_46/0.4)] md:p-8">
+              <ContactRequestForm />
             </div>
 
-            <aside className="grid content-start gap-5">
+            <aside className="grid content-start gap-5 md:grid-cols-3">
               <div className="card p-7">
                 <p className="text-[15px] leading-relaxed text-ink-soft">
                   Nos partenariats stratégiques avec les éditeurs Sage, Divalto, Bitrix24 et Microsoft et notre savoir-faire
