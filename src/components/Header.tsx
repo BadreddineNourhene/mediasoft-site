@@ -9,12 +9,16 @@ import { Arrow, FacebookIcon, LinkedinIcon, SmartLink, WhatsappIcon } from "@/co
 const MAP_TUNIS = "https://www.google.com/maps?ll=36.85705,10.160652&z=15&t=m&hl=fr&gl=TN&mapclient=embed&cid=14338673014987496657";
 const MAP_SOUSSE = "https://www.google.com/maps?ll=35.823281,10.607302&z=16&t=m&hl=fr&gl=US&mapclient=embed&q=Immeuble+Marwa,+Avenue+Yasser+Arafat,+Sahloul,+Sousse,+Tunisie";
 
-// Couleur des barres : la couleur de l'éditeur de la page (vert Sage, orange Divalto, bleu Bitrix24), bleu nuit ailleurs.
-// Teintes assez soutenues pour que le texte blanc reste lisible.
-const BAR: Record<string, string> = { sage: "#007a2a", divalto: "#d9580b", bitrix24: "#0b66c3" };
+// Fond des barres : le même dégradé que l'en-tête de la page (brun-orangé Divalto, vert nuit Sage, bleu nuit Bitrix24),
+// pour que barres et en-tête ne fassent qu'un. `ink` sert au texte du bouton blanc « Contactez-nous ».
+const BAR: Record<string, { bg: string; ink: string }> = {
+  sage: { bg: "linear-gradient(90deg,#03100a 0%,#02120a 30%,#022910 55%,#022d10 100%)", ink: "#022d10" },
+  divalto: { bg: "linear-gradient(90deg,#140902 0%,#170a01 30%,#341301 55%,#381401 100%)", ink: "#381401" },
+  bitrix24: { bg: "linear-gradient(90deg,#071a33 0%,#071c35 30%,#0c314d 55%,#0d3450 100%)", ink: "#0d3450" },
+};
 
 export default function Header({ current = "" }: { current?: string }) {
-  const bar = BAR[current] ?? "#00193a";
+  const bar = BAR[current] ?? { bg: "#00193a", ink: "#00193a" };
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
@@ -61,8 +65,8 @@ export default function Header({ current = "" }: { current?: string }) {
 
       {/* Bandeau d'informations et menu forment un seul bloc collant : en défilant, le bandeau (40 px) sort par le haut
           et seul le menu reste fixé en haut de l’écran. */}
-      <div className="sticky top-0 z-50 lg:top-[-40px]" style={{ ["--bar" as string]: bar }}>
-      <div className="hidden bg-[var(--bar)] text-[13.5px] text-white/70 lg:block">
+      <div className="sticky top-0 z-50 lg:top-[-40px]" style={{ ["--bar" as string]: bar.ink, ["--bar-bg" as string]: bar.bg }}>
+      <div className="hidden [background:var(--bar-bg)] text-[13.5px] text-white/70 lg:block">
         <div className="container-x flex h-10 items-center justify-between gap-6">
           <div className="flex items-center gap-6">
             <a href={`mailto:${site.email}`} className="inline-flex items-center gap-2 hover:text-white">
@@ -96,8 +100,8 @@ export default function Header({ current = "" }: { current?: string }) {
       <header
         className={`relative transition-[background-color,box-shadow] duration-300 ${
           scrolled || mobile
-            ? "border-t border-white/[0.08] bg-[var(--bar)] shadow-[0_14px_30px_-18px_rgb(0_0_0/0.6)]"
-            : "border-t border-white/[0.08] bg-[var(--bar)]"
+            ? "border-t border-white/[0.08] [background:var(--bar-bg)] shadow-[0_14px_30px_-18px_rgb(0_0_0/0.6)]"
+            : "border-t border-white/[0.08] [background:var(--bar-bg)]"
         }`}
       >
         <div className="container-x flex h-[var(--header-h)] items-center justify-between gap-6">
