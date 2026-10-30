@@ -1,4 +1,5 @@
-# Render : aperçu du nouveau site Mediasoft pour l'équipe (site statique, dossier out/).
+# Render : aperçu du nouveau site Mediasoft pour l'équipe (site statique, dossier out/)
+# et API du chatbot (service Python, dossier chatbot/).
 # Reprend les réécritures de public/web.config (IIS) qui sont utiles sur Render.
 # Le formulaire de contact poste vers /site/send.php (PHP) : il ne fonctionne que sur le serveur IIS.
 services:
@@ -11,6 +12,10 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "22"
+      # Adresse de l'API du chatbot, lue au build : sans elle, la bulle n'est pas affichée.
+      # À ajuster si Render attribue une autre adresse au service mediasoft-chatbot.
+      - key: NEXT_PUBLIC_CHATBOT_URL
+        value: https://mediasoft-chatbot.onrender.com
     headers:
       # Aperçu interne : ne pas indexer cette copie dans Google (le vrai site reste mediasoft.tn)
       - path: /*
@@ -30,3 +35,35 @@ services:
       - type: redirect
         source: /Politique de confidentialité.html
         destination: /politique-de-confidentialite
+
+  # API du chatbot (FastAPI), appelée par la bulle « Une question ? » du site
+  - type: web
+    name: mediasoft-chatbot
+    runtime: python
+    # Code dans le dossier chatbot/ ; l'index de la base (chatbot/base-rag/index/) est envoyé avec le code
+    rootDir: chatbot
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: LLM_PROVIDER
+        value: groq,openrouter,nvidia,extractif
+      - key: GROQ_API_KEY
+        sync: false        # à saisir dans le tableau de bord Render
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b,qwen/qwen3.8-27b,openai/gpt-oss-20b
+      - key: OPENROUTER_MODEL
+        value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,poolside/laguna-s-2.1:free,dots-studio/dots-3-note-preview:free,google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free
+      - key: NVIDIA_MODEL
+        value: openai/gpt-oss-20b,nvidia/nemotron-3-ultra-550b-a55b,minimaxai/minimax-m3.1-flash
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://mediasoft-site.onrender.com,https://www.mediasoft.tn,https://mediasoft.tn

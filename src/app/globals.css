@@ -629,3 +629,13 @@ html.lenis body {
     animation: none;
   }
 }
+
+/* Panneau du chatbot (ChatBot.tsx) : arrivée depuis la gauche, voile en fondu */
+@keyframes chatbot-in {
+  from { transform: translateX(-40px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes chatbot-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

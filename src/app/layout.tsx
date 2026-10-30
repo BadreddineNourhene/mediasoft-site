@@ -3,6 +3,7 @@ import { Inter, Sora } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 import FloatingContact from "@/components/FloatingContact";
+import ChatBot from "@/components/ChatBot";
 import { SITE_URL } from "@/lib/site";
 
 const body = Inter({ variable: "--font-body", subsets: ["latin"], display: "swap" });
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <SmoothScroll />
         {children}
         <FloatingContact />
+        <ChatBot />
       </body>
     </html>
   );
