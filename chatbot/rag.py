@@ -8,9 +8,9 @@ import unicodedata
 from collections import Counter
 
 import numpy as np
-from fastembed import TextEmbedding
 
 import config
+from embedder import Embedder
 
 # Code que le modèle met en tête de réponse quand la base n'a pas l'information : déclenche la recherche web
 UNKNOWN = "[INCONNU]"
@@ -76,7 +76,7 @@ class KnowledgeBase:
         meta = json.loads((config.INDEX_DIR / "chunks.json").read_text(encoding="utf-8"))
         self.chunks = meta["chunks"]
         self.vectors = np.load(config.INDEX_DIR / "index.npz")["vectors"]
-        self.model = TextEmbedding(meta.get("model", config.EMBED_MODEL))
+        self.model = Embedder()
         # Index par mots-clés (BM25), en complément des vecteurs : le petit modèle d'embeddings rate souvent
         # les mots précis (« bureaux », « Gabès », « TeamViewer »…)
         self.docs = [Counter(_tokens(c["text"])) for c in self.chunks]
@@ -107,8 +107,7 @@ class KnowledgeBase:
         ou s'il partage des mots rares avec la question.
         """
         queries = [query] if isinstance(query, str) else [q for q in query if q]
-        q = np.array(list(self.model.embed(queries)), dtype=np.float32)
-        q /= np.linalg.norm(q, axis=1, keepdims=True) + 1e-12
+        q = self.model.embed(queries)
         sem = (self.vectors @ q.T).max(axis=1)
         lex = self._bm25(queries[-1])
         lex_norm = lex / lex.max() if lex.max() > 0 else lex

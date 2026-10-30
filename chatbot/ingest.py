@@ -22,9 +22,9 @@ from pathlib import Path
 
 import numpy as np
 from bs4 import BeautifulSoup
-from fastembed import TextEmbedding
 
 import config
+from embedder import Embedder
 
 PUBLIC_SITE = "https://www.mediasoft.tn"
 RAG_BASE = config.BASE_DIR / "rag_knowledge_base.jsonl"
@@ -160,9 +160,7 @@ def main():
         f"{n_pages} pages du site + {len(list(config.KNOWLEDGE_DIR.glob('*.md')))} fichier(s) de connaissances "
         f"+ {n_editeur} entrées des éditeurs : {len(chunks)} passages"
     )
-    model = TextEmbedding(config.EMBED_MODEL)
-    vectors = np.array(list(model.embed([c["text"] for c in chunks], batch_size=32)), dtype=np.float32)
-    vectors /= np.linalg.norm(vectors, axis=1, keepdims=True) + 1e-12
+    vectors = Embedder().embed([c["text"] for c in chunks], batch_size=32)
 
     config.INDEX_DIR.mkdir(exist_ok=True)
     np.savez_compressed(config.INDEX_DIR / "index.npz", vectors=vectors)

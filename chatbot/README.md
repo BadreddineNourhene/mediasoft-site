@@ -8,7 +8,10 @@ du dossier `base-rag/connaissances/`.
 
 1. **Indexation** (`ingest.py`) : les pages du site (`../out`, export du site) et les fichiers `base-rag/connaissances/*.md`
    sont découpés en passages, puis transformés en vecteurs par un modèle d'embeddings **gratuit et local**
-   (`paraphrase-multilingual-MiniLM-L12-v2`, ~220 Mo, sans GPU). Résultat : `base-rag/index/index.npz` et `base-rag/index/chunks.json`.
+   (`paraphrase-multilingual-MiniLM-L12-v2`, sans GPU). Résultat : `base-rag/index/index.npz` et `base-rag/index/chunks.json`.
+   Le modèle est découpé par `base-rag/export_model.py` (`base-rag/model/`) et exécuté par `embedder.py` : sa table de
+   vocabulaire reste sur le disque et le découpage en mots passe par SentencePiece, si bien que le chatbot complet
+   tient en ~210 Mo de mémoire (au lieu de ~630 Mo avec fastembed), sous la limite de 512 Mo de Render gratuit.
 2. **Recherche** (`rag.py`) : pour chaque question, les 8 passages les plus utiles sont retrouvés en combinant le sens
    (embeddings) et les mots-clés (BM25), qui rattrapent les mots précis (« bureaux », « Gabès », « TeamViewer »).
    Hors français, la question est d'abord traduite en français, car la base est en français.
