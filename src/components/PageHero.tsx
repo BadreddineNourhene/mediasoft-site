@@ -17,6 +17,7 @@ export default function PageHero({
   tone = "light",
   eyebrowColor,
   leadClassName = "",
+  wide = false,
 }: {
   crumbs: { label: string; href?: string }[];
   /** Surtitre au-dessus du titre ; facultatif. */
@@ -33,6 +34,8 @@ export default function PageHero({
   eyebrowColor?: string;
   /** Classes en plus pour le texte d'introduction (taille, largeur). */
   leadClassName?: string;
+  /** Bloc de texte plus large (le chapeau tient sur moins de lignes) */
+  wide?: boolean;
 }) {
   const dark = tone === "dark";
   const defaultBackground = dark ? (
@@ -55,7 +58,7 @@ export default function PageHero({
     >
       {background ?? defaultBackground}
       <div className={`container-x grid gap-12 pb-16 pt-10 md:pb-24 md:pt-14 ${visual ? "lg:grid-cols-[1.1fr_0.9fr] lg:items-center" : ""}`}>
-        <div className="max-w-3xl">
+        <div className={wide ? "max-w-5xl" : "max-w-3xl"}>
           <nav aria-label="Fil d’Ariane">
             <ol className={`flex flex-wrap items-center gap-1.5 text-[13.5px] ${dark ? "text-white/60" : "text-ink-soft"}`}>
               <li>

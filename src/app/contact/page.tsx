@@ -31,7 +31,8 @@ export default function ContactPage() {
         <PageHero
           crumbs={[{ label: "Contactez-nous" }]}
           tone="dark"
-          leadClassName="!text-[15.5px] md:!text-[16.5px]"
+          wide
+          leadClassName="!text-[15.5px] md:!text-[16.5px] lg:!max-w-[920px]"
           title={
             <span className="sm:whitespace-nowrap">
               Contactez-<span className="text-brand-sky">nous.</span>
