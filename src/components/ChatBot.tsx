@@ -29,7 +29,7 @@ const TEXTS = {
     openLabel: "Ouvrir l’assistant Mediasoft",
     cta: "Une question ?",
     reset: "Nouvelle conversation",
-    down: "L’assistant est momentanément indisponible. Vous pouvez nous écrire via le formulaire de contact ou sur WhatsApp.",
+    down: "L’assistant est momentanément indisponible. Merci de contacter l’équipe Mediasoft :\n- par e-mail : info@mediasoft.tn\n- par WhatsApp : +216 52 444 444\n- via la page Contactez-nous : https://mediasoft-site.onrender.com/contact",
   },
   en: {
     welcome: "Hello! I’m the Mediasoft assistant. Ask me about our solutions: Sage, Divalto, Bitrix24, Microsoft 365, Power BI, web applications and AI agents.",
@@ -45,7 +45,7 @@ const TEXTS = {
     openLabel: "Open the Mediasoft assistant",
     cta: "Any question?",
     reset: "New conversation",
-    down: "The assistant is temporarily unavailable. You can reach us through the contact form or on WhatsApp.",
+    down: "The assistant is temporarily unavailable. Please contact the Mediasoft team:\n- by e-mail: info@mediasoft.tn\n- on WhatsApp: +216 52 444 444\n- through the Contact us page: https://mediasoft-site.onrender.com/contact",
   },
   ar: {
     welcome: "مرحبًا! أنا مساعد ميدياسوفت. اسألني عن حلولنا: Sage وDivalto وBitrix24 وMicrosoft 365 وPower BI وتطبيقات الويب ووكلاء الذكاء الاصطناعي.",
@@ -61,7 +61,7 @@ const TEXTS = {
     openLabel: "فتح مساعد ميدياسوفت",
     cta: "لديك سؤال؟",
     reset: "محادثة جديدة",
-    down: "المساعد غير متاح حاليًا. يمكنك مراسلتنا عبر استمارة الاتصال أو واتساب.",
+    down: "المساعد غير متاح حاليًا. يرجى التواصل مع فريق ميدياسوفت:\n- عبر البريد الإلكتروني: info@mediasoft.tn\n- عبر واتساب: +216 52 444 444\n- عبر صفحة اتصل بنا: https://mediasoft-site.onrender.com/contact",
   },
 };
 type Lang = keyof typeof TEXTS;
@@ -138,6 +138,8 @@ export default function ChatBot() {
   useEffect(() => {
     if (!open) return;
     field.current?.focus();
+    // Réveille le serveur (l'hébergement gratuit s'endort après 15 min) pendant que le visiteur écrit sa question
+    fetch(`${API}/api/health`, { signal: AbortSignal.timeout(90_000) }).catch(() => {});
     // Échap referme le panneau
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
@@ -156,16 +158,19 @@ export default function ChatBot() {
     setInput("");
     setBusy(true);
     try {
+      // 90 s au plus (réveil du serveur gratuit compris) : au-delà, message d'indisponibilité plutôt qu'une attente sans fin
       const res = await fetch(`${API}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q.slice(0, 600), history, lang: navigator.language }),
+        signal: AbortSignal.timeout(90_000),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.detail || "Erreur");
       setMsgs((m) => [...m, { role: "assistant", content: json.answer, sources: json.sources }]);
     } catch (e) {
-      const detail = e instanceof Error && e.message !== "Failed to fetch" ? e.message : "";
+      // Seul le message renvoyé par l'API est affiché tel quel ; réseau coupé ou délai dépassé → message d'indisponibilité
+      const detail = e instanceof Error && e.name === "Error" ? e.message : "";
       setMsgs((m) => [
         ...m,
         { role: "assistant", error: true, content: detail || T.down },
