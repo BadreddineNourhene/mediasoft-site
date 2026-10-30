@@ -32,7 +32,7 @@ export default function ContactPage() {
           crumbs={[{ label: "Contactez-nous" }]}
           tone="dark"
           wide
-          leadClassName="!text-[15.5px] md:!text-[16.5px] lg:!max-w-[920px]"
+          leadClassName="!text-[15.5px] md:!text-[16.5px] !max-w-[920px]"
           title={
             <span className="sm:whitespace-nowrap">
               Contactez-<span className="text-brand-sky">nous.</span>
