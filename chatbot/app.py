@@ -207,7 +207,7 @@ async def chat(body: ChatRequest, request: Request):
     query = f"{previous} {question}".strip() if len(question) < 40 and previous else question
     dernier = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
     if ACTION_ERP.search(query) and not NOMME.search(query) and not NOMME.search(dernier):
-        return {"answer": langue.message("quel_logiciel", lang), "sources": [], "lang": lang}
+        return {"answer": langue.quel_logiciel(query, lang), "sources": [], "lang": lang}
     # La base est en français et le modèle de recherche comprend mal les dialectes (derja, arabe tunisien) :
     # hors français, on cherche aussi avec une traduction française de la question
     queries = [query]
