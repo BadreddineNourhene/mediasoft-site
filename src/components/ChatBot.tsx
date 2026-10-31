@@ -34,6 +34,7 @@ const TEXTS = {
     openLabel: "Ouvrir l’assistant Mediasoft",
     cta: "Une question ?",
     reset: "Nouvelle conversation",
+    next: "Continuer",
     down: "L’assistant est momentanément indisponible. Merci de contacter l’équipe Mediasoft :\n- par e-mail : info@mediasoft.tn\n- par WhatsApp : +216 52 444 444\n- via la page Contactez-nous : https://mediasoft-site.onrender.com/contact",
   },
   en: {
@@ -49,6 +50,7 @@ const TEXTS = {
     openLabel: "Open the Mediasoft assistant",
     cta: "Any question?",
     reset: "New conversation",
+    next: "Continue",
     down: "The assistant is temporarily unavailable. Please contact the Mediasoft team:\n- by e-mail: info@mediasoft.tn\n- on WhatsApp: +216 52 444 444\n- through the Contact us page: https://mediasoft-site.onrender.com/contact",
   },
   ar: {
@@ -64,6 +66,7 @@ const TEXTS = {
     openLabel: "فتح مساعد ميدياسوفت",
     cta: "لديك سؤال؟",
     reset: "محادثة جديدة",
+    next: "متابعة",
     down: "المساعد غير متاح حاليًا. يرجى التواصل مع فريق ميدياسوفت:\n- عبر البريد الإلكتروني: info@mediasoft.tn\n- عبر واتساب: +216 52 444 444\n- عبر صفحة اتصل بنا: https://mediasoft-site.onrender.com/contact",
   },
 };
@@ -159,56 +162,52 @@ function renderAnswer(text: string) {
   });
 }
 
-function ChoiceButtons({ c, onSend, disabled }: { c: Choices; onSend: (q: string) => void; disabled: boolean }) {
-  // Formulaire (plusieurs questions) : la première option de chaque question est cochée d'office (celle conseillée)
-  const [sel, setSel] = useState(() => c.questions.map((q) => q.options[0]));
-  const direct = c.questions.length === 1 && !c.submit;
+function ChoiceButtons({ c, onSend, disabled, next }: { c: Choices; onSend: (q: string) => void; disabled: boolean; next: string }) {
+  // Formulaire (plusieurs questions) : la première option de chaque question est cochée d'office (celle conseillée) ;
+  // simple précision (une question) : rien n'est coché, le visiteur choisit puis valide
+  const single = c.questions.length === 1;
+  const [sel, setSel] = useState(() => c.questions.map((q) => (single ? "" : q.options[0])));
   const fill = (values: string[]) => values.reduce((t, v, n) => t.replaceAll(`{${n}}`, v), c.template ?? "{0}");
-  // Carte comme celle de ChatGPT : options en liste verticale (boutons radio pour un formulaire, lignes cliquables
-  // pour une simple précision), filet entre les questions, bouton noir sur toute la largeur, conseil sous la carte
+  // Même carte que ChatGPT partout : boutons radio en liste verticale, filet entre les questions, bouton noir sur
+  // toute la largeur, conseil sous la carte
   return (
     <div className="ms-10 max-w-[90%] space-y-3">
       <div className="rounded-2xl border border-[#00193a]/12 bg-white p-4 text-[13px] text-[#0b1b33] shadow-sm">
         {c.questions.map((q, i) => (
-          <div key={i} role={direct ? undefined : "radiogroup"} aria-label={q.label} className={i ? "mt-3 border-t border-[#00193a]/10 pt-3" : ""}>
+          <div key={i} role="radiogroup" aria-label={q.label} className={i ? "mt-3 border-t border-[#00193a]/10 pt-3" : ""}>
             {q.label && <p className="mb-2 font-semibold">{q.label}</p>}
             <div className="flex flex-col">
               {q.options.map((o) => {
-                const on = !direct && sel[i] === o;
+                const on = sel[i] === o;
                 return (
                   <button
                     key={o}
                     type="button"
                     disabled={disabled}
-                    role={direct ? undefined : "radio"}
-                    aria-checked={direct ? undefined : on}
-                    onClick={() => (direct ? onSend(fill([o])) : setSel((s) => s.map((v, n) => (n === i ? o : v))))}
-                    className="group flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-start leading-snug transition-colors hover:bg-[#f4f7fb] disabled:opacity-50"
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => setSel((s) => s.map((v, n) => (n === i ? o : v)))}
+                    onDoubleClick={() => single && onSend(fill([o]))}
+                    className="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-start leading-snug transition-colors hover:bg-[#f4f7fb] disabled:opacity-50"
                   >
-                    {direct ? (
-                      <span className="grid h-4 w-4 shrink-0 place-items-center text-[#1f5fff]" aria-hidden>→</span>
-                    ) : (
-                      <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 ${on ? "border-[#0b1b33]" : "border-[#00193a]/25"}`} aria-hidden>
-                        {on && <span className="h-2 w-2 rounded-full bg-[#0b1b33]" />}
-                      </span>
-                    )}
-                    <span className={direct ? "group-hover:text-[#1f5fff]" : ""}>{o}</span>
+                    <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 ${on ? "border-[#0b1b33]" : "border-[#00193a]/25"}`} aria-hidden>
+                      {on && <span className="h-2 w-2 rounded-full bg-[#0b1b33]" />}
+                    </span>
+                    <span>{o}</span>
                   </button>
                 );
               })}
             </div>
           </div>
         ))}
-        {c.submit && (
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => onSend(fill(sel))}
-            className="mt-3 w-full rounded-full bg-[#0b1b33] px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-[#1f5fff] disabled:opacity-50"
-          >
-            {c.submit}
-          </button>
-        )}
+        <button
+          type="button"
+          disabled={disabled || sel.some((v) => !v)}
+          onClick={() => onSend(fill(sel))}
+          className="mt-3 w-full rounded-full bg-[#0b1b33] px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-[#1f5fff] disabled:opacity-40 disabled:hover:bg-[#0b1b33]"
+        >
+          {c.submit ?? next}
+        </button>
       </div>
       {/* « Mon conseil » : sous la carte */}
       {c.note && <div className="px-1 text-[13px] leading-relaxed text-[#0b1b33]">{renderAnswer(c.note)}</div>}
@@ -357,7 +356,7 @@ export default function ChatBot() {
                 </div>
               </div>
               {/* Choix proposés : seulement sous la dernière réponse (un clic l'envoie comme nouvelle question) */}
-              {m.choices && i === msgs.length && <ChoiceButtons key={i} c={m.choices} onSend={ask} disabled={busy} />}
+              {m.choices && i === msgs.length && <ChoiceButtons key={i} c={m.choices} onSend={ask} disabled={busy} next={T.next} />}
               </div>
             ))}
             {busy && (
