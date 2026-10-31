@@ -158,7 +158,15 @@ _PLAN = {
 _SUJETS = ["Divalto Infinity", "Sage 100", "Sage 50 (Ciel)", "Bitrix24", "Microsoft 365", "Power BI", "Mediasoft"]
 _ASSISTANT = {
     "fr": {
-        "sujet": "Avec plaisir ! Sur quelle solution souhaitez-vous l'article ?",
+        "sans_sujet": "Bien sûr ! Je peux vous accompagner dans la création d'un article professionnel et marketing "
+        "destiné au site web de Mediasoft : présenter la solution de manière attractive, expliquer ses avantages pour "
+        "les entreprises et valoriser l'expertise de Mediasoft dans son intégration.\n\n"
+        "### Proposition de structure de l'article\n",
+        "la_solution": "la solution",
+        "domaines": "Les modules et leurs avantages concrets.",
+        "q_sujet": "1. Sur quelle solution porte l'article ?",
+        "fiche": "\n\nSi vous souhaitez plutôt créer une **fiche article** dans Sage ou Divalto, dites-le-moi : je vous "
+        "donnerai les étapes.",
         "plan": "Bien sûr ! Je peux vous accompagner dans la création d'un article professionnel et marketing sur "
         "**{l}**, destiné au site web de Mediasoft.\n\n"
         "L'objectif sera de présenter {l} de manière attractive, d'expliquer ses avantages pour les entreprises et "
@@ -189,7 +197,13 @@ _ASSISTANT = {
         "Rédige un article professionnel, original et optimisé SEO.",
     },
     "en": {
-        "sujet": "Happy to help! Which solution should the article be about?",
+        "sans_sujet": "Of course! I can help you create a professional marketing article for the Mediasoft website: "
+        "present the solution attractively, explain its benefits for companies and highlight Mediasoft's integration "
+        "expertise.\n\n### Suggested article structure\n",
+        "la_solution": "the solution",
+        "domaines": "Modules and their concrete benefits.",
+        "q_sujet": "1. Which solution is the article about?",
+        "fiche": "\n\nIf you'd rather create an **item record** in Sage or Divalto, just tell me and I'll give you the steps.",
         "plan": "Of course! I can help you create a professional marketing article about **{l}** for the Mediasoft "
         "website.\n\nThe goal is to present {l} attractively, explain its benefits for companies and highlight "
         "Mediasoft's integration expertise.\n\n"
@@ -227,9 +241,19 @@ def assistant_article(logiciel: str | None, code: str) -> tuple[str, dict]:
     en = code in ("en", "es", "de", "it")
     t = _ASSISTANT["en" if en else "fr"]
     if not logiciel:
-        # Un clic sur une solution envoie « Rédiger un article sur … » : on revient ici avec le logiciel connu
-        return t["sujet"], {"questions": [{"options": _SUJETS}],
-                            "template": "Write an article about {0}" if en else "Rédiger un article sur {0}"}
+        # Solution non précisée : même plan et même formulaire, avec la solution en première question
+        intro, choix = assistant_article("Divalto Infinity", code)
+        intro = (t["sans_sujet"] + intro.split("### ", 1)[1].split("\n", 1)[1]).replace("Divalto Infinity", t["la_solution"])
+        intro = re.sub(r"\*\*Titre principal :\*\*.*\n\n|\*\*Main title:\*\*.*\n\n", "", intro)
+        intro = re.sub(r"(3\. \*\*[^*]+\*\*)\n(- .*\n)+", r"\1 – " + t["domaines"] + "\n", intro)
+        questions = [{"label": t["q_sujet"], "options": _SUJETS}] + [
+            {"label": f"{n + 2}. {q['label'].split('. ', 1)[1]}",
+             "options": [o.replace("Divalto Infinity", t["la_solution"]) for o in q["options"]]}
+            for n, q in enumerate(choix["questions"])
+        ]
+        template = re.sub(r"\{(\d)\}", lambda m: "{%d}" % (int(m.group(1)) + 1), choix["template"])
+        debut, fin = intro.rsplit("\n\n", 1)
+        return debut + t["fiche"] + "\n\n" + fin, {**choix, "questions": questions, "template": template.replace("Divalto Infinity", "{0}")}
     nom = "Sage 100" if logiciel == "Sage (Sage 100)" else logiciel
     titre, domaines = _PLAN.get(logiciel, ("la solution au service de votre croissance", []))
     choix = {

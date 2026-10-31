@@ -128,6 +128,7 @@ REDACTION = re.compile(
 )
 # « Article sur Divalto » : fiche article dans le logiciel, ou article rédigé à propos du logiciel ? On demande.
 ARTICLE_SUR = re.compile(r"\barticles?\b[^.?!]{0,25}\b(sur|about|à propos|concernant)\b", re.I)
+ARTICLE_CREER = re.compile(r"\b(cr[ée]er|faire|pr[ée]parer|create|make)\b.{0,30}\barticles?\b", re.I)
 FICHE = re.compile(r"fiche|dans (le |l')?(logiciel|erp)|stock|r[ée]f[ée]rence|code article|famille|tarif", re.I)
 
 # Le visiteur nomme lui-même un logiciel dans sa question
@@ -294,6 +295,11 @@ async def chat(body: ChatRequest, request: Request):
         return await _rediger(query, body, sujet, langue.nom(detectee, body.lang), lang)
     # « Créer un article sur Divalto » : comme ChatGPT, on part sur un article rédigé (une fiche article se crée
     # « dans » le logiciel, cas traité plus bas avec la procédure)
+    # « Créer un article » sans logiciel ni « comment » : rédaction (plan et formulaire, solution en 1re question)
+    if (ARTICLE_CREER.search(question) and not FICHE.search(question) and not NOMME.search(question)
+            and not re.search(r"comment|[ée]tapes?|proc[ée]dure|how", question, re.I)):
+        answer, choices = langue.assistant_article(None, lang)
+        return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
     if ARTICLE_SUR.search(question) and logiciel and not FICHE.search(question):
         answer, choices = langue.assistant_article(logiciel, lang)
         return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
