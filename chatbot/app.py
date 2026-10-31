@@ -108,6 +108,18 @@ PROCEDURE = re.compile(
     re.I,
 )
 
+# Manipulation dans un logiciel de gestion (« créer un article », « saisir une facture »…) : sans logiciel nommé
+# dans la conversation, le chatbot demande lequel au lieu de deviner (un article se crée différemment dans chacun)
+ACTION_ERP = re.compile(
+    r"(cr[ée]er|ajouter|saisir|modifier|supprimer|param[ée]trer|imprimer|annuler|valider|transformer|cl[ôo]turer|"
+    r"create|add|edit|delete|print)\b.{0,40}\b(article|client|fournisseur|facture|devis|bon de|commande|[ée]criture|"
+    r"journal|stock|inventaire|tiers|produit|pi[èe]ce|r[èe]glement|avoir|item|invoice|quote|customer|supplier|order)",
+    re.I,
+)
+
+# Le visiteur nomme lui-même un logiciel dans sa question
+NOMME = re.compile(r"sage|ciel|divalto|bitrix|outlook|teams|excel|word|onedrive|sharepoint|microsoft|office|power ?bi", re.I)
+
 # Logiciel nommé dans une réponse : sert à préciser la recherche web des questions de suivi
 PRODUIT = re.compile(r"Sage \d+\w*(?: Ciel)?|Sage [A-Z][\w-]+|Divalto(?: Infinity| weavy)?|Bitrix24|Microsoft 365|Power BI")
 
@@ -193,6 +205,9 @@ async def chat(body: ChatRequest, request: Request):
     # La recherche tient compte de la question précédente (questions de suivi : « et son prix ? »)
     previous = next((m.content for m in reversed(body.history) if m.role == "user"), "")
     query = f"{previous} {question}".strip() if len(question) < 40 and previous else question
+    dernier = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
+    if ACTION_ERP.search(query) and not NOMME.search(query) and not NOMME.search(dernier):
+        return {"answer": langue.message("quel_logiciel", lang), "sources": [], "lang": lang}
     # La base est en français et le modèle de recherche comprend mal les dialectes (derja, arabe tunisien) :
     # hors français, on cherche aussi avec une traduction française de la question
     queries = [query]
@@ -209,17 +224,19 @@ async def chat(body: ChatRequest, request: Request):
     # Base peu pertinente (meilleur score de sens faible) : recherche web d'emblée aussi
     base_faible = not hits or max(h.get("score", 0) for h in hits) < config.WEB_MIN_SCORE
     # Question de suivi (« et ça coûte combien ? ») : la recherche web reprend le logiciel cité dans la réponse précédente
+    # Le logiciel nommé par le visiteur l'emporte (« sur Divalto, pas Sage ») ; sinon celui de la réponse précédente
     last = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
-    produit = PRODUIT.search(last) if len(question) < 60 else None
+    produit = None if NOMME.search(question) else (PRODUIT.search(last) if len(question) < 60 else None)
     contexte = f"Logiciel dont il est question : {produit.group(0)}" if produit else ""
-    # « Comment faire » (créer, configurer…) : la documentation des éditeurs est sur le web, recherche d'emblée
-    procedure = bool(PROCEDURE.search(question))
+    # « Comment faire » (créer, configurer…) : la documentation des éditeurs est sur le web, recherche d'emblée.
+    # Question de suivi courte (« sur Divalto ») : on tient compte de la question précédente (« créer un article »)
+    procedure = bool(PROCEDURE.search(query))
     sq = None  # requête web, reformulée par le modèle (sans politesses, avec le nom du logiciel) au premier besoin
 
     async def requete():
         nonlocal sq
         if sq is None:
-            sq = await llm.search_query(question, contexte)
+            sq = await llm.search_query(query, contexte)
         return sq
 
     web = []

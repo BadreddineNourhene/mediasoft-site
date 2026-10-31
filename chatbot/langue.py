@@ -82,18 +82,24 @@ _CONTACT = {
 MESSAGES = {
     "fr": {
         "contact": _CONTACT["fr"],
+        "quel_logiciel": "Avec plaisir ! Sur quel logiciel souhaitez-vous le faire : Sage 100, Sage 50 (Ciel), "
+        "Divalto Infinity, Bitrix24 ou Microsoft 365 ? La manipulation est différente dans chacun.",
         "introuvable": "Je n'ai pas trouvé cette information. " + _CONTACT["fr"],
         "indisponible": "L'assistant est momentanément indisponible. ",
         "trop": "Trop de questions en peu de temps, merci de patienter une minute.",
     },
     "en": {
         "contact": _CONTACT["en"],
+        "quel_logiciel": "Happy to help! In which software do you want to do it: Sage 100, Sage 50 (Ciel), "
+        "Divalto Infinity, Bitrix24 or Microsoft 365? The steps differ in each one.",
         "introuvable": "I couldn't find this information. " + _CONTACT["en"],
         "indisponible": "The assistant is temporarily unavailable. ",
         "trop": "Too many questions in a short time, please wait a minute.",
     },
     "ar": {
         "contact": _CONTACT["ar"],
+        "quel_logiciel": "بكل سرور! في أي برنامج تريد القيام بذلك: Sage 100 أو Sage 50 (Ciel) أو Divalto Infinity أو "
+        "Bitrix24 أو Microsoft 365؟ تختلف الخطوات من برنامج إلى آخر.",
         "introuvable": "لم أجد هذه المعلومة. " + _CONTACT["ar"],
         "indisponible": "المساعد غير متاح حاليًا. ",
         "trop": "عدد كبير من الأسئلة في وقت قصير، يرجى الانتظار دقيقة.",
