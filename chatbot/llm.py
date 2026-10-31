@@ -78,7 +78,7 @@ def status():
     ]
 
 
-async def _openai_compatible(name, model, messages, timeout):
+async def _openai_compatible(name, model, messages, timeout, max_tokens=1500):
     url, key, _ = OPENAI_COMPATIBLES[name]
     if not key:
         raise _Pause(f"{name.upper()}_API_KEY manquante dans .env", HOUR, whole_provider=True)
@@ -87,7 +87,7 @@ async def _openai_compatible(name, model, messages, timeout):
             r = await client.post(
                 url,
                 headers={"Authorization": f"Bearer {key}"},
-                json={"model": model, "messages": messages, "temperature": 0.2, "max_tokens": 1500},
+                json={"model": model, "messages": messages, "temperature": 0.2, "max_tokens": max_tokens},
             )
     except httpx.HTTPError as e:
         raise _Pause(f"injoignable : {type(e).__name__} {e}".rstrip(), config.LLM_COOLDOWN) from e
@@ -158,7 +158,7 @@ async def search_query(question, context=""):
     return out if 3 <= len(out) <= 200 else question
 
 
-async def generate(messages, hits):
+async def generate(messages, hits, max_tokens=1500):
     errors = []
     start = time.time()
     for provider, model in chain():
@@ -172,7 +172,7 @@ async def generate(messages, hits):
         if _is_paused(provider, model, now) or remaining < 3:
             continue
         try:
-            return await _openai_compatible(provider, model, messages, timeout=min(60, remaining))
+            return await _openai_compatible(provider, model, messages, timeout=min(60, remaining), max_tokens=max_tokens)
         except _Pause as e:
             _paused[(provider, None if e.whole_provider else model)] = time.time() + e.seconds
             log.warning("Modèle %s/%s mis en pause %ds : %s", provider, model, e.seconds, e)

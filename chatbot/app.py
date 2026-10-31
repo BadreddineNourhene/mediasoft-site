@@ -117,6 +117,16 @@ ACTION_ERP = re.compile(
     re.I,
 )
 
+# Rédaction de contenu (article de blog, SEO, post LinkedIn…) plutôt qu'une réponse de support
+REDACTION = re.compile(
+    r"r[ée]dig|r[ée]daction|[ée]cri(re|s|vez)\b|article (de blog|marketing|seo|commercial|technique)|blog|\bseo\b|"
+    r"linkedin|newsletter|write (an?|the|me an?) (article|blog|post)|blog post",
+    re.I,
+)
+# « Article sur Divalto » : fiche article dans le logiciel, ou article rédigé à propos du logiciel ? On demande.
+ARTICLE_SUR = re.compile(r"\barticles?\b[^.?!]{0,25}\b(sur|about|à propos|concernant)\b", re.I)
+FICHE = re.compile(r"fiche|dans (le |l')?(logiciel|erp)|stock|r[ée]f[ée]rence|code article|famille|tarif", re.I)
+
 # Le visiteur nomme lui-même un logiciel dans sa question
 NOMME = re.compile(r"sage|ciel|divalto|bitrix|outlook|teams|excel|word|onedrive|sharepoint|microsoft|office|power ?bi", re.I)
 
@@ -188,6 +198,33 @@ def _sans_double_contact(answer: str) -> str:
     return answer
 
 
+async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, lang: str):
+    """Rédige un article (ou un post) à partir de passages variés de la base sur le logiciel demandé."""
+    sujet = logiciel or "Mediasoft"
+    hits, vus = [], set()
+    for q in (
+        f"{sujet} présentation du logiciel",
+        f"{sujet} fonctionnalités et modules",
+        f"{sujet} avantages pour l'entreprise",
+        f"{sujet} secteurs d'activité et à qui il s'adresse",
+        f"Mediasoft accompagnement intégration {sujet} conseil formation",
+        demande,
+    ):
+        for h in kb.search(q, k=5):
+            if h["text"] not in vus:
+                vus.add(h["text"])
+                hits.append(h)
+    hits = hits[:18]
+    history = [m.model_dump() for m in body.history]
+    try:
+        answer = await llm.generate(rag.build_redaction_messages(demande, history, hits, nom_langue), hits, max_tokens=4000)
+    except llm.LLMError as e:
+        print(f"[chatbot] erreur du modèle (rédaction) : {e}")
+        raise HTTPException(503, langue.message("indisponible", lang) + langue.message("introuvable", lang))
+    answer, _ = _citations((answer or "").replace(rag.UNKNOWN, "").strip(), hits, [])
+    return {"answer": answer, "sources": [], "lang": lang}
+
+
 @app.get("/api/health")
 def health():
     return {"status": "ok", "provider": config.LLM_PROVIDER, "passages": len(kb.chunks), "models": llm.status()}
@@ -206,6 +243,18 @@ async def chat(body: ChatRequest, request: Request):
     previous = next((m.content for m in reversed(body.history) if m.role == "user"), "")
     query = f"{previous} {question}".strip() if len(question) < 40 and previous else question
     dernier = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
+    logiciel = next((label for motif, label in LOGICIELS if re.search(motif, query, re.I)), None)
+    # Réponse « 1 » ou « 2 » à la question « fiche article ou article rédigé ? »
+    if re.search(r"\*\*(Créer une fiche article|Create an item record|إنشاء بطاقة)", dernier):
+        choix = question.strip(" .)").lower()
+        if choix in ("2", "deux", "two", "٢"):
+            return await _rediger(f"Rédiger un article sur {logiciel or 'la solution'}", body, logiciel, langue.nom(detectee, body.lang), lang)
+        if choix in ("1", "un", "one", "١"):
+            question = query = f"Comment créer une fiche article dans {logiciel or 'le logiciel'} ?"
+    if REDACTION.search(query):
+        return await _rediger(query, body, logiciel, langue.nom(detectee, body.lang), lang)
+    if ARTICLE_SUR.search(question) and logiciel and not FICHE.search(question):
+        return {"answer": langue.article_ambigu(logiciel, lang), "sources": [], "lang": lang}
     if ACTION_ERP.search(query) and not NOMME.search(query) and not NOMME.search(dernier):
         return {"answer": langue.quel_logiciel(query, lang), "sources": [], "lang": lang}
     # La base est en français et le modèle de recherche comprend mal les dialectes (derja, arabe tunisien) :

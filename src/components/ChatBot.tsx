@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { Bot, Loader2, RotateCcw, Send, X } from "lucide-react";
+import { Bot, Check, Copy, Loader2, RotateCcw, Send, X } from "lucide-react";
 
 /* Assistant virtuel Mediasoft (RAG) : bulle en bas à gauche (Tidio reste en bas à droite sur l'accueil).
    Les réponses viennent de l'API Python du dossier mediasoft-chatbot, dont l'adresse est fixée au build
@@ -31,6 +31,8 @@ const TEXTS = {
     openLabel: "Ouvrir l’assistant Mediasoft",
     cta: "Une question ?",
     reset: "Nouvelle conversation",
+    copy: "Copier",
+    copied: "Copié",
     down: "L’assistant est momentanément indisponible. Merci de contacter l’équipe Mediasoft :\n- par e-mail : info@mediasoft.tn\n- par WhatsApp : +216 52 444 444\n- via la page Contactez-nous : https://mediasoft-site.onrender.com/contact",
   },
   en: {
@@ -46,6 +48,8 @@ const TEXTS = {
     openLabel: "Open the Mediasoft assistant",
     cta: "Any question?",
     reset: "New conversation",
+    copy: "Copy",
+    copied: "Copied",
     down: "The assistant is temporarily unavailable. Please contact the Mediasoft team:\n- by e-mail: info@mediasoft.tn\n- on WhatsApp: +216 52 444 444\n- through the Contact us page: https://mediasoft-site.onrender.com/contact",
   },
   ar: {
@@ -61,6 +65,8 @@ const TEXTS = {
     openLabel: "فتح مساعد ميدياسوفت",
     cta: "لديك سؤال؟",
     reset: "محادثة جديدة",
+    copy: "نسخ",
+    copied: "تم النسخ",
     down: "المساعد غير متاح حاليًا. يرجى التواصل مع فريق ميدياسوفت:\n- عبر البريد الإلكتروني: info@mediasoft.tn\n- عبر واتساب: +216 52 444 444\n- عبر صفحة اتصل بنا: https://mediasoft-site.onrender.com/contact",
   },
 };
@@ -151,6 +157,7 @@ export default function ChatBot() {
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState<number | null>(null);
   const list = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
 
@@ -271,6 +278,22 @@ export default function ChatBot() {
                   }`}
                 >
                   {m.role === "assistant" ? renderAnswer(m.content) : m.content}
+                  {/* Réponse longue (article rédigé…) : bouton pour la copier telle quelle (Markdown) */}
+                  {m.role === "assistant" && !m.error && m.content.length > 600 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard?.writeText(m.content).then(() => {
+                          setCopied(i);
+                          window.setTimeout(() => setCopied(null), 1500);
+                        });
+                      }}
+                      className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[#1f5fff]/25 px-3 py-1 text-[12px] font-semibold text-[#1f5fff] hover:bg-[#eef3ff]"
+                    >
+                      {copied === i ? <Check size={13} aria-hidden /> : <Copy size={13} aria-hidden />}
+                      {copied === i ? T.copied : T.copy}
+                    </button>
+                  )}
                   {!!m.sources?.length && (
                     <span className="mt-2 flex flex-col gap-1 border-t border-line pt-2">
                       <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft">{T.more}</span>

@@ -129,6 +129,22 @@ def quel_logiciel(question: str, code: str) -> str:
     return MESSAGES.get(code, MESSAGES["en"])["quel_logiciel"].format(logiciels=texte)
 
 
+_AMBIGU = {
+    "fr": "Avec plaisir ! Pour {l}, souhaitez-vous :\n1. **Créer une fiche article** dans {l} (je vous donne les étapes) ;\n"
+    "2. **Rédiger un article** sur {l} (article de blog, article SEO, post LinkedIn…) ?",
+    "en": "Happy to help! For {l}, do you want to:\n1. **Create an item record** in {l} (I'll give you the steps);\n"
+    "2. **Write an article** about {l} (blog post, SEO article, LinkedIn post…)?",
+    "ar": "بكل سرور! بالنسبة إلى {l}، هل تريد:\n1. **إنشاء بطاقة صنف (article)** في {l} (أعطيك الخطوات)؛\n"
+    "2. **كتابة مقال** عن {l} (مقال مدونة، مقال SEO، منشور LinkedIn…)؟",
+}
+
+
+def article_ambigu(logiciel: str, code: str) -> str:
+    """« Créer un article sur Divalto » : fiche article dans le logiciel, ou article rédigé sur le logiciel ?"""
+    code = "fr" if code == "tn" else code
+    return _AMBIGU.get(code, _AMBIGU["en"]).format(l=logiciel)
+
+
 def commerciale(question: str) -> bool:
     return bool(COMMERCIAL.search(question))
 
