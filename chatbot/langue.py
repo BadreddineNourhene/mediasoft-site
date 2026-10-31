@@ -120,13 +120,14 @@ _OU = {"fr": " ou ", "en": " or ", "ar": " أو "}
 _CRM = re.compile(r"devis|facture|client|produit|quote|invoice|customer|product", re.I)
 
 
-def quel_logiciel(question: str, code: str) -> str:
-    """Question de précision « sur quel logiciel ? », avec seulement les logiciels où cette manipulation existe."""
+def quel_logiciel(question: str, code: str) -> tuple[str, dict]:
+    """Question de précision « sur quel logiciel ? », avec seulement les logiciels où cette manipulation existe,
+    et les mêmes logiciels en boutons (un clic envoie le nom du logiciel)."""
     logiciels = ["Sage 100", "Sage 50 (Ciel)", "Divalto Infinity"] + (["Bitrix24"] if _CRM.search(question) else [])
     code = "fr" if code == "tn" else code
     ou = _OU.get(code, _OU["en"])
     texte = ("، " if code == "ar" else ", ").join(logiciels[:-1]) + ou + logiciels[-1]
-    return MESSAGES.get(code, MESSAGES["en"])["quel_logiciel"].format(logiciels=texte)
+    return MESSAGES.get(code, MESSAGES["en"])["quel_logiciel"].format(logiciels=texte), {"questions": [{"options": logiciels}]}
 
 
 _AMBIGU = {
@@ -139,10 +140,106 @@ _AMBIGU = {
 }
 
 
-def article_ambigu(logiciel: str, code: str) -> str:
+_AMBIGU_CHOIX = {
+    "fr": ["Créer une fiche article dans {l}", "Rédiger un article sur {l}"],
+    "en": ["Create an item record in {l}", "Write an article about {l}"],
+    "ar": ["إنشاء بطاقة صنف في {l}", "كتابة مقال عن {l}"],
+}
+
+
+def article_ambigu(logiciel: str, code: str) -> tuple[str, dict]:
     """« Créer un article sur Divalto » : fiche article dans le logiciel, ou article rédigé sur le logiciel ?"""
     code = "fr" if code == "tn" else code
-    return _AMBIGU.get(code, _AMBIGU["en"]).format(l=logiciel)
+    options = [o.format(l=logiciel) for o in _AMBIGU_CHOIX.get(code, _AMBIGU_CHOIX["en"])]
+    return _AMBIGU.get(code, _AMBIGU["en"]).format(l=logiciel), {"questions": [{"options": options}]}
+
+
+# Assistant de rédaction (comme ChatGPT) : proposition de plan, puis type, public et objectif à choisir avant d'écrire
+_ANGLE = {
+    "Divalto Infinity": "l'ERP qui centralise toute la gestion de votre entreprise",
+    "Sage (Sage 100)": "piloter sa gestion commerciale et sa comptabilité avec un seul logiciel",
+    "Sage 50 (Ciel)": "la gestion et la comptabilité simplifiées pour les petites entreprises",
+    "Bitrix24": "le CRM et l'espace collaboratif pour vendre et travailler ensemble",
+    "Microsoft 365": "les outils de travail et de collaboration de l'entreprise moderne",
+    "Power BI": "transformer les données de votre entreprise en décisions",
+}
+_SUJETS = ["Divalto Infinity", "Sage 100", "Sage 50 (Ciel)", "Bitrix24", "Microsoft 365", "Power BI", "Mediasoft"]
+_ASSISTANT = {
+    "fr": {
+        "sujet": "Avec plaisir ! Sur quelle solution souhaitez-vous l'article ?",
+        "plan": "Avec plaisir ! Voici une proposition de structure pour votre article sur **{l}** :\n\n"
+        "**Titre proposé :** {l} : {angle}\n\n"
+        "1. Introduction : les enjeux de la digitalisation pour les entreprises tunisiennes\n"
+        "2. Qu'est-ce que {l} ?\n"
+        "3. Les fonctionnalités principales, avec l'avantage concret de chacune\n"
+        "4. Pourquoi une solution intégrée change le quotidien\n"
+        "5. À qui s'adresse {l} ?\n"
+        "6. Pourquoi choisir Mediasoft comme partenaire\n"
+        "7. Conclusion et appel à l'action\n"
+        "8. FAQ et informations SEO\n\n"
+        "Pour l'adapter à votre besoin, choisissez ci-dessous le type d'article, le public et l'objectif.\n\n"
+        "**Mon conseil :** pour le blog Mediasoft, un article marketing optimisé SEO, destiné aux entreprises "
+        "tunisiennes et qui génère des demandes de devis, donne généralement les meilleurs résultats.",
+        "questions": [
+            ("Quel type d'article ?", ["Article marketing pour le blog Mediasoft", "Article technique détaillé",
+                                       "Article SEO pour Google", "Présentation commerciale"]),
+            ("Quel public ?", ["Entreprises tunisiennes (PME et grandes entreprises)", "Dirigeants et directeurs généraux",
+                               "Responsables financiers et informatiques", "Tous les professionnels"]),
+            ("Quel objectif ?", ["Présenter la solution et générer des demandes de devis", "Améliorer le référencement Google (SEO)",
+                                 "Expliquer les fonctionnalités et les avantages"]),
+        ],
+        "submit": "Créer mon article",
+        "template": "Créons l'article {l} pour Mediasoft. Type : {{0}}. Public : {{1}}. Objectif : {{2}}. "
+        "Rédige un article professionnel, original et optimisé SEO.",
+    },
+    "en": {
+        "sujet": "Happy to help! Which solution should the article be about?",
+        "plan": "Happy to help! Here is a suggested structure for your article about **{l}**:\n\n"
+        "**Suggested title:** {l}: {angle}\n\n"
+        "1. Introduction: the digital challenges of Tunisian companies\n"
+        "2. What is {l}?\n"
+        "3. Main features, with the concrete benefit of each\n"
+        "4. Why an integrated solution changes daily work\n"
+        "5. Who is {l} for?\n"
+        "6. Why choose Mediasoft as a partner\n"
+        "7. Conclusion and call to action\n"
+        "8. FAQ and SEO information\n\n"
+        "To tailor it, choose the article type, audience and goal below.\n\n"
+        "**My advice:** for the Mediasoft blog, an SEO-optimised marketing article aimed at Tunisian companies "
+        "and designed to generate quote requests usually works best.",
+        "questions": [
+            ("Article type?", ["Marketing article for the Mediasoft blog", "Detailed technical article",
+                               "SEO article for Google", "Sales presentation"]),
+            ("Audience?", ["Tunisian companies (SMEs and large companies)", "Executives and managing directors",
+                           "Finance and IT managers", "All professionals"]),
+            ("Goal?", ["Present the solution and generate quote requests", "Improve Google ranking (SEO)",
+                       "Explain the features and benefits"]),
+        ],
+        "submit": "Create my article",
+        "template": "Let's create the {l} article for Mediasoft. Type: {{0}}. Audience: {{1}}. Goal: {{2}}. "
+        "Write a professional, original, SEO-optimised article.",
+    },
+}
+# Le message envoyé par le bouton « Créer mon article » : la rédaction peut commencer
+ARTICLE_PRECISE = re.compile(r"\b(Type|Public|Audience|Objectif|Goal)\s*:", re.I)
+
+
+def assistant_article(logiciel: str | None, code: str) -> tuple[str, dict]:
+    """Avant de rédiger : demande la solution si besoin, sinon propose un plan et les choix type / public / objectif."""
+    en = code in ("en", "es", "de", "it")
+    t = _ASSISTANT["en" if en else "fr"]
+    if not logiciel:
+        # Un clic sur une solution envoie « Rédiger un article sur … » : on revient ici avec le logiciel connu
+        return t["sujet"], {"questions": [{"options": _SUJETS}],
+                            "template": "Write an article about {0}" if en else "Rédiger un article sur {0}"}
+    nom = "Sage 100" if logiciel == "Sage (Sage 100)" else logiciel
+    angle = _ANGLE.get(logiciel, "la solution au service de votre croissance")
+    choix = {
+        "questions": [{"label": label, "options": options} for label, options in t["questions"]],
+        "submit": t["submit"],
+        "template": t["template"].format(l=nom),
+    }
+    return t["plan"].format(l=nom, angle=angle), choix
 
 
 def commerciale(question: str) -> bool:

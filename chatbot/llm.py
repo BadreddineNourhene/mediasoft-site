@@ -158,9 +158,10 @@ async def search_query(question, context=""):
     return out if 3 <= len(out) <= 200 else question
 
 
-async def generate(messages, hits, max_tokens=1500):
+async def generate(messages, hits, max_tokens=1500, deadline=None):
     errors = []
     start = time.time()
+    deadline = deadline or config.LLM_DEADLINE
     for provider, model in chain():
         if provider == "extractif":
             return _extractif(hits)
@@ -168,11 +169,11 @@ async def generate(messages, hits, max_tokens=1500):
             raise LLMError(f"LLM_PROVIDER inconnu : {provider} ({', '.join([*OPENAI_COMPATIBLES, 'extractif'])})")
         now = time.time()
         # Au-delà du temps maximal par question, on ne tente plus de modèle (on passe au secours extractif s'il y en a un)
-        remaining = config.LLM_DEADLINE - (now - start)
+        remaining = deadline - (now - start)
         if _is_paused(provider, model, now) or remaining < 3:
             continue
         try:
-            return await _openai_compatible(provider, model, messages, timeout=min(60, remaining), max_tokens=max_tokens)
+            return await _openai_compatible(provider, model, messages, timeout=min(max(60, deadline - 30), remaining), max_tokens=max_tokens)
         except _Pause as e:
             _paused[(provider, None if e.whole_provider else model)] = time.time() + e.seconds
             log.warning("Modèle %s/%s mis en pause %ds : %s", provider, model, e.seconds, e)

@@ -14,7 +14,10 @@ const API = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(API_URL) || proc
 const STORE = "ms-chatbot-v2";
 
 type Source = { title: string; url: string };
-type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; error?: boolean };
+/* Boutons proposés sous une réponse (envoyés par l'API) : une seule question sans « submit » → un clic envoie l'option
+   (ou « template » où {0} est remplacé) ; sinon un choix par question puis « submit » envoie le template rempli. */
+type Choices = { questions: { label?: string; options: string[] }[]; submit?: string; template?: string };
+type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; error?: boolean; choices?: Choices };
 
 /* Textes de la bulle selon la langue du navigateur ; l'assistant, lui, répond dans la langue de chaque question. */
 const TEXTS = {
@@ -98,10 +101,14 @@ function linkify(text: string) {
 /* Mise en forme légère des réponses (le modèle écrit en Markdown) : **gras**, listes « - » ou « 1. », titres « ### ». */
 /* Renvois aux sources « [1](https://…) » (posés par l'API) → petit numéro cliquable qui ouvre la page source. */
 function withRefs(s: string, k: string) {
-  const parts = s.split(/\[([^\]\n]{1,40})\]\((https?:\/\/[^)\s]+)\)/g);
+  const parts = s.split(/\[([^\]\n]{1,90})\]\((https?:\/\/[^)\s]+)\)/g);
   return parts.map((p, j) =>
     j % 3 === 0 ? (
       <span key={`${k}-${j}`}>{linkify(p)}</span>
+    ) : j % 3 === 1 && !/^\d+$/.test(p) ? (
+      <a key={`${k}-${j}`} href={parts[j + 1]} target="_blank" rel="noopener noreferrer" className="font-semibold text-[#1f5fff] underline underline-offset-2 hover:text-[#00193a]">
+        {p}
+      </a>
     ) : j % 3 === 1 ? (
       <a
         key={`${k}-${j}`}
@@ -119,7 +126,15 @@ function withRefs(s: string, k: string) {
 
 function renderAnswer(text: string) {
   const inline = (s: string, k: number) =>
-    s.split(/\*\*(.+?)\*\*/g).map((part, j) => (j % 2 ? <strong key={`${k}-${j}`}>{withRefs(part, `${k}-${j}`)}</strong> : <span key={`${k}-${j}`}>{withRefs(part, `${k}-${j}`)}</span>));
+    s.split(/\*\*(.+?)\*\*/g).map((part, j) =>
+      j % 2 ? (
+        <strong key={`${k}-${j}`}>{withRefs(part, `${k}-${j}`)}</strong>
+      ) : (
+        part.split(/(?<![\w*])\*([^*\n]+)\*(?![\w*])/g).map((p, n) =>
+          n % 2 ? <em key={`${k}-${j}-${n}`}>{withRefs(p, `${k}-${j}-${n}`)}</em> : <span key={`${k}-${j}-${n}`}>{withRefs(p, `${k}-${j}-${n}`)}</span>,
+        )
+      ),
+    );
   return text.split("\n").map((raw, i) => {
     const line = raw.trim();
     if (!line) return <span key={i} className="block h-2" />;
@@ -142,6 +157,52 @@ function renderAnswer(text: string) {
     if (title) return <strong key={i} className="block">{inline(title[1], i)}</strong>;
     return <span key={i} className="block">{inline(line, i)}</span>;
   });
+}
+
+function ChoiceButtons({ c, onSend, disabled }: { c: Choices; onSend: (q: string) => void; disabled: boolean }) {
+  // Formulaire (plusieurs questions) : la première option de chaque question est cochée d'office (celle conseillée)
+  const [sel, setSel] = useState(() => c.questions.map((q) => q.options[0]));
+  const direct = c.questions.length === 1 && !c.submit;
+  const fill = (values: string[]) => values.reduce((t, v, n) => t.replaceAll(`{${n}}`, v), c.template ?? "{0}");
+  return (
+    <div className="ms-10 space-y-3">
+      {c.questions.map((q, i) => (
+        <div key={i} role={direct ? undefined : "radiogroup"} aria-label={q.label}>
+          {q.label && <p className="mb-1.5 text-[12.5px] font-semibold text-[#0b1b33]">{q.label}</p>}
+          <div className="flex flex-wrap gap-1.5">
+            {q.options.map((o) => {
+              const on = !direct && sel[i] === o;
+              return (
+                <button
+                  key={o}
+                  type="button"
+                  disabled={disabled}
+                  role={direct ? undefined : "radio"}
+                  aria-checked={direct ? undefined : on}
+                  onClick={() => (direct ? onSend(fill([o])) : setSel((s) => s.map((v, n) => (n === i ? o : v))))}
+                  className={`rounded-full border px-3 py-1.5 text-start text-[12.5px] font-medium leading-snug transition-colors disabled:opacity-50 ${
+                    on ? "border-[#1f5fff] bg-[#1f5fff] text-white" : "border-[#1f5fff]/30 bg-white text-[#1f5fff] hover:border-[#1f5fff] hover:bg-[#1f5fff]/5"
+                  }`}
+                >
+                  {o}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      {c.submit && (
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => onSend(fill(sel))}
+          className="rounded-full bg-gradient-to-r from-[#1f5fff] to-[#3d8bff] px-5 py-2.5 text-[13.5px] font-bold text-white shadow-[0_8px_20px_-6px_rgba(31,95,255,0.7)] transition-transform hover:scale-[1.02] disabled:opacity-50"
+        >
+          {c.submit}
+        </button>
+      )}
+    </div>
+  );
 }
 
 export default function ChatBot() {
@@ -190,16 +251,16 @@ export default function ChatBot() {
     setInput("");
     setBusy(true);
     try {
-      // 90 s au plus (réveil du serveur gratuit compris) : au-delà, message d'indisponibilité plutôt qu'une attente sans fin
+      // 150 s au plus (article détaillé compris) : au-delà, message d'indisponibilité plutôt qu'une attente sans fin
       const res = await fetch(`${API}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q.slice(0, 600), history, lang: navigator.language }),
-        signal: AbortSignal.timeout(90_000),
+        signal: AbortSignal.timeout(150_000),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.detail || "Erreur");
-      setMsgs((m) => [...m, { role: "assistant", content: json.answer, sources: json.sources }]);
+      setMsgs((m) => [...m, { role: "assistant", content: json.answer, sources: json.sources, choices: json.choices }]);
     } catch (e) {
       // Seul le message renvoyé par l'API est affiché tel quel ; réseau coupé ou délai dépassé → message d'indisponibilité
       const detail = e instanceof Error && e.name === "Error" ? e.message : "";
@@ -258,7 +319,8 @@ export default function ChatBot() {
             {/* data-lenis-prevent : la molette fait défiler la conversation, pas la page derrière */}
             <div ref={list} data-lenis-prevent className="flex-1 space-y-4 overflow-y-auto overscroll-contain bg-[#f4f7fb] px-5 py-6" aria-live="polite">
             {[{ role: "assistant", content: T.welcome } as Msg, ...msgs].map((m, i) => (
-              <div key={i} className={`flex items-end gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div key={i} className="space-y-2">
+              <div className={`flex items-end gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 {m.role === "assistant" && (
                   <span className="mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#00193a] text-white" aria-hidden>
                     <Bot size={16} />
@@ -282,6 +344,9 @@ export default function ChatBot() {
                     </span>
                   )}
                 </div>
+              </div>
+              {/* Choix proposés : seulement sous la dernière réponse (un clic l'envoie comme nouvelle question) */}
+              {m.choices && i === msgs.length && <ChoiceButtons key={i} c={m.choices} onSend={ask} disabled={busy} />}
               </div>
             ))}
             {busy && (

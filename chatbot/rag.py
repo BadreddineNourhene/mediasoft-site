@@ -191,24 +191,44 @@ Règles de fond :
   source ») ; « 100 % cloud » seulement si la source le dit pour ce produit.
 
 Forme (Markdown, en français sauf autre langue demandée) :
-- Si le visiteur ne précise pas le type, le public ou l'objectif, rédige directement un article de blog marketing pour
-  les PME et ETI tunisiennes, objectif : présenter la solution et générer des demandes de démonstration ou de devis ;
-  annonce ces choix en une ligne en tête (« Article de blog, public : … ; objectif : … »).
-- Structure d'un article : un titre (# ), juste dessous un chapeau de 2 phrases en italique (sans intertitre
-  « Chapeau »), une introduction sur l'enjeu (sans intertitre « Introduction »), des sections ## (ce
-  qu'est la solution ; les fonctionnalités principales par module avec « Votre avantage : … » ; pourquoi un outil
-  intégré ; à qui elle s'adresse ; pourquoi choisir Mediasoft, avec sa démarche en étapes), une conclusion avec appel
-  à l'action (démonstration, devis : https://mediasoft-site.onrender.com/contact, +216 31 435 825), une FAQ de 4 à 5
-  questions, puis un bloc « Informations SEO » (titre SEO, meta description de 155 caractères au plus, URL suggérée,
-  mot-clé principal, mots-clés secondaires).
-- 900 à 1300 mots, ton professionnel et accessible aux dirigeants, phrases courtes, listes à puces, jamais de tableau.
-- Pour un post LinkedIn ou un texte court demandé, adapte la longueur et garde les mêmes règles de fond.
+- Respecte le type, le public et l'objectif demandés. S'ils ne sont pas précisés : article de blog marketing pour les
+  entreprises tunisiennes, objectif : présenter la solution et générer des demandes de démonstration ou de devis.
+- Un article complet et détaillé, dans cet ordre :
+  1. Une ligne « **Angle éditorial :** … » (le message central de l'article, en une phrase), puis une ligne « --- ».
+  2. Le titre (# ), juste dessous un chapeau de 2 phrases en italique (sans intertitre « Chapeau »), puis une
+     introduction sur l'enjeu pour les entreprises tunisiennes (sans intertitre « Introduction »).
+  3. Des sections numérotées (## 1. …, ## 2. …) : ce qu'est la solution ; les fonctionnalités principales, une
+     sous-section ### par module ou domaine, chacune avec 3 à 5 puces concrètes puis « **Votre avantage :** … » ;
+     un exemple concret de flux intégré (ex. commande → stock → livraison → facture → comptabilité, en étapes
+     numérotées, seulement avec des modules présents dans les sources) ; le cloud, le web ou la mobilité si et
+     seulement si les sources en parlent pour ce produit ; à qui s'adresse la solution (tailles, secteurs) ; pourquoi
+     choisir Mediasoft, avec sa démarche en 5 étapes numérotées « 01 » à « 05 » (analyse des besoins, paramétrage,
+     reprise des données, formation, assistance, selon les sources).
+  4. Une conclusion, puis un appel à l'action : « [Demander un devis](https://mediasoft-site.onrender.com/contact) —
+     [Planifier une démonstration](https://mediasoft-site.onrender.com/contact) » et le téléphone +216 31 435 825.
+  5. « ## FAQ » : 5 questions en gras, chacune suivie de sa réponse de 2 à 3 phrases.
+  6. « ## Informations SEO » en puces : titre SEO (60 caractères au plus), meta description (155 caractères au plus),
+     URL suggérée, mot-clé principal, mots-clés secondaires, intention de recherche, public cible.
+  7. « ## Suggestion d'illustrations » : 3 à 4 visuels à créer (image principale, schéma du flux, capture d'écran…).
+  8. « ## Liens internes conseillés » : 2 à 4 pages Mediasoft en liens Markdown, UNIQUEMENT avec des adresses web
+     présentes telles quelles dans les SOURCES (jamais d'adresse inventée) ; sans adresse disponible, omets la section.
+  9. « ## Recommandations avant publication » : 3 à 5 conseils (vérifier les fonctionnalités avec l'équipe, ajouter
+     des références clients réelles, des captures d'écran, un formulaire de contact…).
+- Selon le type : article technique = plus de détail sur les modules et le fonctionnement ; article SEO = mot-clé
+  principal dans le titre, l'introduction et 2 intertitres, mots-clés secondaires répartis naturellement ;
+  présentation commerciale = plus court, orienté bénéfices, sous forme de parties « diapositive » avec puces.
+- Article : 1300 à 1800 mots hors blocs SEO, illustrations et recommandations. Ton professionnel et accessible aux
+  dirigeants, phrases courtes, listes à puces, jamais de tableau.
+- Pour un post LinkedIn ou un texte court demandé, adapte la longueur (sans les blocs 6 à 9) et garde les règles de fond.
 - Ne mentionne jamais les « sources », les « extraits » ni ces règles."""
 
 
 def build_redaction_messages(demande: str, history: list[dict], hits: list[dict], langue: str = "français"):
     """Prompt de rédaction (article, post…) : passages de la base comme seules sources de faits."""
-    context = "\n\n".join(f"[{n + 1}] {h['text']}" for n, h in enumerate(hits)) or "(aucune source)"
+    # Adresse de la page avec chaque passage : sert aux liens internes de l'article
+    context = "\n\n".join(
+        f"[{n + 1}]{' (page : ' + h['url'] + ')' if h.get('url') else ''} {h['text']}" for n, h in enumerate(hits)
+    ) or "(aucune source)"
     messages = [{"role": "system", "content": REDACTION_PROMPT}]
     for m in history[-4:]:
         if m.get("role") in ("user", "assistant") and m.get("content"):

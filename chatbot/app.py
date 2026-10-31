@@ -2,7 +2,10 @@
 
   GET  /api/health  : état du service (modèles et ceux en pause, nombre de passages indexés)
   POST /api/chat    : {"question": "...", "history": [{"role": "user"|"assistant", "content": "..."}], "lang": "fr"}
-                      → {"answer": "...", "sources": [{"title", "url"}], "lang": "fr"}
+                      → {"answer": "...", "sources": [{"title", "url"}], "lang": "fr", "choices"?: {...}}
+                      « choices » (facultatif) : boutons proposés sous la réponse, {"questions": [{"label"?, "options"}],
+                      "submit"?, "template"?} ; une seule question sans « submit » : un clic envoie l'option (ou le
+                      template avec {0}) ; sinon un choix par question, puis « submit » envoie le template rempli ({0}, {1}…).
                       La réponse suit la langue de la question ; « lang » (langue du navigateur) sert si elle est ambiguë.
 
 Lancement local :  uvicorn app:app --port 8000
@@ -207,22 +210,44 @@ async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, la
         f"{sujet} fonctionnalités et modules",
         f"{sujet} avantages pour l'entreprise",
         f"{sujet} secteurs d'activité et à qui il s'adresse",
+        f"{sujet} cloud SaaS hébergement mobilité",
         f"Mediasoft accompagnement intégration {sujet} conseil formation",
+        "Mediasoft démarche projet analyse des besoins paramétrage reprise des données formation assistance",
         demande,
     ):
         for h in kb.search(q, k=5):
             if h["text"] not in vus:
                 vus.add(h["text"])
                 hits.append(h)
-    hits = hits[:18]
+    hits = hits[:22]
     history = [m.model_dump() for m in body.history]
     try:
-        answer = await llm.generate(rag.build_redaction_messages(demande, history, hits, nom_langue), hits, max_tokens=4000)
+        # Article détaillé : plus de texte et plus de temps qu'une réponse courte
+        answer = await llm.generate(
+            rag.build_redaction_messages(demande, history, hits, nom_langue), hits, max_tokens=7000, deadline=120
+        )
     except llm.LLMError as e:
         print(f"[chatbot] erreur du modèle (rédaction) : {e}")
         raise HTTPException(503, langue.message("indisponible", lang) + langue.message("introuvable", lang))
     answer, _ = _citations((answer or "").replace(rag.UNKNOWN, "").strip(), hits, [])
-    return {"answer": answer, "sources": [], "lang": lang}
+    return {"answer": _liens_connus(answer), "sources": [], "lang": lang}
+
+
+_LIEN = re.compile(r"\[([^\]\n]+)\]\((https?://[^)\s]+)\)")
+
+
+def _liens_connus(answer: str) -> str:
+    """Retire les liens vers des pages absentes de la base (le modèle invente parfois une adresse plausible) :
+    une puce qui ne contenait que ce lien disparaît, ailleurs le texte du lien reste sans lien."""
+    connues = {c.get("url") for c in kb.chunks} | {config.CONTACT["formulaire"]}
+
+    def ligne(l: str) -> str | None:
+        faux = [m for m in _LIEN.finditer(l) if m.group(2) not in connues]
+        if faux and re.fullmatch(r"\s*[-*•]\s*" + re.escape(faux[0].group(0)) + r"\s*", l):
+            return None
+        return _LIEN.sub(lambda m: m.group(0) if m.group(2) in connues else m.group(1), l)
+
+    return "\n".join(l for l in map(ligne, answer.split("\n")) if l is not None)
 
 
 @app.get("/api/health")
@@ -248,15 +273,24 @@ async def chat(body: ChatRequest, request: Request):
     if re.search(r"\*\*(Créer une fiche article|Create an item record|إنشاء بطاقة)", dernier):
         choix = question.strip(" .)").lower()
         if choix in ("2", "deux", "two", "٢"):
-            return await _rediger(f"Rédiger un article sur {logiciel or 'la solution'}", body, logiciel, langue.nom(detectee, body.lang), lang)
+            answer, choices = langue.assistant_article(logiciel, lang)
+            return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
         if choix in ("1", "un", "one", "١"):
             question = query = f"Comment créer une fiche article dans {logiciel or 'le logiciel'} ?"
     if REDACTION.search(query):
-        return await _rediger(query, body, logiciel, langue.nom(detectee, body.lang), lang)
+        sujet = logiciel or ("Mediasoft" if re.search(r"mediasoft", question, re.I) else None)
+        # Article sans précision : comme ChatGPT, plan proposé et choix (type, public, objectif) avant de rédiger ;
+        # un post LinkedIn, une newsletter ou une demande déjà précisée sont rédigés directement
+        if not langue.ARTICLE_PRECISE.search(question) and not re.search(r"linkedin|newsletter|post\b", question, re.I):
+            answer, choices = langue.assistant_article(sujet, lang)
+            return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
+        return await _rediger(query, body, sujet, langue.nom(detectee, body.lang), lang)
     if ARTICLE_SUR.search(question) and logiciel and not FICHE.search(question):
-        return {"answer": langue.article_ambigu(logiciel, lang), "sources": [], "lang": lang}
+        answer, choices = langue.article_ambigu(logiciel, lang)
+        return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
     if ACTION_ERP.search(query) and not NOMME.search(query) and not NOMME.search(dernier):
-        return {"answer": langue.quel_logiciel(query, lang), "sources": [], "lang": lang}
+        answer, choices = langue.quel_logiciel(query, lang)
+        return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
     # La base est en français et le modèle de recherche comprend mal les dialectes (derja, arabe tunisien) :
     # hors français, on cherche aussi avec une traduction française de la question
     queries = [query]
