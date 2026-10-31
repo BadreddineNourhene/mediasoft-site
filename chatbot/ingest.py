@@ -5,7 +5,8 @@ Sources :
      Microsoft 365, Power BI, solutions par secteur… ;
   2. les fichiers Markdown du dossier base-rag/connaissances/ (faits rédigés à la main : coordonnées, services…) ;
   3. la base des documentations officielles des éditeurs (base-rag/rag_knowledge_base.jsonl, produite par
-     base-rag/build_base.py) : Sage, Divalto, Bitrix24, Microsoft 365.
+     base-rag/build_base.py) : Sage, Divalto, Bitrix24, Microsoft 365 ;
+  4. l'aide en ligne officielle Divalto (base-rag/divalto_wiki.jsonl, produite par base-rag/import_divalto_wiki.py).
 
 Chaque page est découpée en passages (environ 900 caractères, rattachés à leur titre), puis chaque
 passage est transformé en vecteur par un modèle d'embeddings gratuit exécuté en local.
@@ -17,7 +18,9 @@ Usage :  python ingest.py
 
 import hashlib
 import json
+import os
 import re
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import numpy as np
@@ -28,6 +31,7 @@ from embedder import Embedder
 
 PUBLIC_SITE = "https://www.mediasoft.tn"
 RAG_BASE = config.BASE_DIR / "rag_knowledge_base.jsonl"
+DIVALTO_WIKI = config.BASE_DIR / "divalto_wiki.jsonl"
 CHUNK_CHARS = 900
 SKIP_FILES = {"404.html", "_not-found.html", "login.html", "politique-de-confidentialite.html", "assistance.html"}
 # Textes d'interface sans intérêt pour répondre aux clients
@@ -118,15 +122,19 @@ def chunk(title: str, heading: str, lines: list[str]):
     return [f"{prefix}\n{c}" for c in out]
 
 
+def _embed(textes):
+    return Embedder().embed(textes, batch_size=32)
+
+
 def main():
     chunks, seen = [], set()
 
-    def add(text, title, url):
+    def add(text, title, url, source=None):
         key = hashlib.md5(text.split("\n", 1)[-1].lower().encode()).hexdigest()
         if key in seen or len(text) < 60:
             return
         seen.add(key)
-        chunks.append({"text": text, "title": title, "url": url})
+        chunks.append({"text": text, "title": title, "url": url} | ({"source": source} if source else {}))
 
     n_pages = 0
     if config.SITE_OUT_DIR.exists():
@@ -156,11 +164,37 @@ def main():
                 add(e["chunk"], f"{e['logiciel']} : {e['titre']}", e.get("source_url"))
                 n_editeur += len(chunks) - before
 
+    # Aide en ligne officielle Divalto (base-rag/import_divalto_wiki.py) : chaque passage garde le chemin de sa page
+    # (« Commerce > Fichiers > Article ») et le lien vers la page, cité dans les réponses
+    n_wiki = 0
+    if DIVALTO_WIKI.exists():
+        for line in DIVALTO_WIKI.read_text(encoding="utf-8").splitlines():
+            try:
+                p = json.loads(line)
+            except ValueError:  # dernière ligne incomplète pendant un import en cours
+                continue
+            title = f"Aide Divalto : {p['titre']}"
+            chemin = " > ".join(p["chemin"] + [p["titre"]])
+            for heading, lines in p["sections"]:
+                for c in chunk(f"Aide officielle {p['espace']} — {chemin}", heading if heading != p["titre"] else "", lines):
+                    before = len(chunks)
+                    add(c, title, p["url"], source="divalto_wiki")
+                    n_wiki += len(chunks) - before
+
     print(
         f"{n_pages} pages du site + {len(list(config.KNOWLEDGE_DIR.glob('*.md')))} fichier(s) de connaissances "
-        f"+ {n_editeur} entrées des éditeurs : {len(chunks)} passages"
+        f"+ {n_editeur} entrées des éditeurs + {n_wiki} passages de l'aide Divalto : {len(chunks)} passages"
     )
-    vectors = Embedder().embed([c["text"] for c in chunks], batch_size=32)
+    # Le modèle tourne sur un seul cœur (pour garder peu de mémoire en service) : pour indexer des dizaines de
+    # milliers de passages, on répartit le calcul sur plusieurs processus
+    textes = [c["text"] for c in chunks]
+    n = max(1, min(7, (os.cpu_count() or 2) - 1))
+    parts = [textes[i::n] for i in range(n)]
+    with ProcessPoolExecutor(n) as pool:
+        res = list(pool.map(_embed, parts))
+    vectors = np.empty((len(textes), res[0].shape[1]), dtype=res[0].dtype)
+    for i, r in enumerate(res):
+        vectors[i::n] = r
 
     config.INDEX_DIR.mkdir(exist_ok=True)
     np.savez_compressed(config.INDEX_DIR / "index.npz", vectors=vectors)

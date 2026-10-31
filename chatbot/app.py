@@ -205,6 +205,9 @@ def _sans_double_contact(answer: str) -> str:
 async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, lang: str):
     """Rédige un article (ou un post) à partir de passages variés de la base sur le logiciel demandé."""
     sujet = logiciel or "Mediasoft"
+    # L'aide en ligne Divalto (procédures, paramétrage) sert l'article technique sur Divalto ; un article marketing
+    # s'appuie sur les pages de présentation
+    sans = None if sujet == "Divalto Infinity" and re.search(r"technique", demande, re.I) else "divalto_wiki"
     hits, vus = [], set()
     for q in (
         f"{sujet} présentation du logiciel",
@@ -216,7 +219,7 @@ async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, la
         "Mediasoft démarche projet analyse des besoins paramétrage reprise des données formation assistance",
         demande,
     ):
-        for h in kb.search(q, k=5):
+        for h in kb.search(q, k=5, sans=sans):
             if h["text"] not in vus:
                 vus.add(h["text"])
                 hits.append(h)
@@ -311,7 +314,9 @@ async def chat(body: ChatRequest, request: Request):
     queries = [query]
     if detectee != "fr":
         queries.append(await llm.translate_query(query))
-    hits = _consultants(f"{question} {queries[-1]}", kb.search(queries))
+    # Question sur un autre logiciel que Divalto : l'aide en ligne Divalto est écartée
+    sans = "divalto_wiki" if logiciel and logiciel != "Divalto Infinity" else None
+    hits = _consultants(f"{question} {queries[-1]}", kb.search(queries, sans=sans))
 
     history = [m.model_dump() for m in body.history]
     nom_langue = langue.nom(detectee, body.lang)

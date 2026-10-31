@@ -4,7 +4,7 @@ import json
 import math
 import re
 import unicodedata
-from collections import Counter
+from collections import Counter, defaultdict
 
 import numpy as np
 
@@ -88,26 +88,31 @@ class KnowledgeBase:
         self.model = Embedder()
         # Index par mots-clés (BM25), en complément des vecteurs : le petit modèle d'embeddings rate souvent
         # les mots précis (« bureaux », « Gabès », « TeamViewer »…)
-        self.docs = [Counter(_tokens(c["text"])) for c in self.chunks]
-        self.doc_len = np.array([sum(d.values()) for d in self.docs], dtype=np.float32)
-        df = Counter(t for d in self.docs for t in d)
-        n = len(self.docs)
-        self.idf = {t: math.log(1 + (n - f + 0.5) / (f + 0.5)) for t, f in df.items()}
+        # Index inversé (mot → passages et fréquences) : la base compte des dizaines de milliers de passages avec
+        # l'aide en ligne Divalto, on ne parcourt que les passages qui contiennent les mots de la question
+        docs = [Counter(_tokens(c["text"])) for c in self.chunks]
+        self.doc_len = np.array([sum(d.values()) for d in docs], dtype=np.float32)
+        postings = defaultdict(lambda: ([], []))
+        for i, d in enumerate(docs):
+            for t, f in d.items():
+                postings[t][0].append(i)
+                postings[t][1].append(f)
+        self.postings = {t: (np.array(ids, dtype=np.int32), np.array(fs, dtype=np.float32)) for t, (ids, fs) in postings.items()}
+        n = len(docs)
+        self.idf = {t: math.log(1 + (n - len(ids) + 0.5) / (len(ids) + 0.5)) for t, (ids, _) in self.postings.items()}
+        # Origine de chaque passage (ex. « divalto_wiki ») : permet d'écarter l'aide Divalto d'une question sur Sage
+        self.source = np.array([c.get("source", "") for c in self.chunks])
 
     def _bm25(self, query: str, k1=1.5, b=0.75):
-        terms = set(_tokens(query))
         avg = self.doc_len.mean()
-        scores = np.zeros(len(self.docs), dtype=np.float32)
-        for i, d in enumerate(self.docs):
-            s = 0.0
-            for t in terms:
-                f = d.get(t)
-                if f:
-                    s += self.idf[t] * f * (k1 + 1) / (f + k1 * (1 - b + b * self.doc_len[i] / avg))
-            scores[i] = s
+        scores = np.zeros(len(self.chunks), dtype=np.float32)
+        for t in set(_tokens(query)):
+            if t in self.postings:
+                ids, f = self.postings[t]
+                scores[ids] += self.idf[t] * f * (k1 + 1) / (f + k1 * (1 - b + b * self.doc_len[ids] / avg))
         return scores
 
-    def search(self, query: str | list[str], k: int = config.TOP_K):
+    def search(self, query: str | list[str], k: int = config.TOP_K, sans: str | None = None):
         """Passages les plus utiles pour la requête, ou pour [question, traduction française].
 
         Deux classements fusionnés par rang (« reciprocal rank fusion ») : proximité de sens (embeddings, sur toutes les
@@ -119,6 +124,9 @@ class KnowledgeBase:
         q = self.model.embed(queries)
         sem = (self.vectors @ q.T).max(axis=1)
         lex = self._bm25(queries[-1])
+        if sans:  # passages d'une origine écartée (« sans ») : jamais retenus
+            exclus = self.source == sans
+            sem, lex = np.where(exclus, -1.0, sem), np.where(exclus, 0.0, lex)
         lex_norm = lex / lex.max() if lex.max() > 0 else lex
 
         fused = np.zeros(len(self.chunks), dtype=np.float32)
