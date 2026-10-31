@@ -99,9 +99,30 @@ function linkify(text: string) {
 }
 
 /* Mise en forme légère des réponses (le modèle écrit en Markdown) : **gras**, listes « - » ou « 1. », titres « ### ». */
+/* Renvois aux sources « [1](https://…) » (posés par l'API) → petit numéro cliquable qui ouvre la page source. */
+function withRefs(s: string, k: string) {
+  const parts = s.split(/\[([^\]\n]{1,40})\]\((https?:\/\/[^)\s]+)\)/g);
+  return parts.map((p, j) =>
+    j % 3 === 0 ? (
+      <span key={`${k}-${j}`}>{linkify(p)}</span>
+    ) : j % 3 === 1 ? (
+      <a
+        key={`${k}-${j}`}
+        href={parts[j + 1]}
+        target="_blank"
+        rel="noopener noreferrer"
+        title={parts[j + 1]}
+        className="mx-0.5 inline-grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#1f5fff]/10 px-1 align-super text-[10.5px] font-bold leading-none text-[#1f5fff] no-underline hover:bg-[#1f5fff] hover:text-white"
+      >
+        {p}
+      </a>
+    ) : null,
+  );
+}
+
 function renderAnswer(text: string) {
   const inline = (s: string, k: number) =>
-    s.split(/\*\*(.+?)\*\*/g).map((part, j) => (j % 2 ? <strong key={`${k}-${j}`}>{linkify(part)}</strong> : <span key={`${k}-${j}`}>{linkify(part)}</span>));
+    s.split(/\*\*(.+?)\*\*/g).map((part, j) => (j % 2 ? <strong key={`${k}-${j}`}>{withRefs(part, `${k}-${j}`)}</strong> : <span key={`${k}-${j}`}>{withRefs(part, `${k}-${j}`)}</span>));
   return text.split("\n").map((raw, i) => {
     const line = raw.trim();
     if (!line) return <span key={i} className="block h-2" />;

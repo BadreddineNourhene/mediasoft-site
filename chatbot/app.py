@@ -79,6 +79,37 @@ def _inconnu(answer: str) -> bool:
     return debut.startswith(rag.UNKNOWN) or bool(_INCONNU.search(debut))
 
 
+_REF = re.compile(r"\s*\(?\s*(?:sources?\s*:?\s*)?[\[【]\s*(W?\d+(?:\s*[,;]\s*W?\d+)*)\s*[\]】]\s*\)?", re.I)
+
+
+def _citations(answer: str, hits: list[dict], web: list[dict]):
+    """Remplace les renvois du modèle ([1], 【W2】, (source [3])) par des liens Markdown « [n](url) » numérotés dans
+    l'ordre d'apparition ; un renvoi vers une fiche sans page web est retiré. Renvoie (réponse, pages citées)."""
+    order: list[dict] = []
+
+    def url_of(ref: str):
+        i = int(ref.lstrip("Ww")) - 1
+        items = web if ref[0] in "Ww" else hits
+        if 0 <= i < len(items) and items[i].get("url"):
+            return items[i]["url"], items[i].get("title") or items[i]["url"]
+        return None
+
+    def repl(m):
+        links = []
+        for ref in re.split(r"\s*[,;]\s*", m.group(1)):
+            found = url_of(ref)
+            if not found:
+                continue
+            url, title = found
+            if url not in [o["url"] for o in order]:
+                order.append({"title": title, "url": url})
+            n = [o["url"] for o in order].index(url) + 1
+            links.append(f"[{n}]({url})")
+        return (" " + " ".join(dict.fromkeys(links))) if links else ""
+
+    return _REF.sub(repl, answer).strip(), order
+
+
 def _sans_contact_final(answer: str) -> str:
     """Retire le dernier paragraphe s'il s'agit du message de contact (lien de la page Contact)."""
     parts = re.split(r"\n\s*\n", (answer or "").strip())
@@ -153,8 +184,8 @@ async def chat(body: ChatRequest, request: Request):
         raise HTTPException(503, langue.message("indisponible", lang) + fallback)
 
     answer = _sans_contact_final((answer or "").replace(rag.UNKNOWN, "").strip())
-    # Renvois internes aux passages (« [3] », « (source [W1]) ») : sans intérêt pour le visiteur
-    answer = re.sub(r"\s*\((?:source\s*)?\[W?\d+\]\)|\s*\[W?\d+\]", "", answer).strip()
+    # Renvois aux passages (« [3] », « 【W1】 », « (source [2]) ») → petits liens numérotés vers la page source
+    answer, refs = _citations(answer, hits, web)
     if not answer:
         return {"answer": fallback, "sources": [], "lang": lang}
     # Le modèle écrit parfois « Je n'ai pas cette information. » puis répond quand même en détail (avec les pages web) :
@@ -166,6 +197,14 @@ async def chat(body: ChatRequest, request: Request):
     if (unknown or commerciale) and config.CONTACT["formulaire"] not in answer:
         answer += "\n\n" + langue.message("contact", lang)
     # Liens sous la réponse : pages web réellement citées dans la réponse, puis pages du site ; aucun si introuvable
-    cited = [{"title": r["title"], "url": r["url"]} for r in web if r["url"].rstrip("/") in answer]
-    sources = [] if unknown else (cited + [s for s in rag.sources(hits) if s not in cited])[:3]
+    cited = refs + [
+        {"title": r["title"], "url": r["url"]} for r in web if r["url"].rstrip("/") in answer and r["url"] not in {c["url"] for c in refs}
+    ]
+    sources, vus = [], set()
+    for s in [] if unknown else cited + rag.sources(hits):
+        # Même page avec ou sans « / » final : un seul lien
+        if s["url"].rstrip("/") not in vus:
+            vus.add(s["url"].rstrip("/"))
+            sources.append(s)
+    sources = sources[:4]
     return {"answer": answer, "sources": sources, "lang": lang}
