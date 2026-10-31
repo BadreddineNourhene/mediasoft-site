@@ -69,6 +69,38 @@ _INCONNU = re.compile(
 )
 
 
+# Demande d'assistance (bug, problème, « qui contacter ») : la fiche des consultants du logiciel est ajoutée d'office
+ASSISTANCE = re.compile(
+    r"bug|probl[eè]me|erreur|panne|bloqu|ne (marche|fonctionne)|assistance|support|aide|contacter|consultant|qui (dois|peut|peux)|"
+    r"issue|error|problem|help|contact|who |mochkla|mouchkla|ma ye5dem|ma y7el|t3atl|مشكل|خطأ|مساعدة|اتصل|عطل",
+    re.I,
+)
+# Logiciel cité dans la question → intitulé de sa section dans consultants-mediasoft.md (Sage 50 avant Sage)
+LOGICIELS = [
+    (r"divalto", "Divalto Infinity"),
+    (r"sage ?50|ciel", "Sage 50 (Ciel)"),
+    (r"sage", "Sage (Sage 100)"),
+    (r"bitrix", "Bitrix24"),
+    (r"power ?bi", "Power BI"),
+    (r"microsoft|office|outlook|teams|excel|word|onedrive|sharepoint|365", "Microsoft 365"),
+]
+
+
+def _consultants(question: str, hits: list[dict]) -> list[dict]:
+    """Pour une demande d'assistance sur un logiciel nommé, place en tête la fiche de ses consultants Mediasoft."""
+    if not ASSISTANCE.search(question):
+        return hits
+    for motif, label in LOGICIELS:
+        if re.search(motif, question, re.I):
+            fiche = [
+                {**c, "score": 1.0}
+                for c in kb.chunks
+                if c["text"].startswith("Consultants Mediasoft à contacter") and f"Consultants à contacter pour {label}" in c["text"]
+            ]
+            return fiche + [h for h in hits if h["text"] not in {f["text"] for f in fiche}]
+    return hits
+
+
 # Question « comment faire » (procédure) : la réponse est souvent dans l'aide en ligne de l'éditeur
 PROCEDURE = re.compile(
     r"comment|cr[ée]er|cr[ée]ation|param[ée]tr|configur|ajouter|modifier|supprimer|installer|[ée]tapes?|proc[ée]dure|"
@@ -87,7 +119,11 @@ def _inconnu(answer: str) -> bool:
 
 
 # Espaces seulement autour du renvoi (pas de saut de ligne) : sinon l'étape suivante d'une liste se colle au lien
-_REF = re.compile(r"[ \t]*\(?[ \t]*(?:sources?[ \t]*:?[ \t]*)?[\[【][ \t]*(W?\d+(?:[ \t]*[,;][ \t]*W?\d+)*)[ \t]*[\]】][ \t]*\)?", re.I)
+_REF = re.compile(
+    r"[ \t]*\(?[ \t]*(?:(?:voir|cf\.?|see)[ \t]+)?(?:(?:la|the)[ \t]+)?(?:sources?[ \t]*:?[ \t]*)?"
+    r"[\[【][ \t]*(W?\d+(?:[ \t]*[,;][ \t]*W?\d+)*)[ \t]*[\]】][ \t]*\)?",
+    re.I,
+)
 
 
 def _citations(answer: str, hits: list[dict], web: list[dict]):
@@ -113,7 +149,11 @@ def _citations(answer: str, hits: list[dict], web: list[dict]):
                 order.append({"title": title, "url": url})
             n = [o["url"] for o in order].index(url) + 1
             links.append(f"[{n}]({url})")
-        return (" " + " ".join(dict.fromkeys(links))) if links else ""
+        # Le renvoi était entouré d'espaces (milieu de phrase) : on garde un espace après, sinon les mots se collent
+        apres = " " if m.group(0)[-1:] in (" ", "\t") else ""
+        if links:
+            return " " + " ".join(dict.fromkeys(links)) + apres
+        return " " if apres and m.group(0)[:1] in (" ", "\t") else ""
 
     return _REF.sub(repl, answer).strip(), order
 
@@ -158,7 +198,7 @@ async def chat(body: ChatRequest, request: Request):
     queries = [query]
     if detectee != "fr":
         queries.append(await llm.translate_query(query))
-    hits = kb.search(queries)
+    hits = _consultants(f"{question} {queries[-1]}", kb.search(queries))
 
     history = [m.model_dump() for m in body.history]
     nom_langue = langue.nom(detectee, body.lang)

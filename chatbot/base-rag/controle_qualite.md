@@ -1,6 +1,6 @@
 # Contrôle qualité de la base
 
-627 entrées.
+636 entrées.
 
 ## Entrées par logiciel et fiabilité
 
@@ -10,7 +10,7 @@
 - Excel — officielle : 4
 - Mediasoft — a_confirmer_mediasoft : 14
 - Mediasoft — officielle : 101
-- Mediasoft — source_mediasoft : 7
+- Mediasoft — source_mediasoft : 16
 - Microsoft 365 — officielle : 25
 - OneDrive — officielle : 10
 - Outlook — officielle : 32
@@ -91,3 +91,12 @@
 - mediasoft-problemes-frequents-012 : Microsoft 365 : Outlook ne reçoit plus les e-mails ou ne se synchronise pas — Rédigé dans connaissances/problemes-frequents.md
 - mediasoft-problemes-frequents-013 : Microsoft 365 : Teams, OneDrive et licences — Rédigé dans connaissances/problemes-frequents.md
 - mediasoft-problemes-frequents-014 : Power BI : le rapport ne s'actualise pas — Rédigé dans connaissances/problemes-frequents.md
+- mediasoft-consultants-mediasoft-001 : Consultants Mediasoft à contacter par logiciel et par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-002 : Consultants à contacter pour Divalto Infinity : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-003 : Consultants à contacter pour Sage (Sage 100) : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-004 : Consultants à contacter pour Sage 50 (Ciel) : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-005 : Consultants à contacter pour Bitrix24 : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-006 : Consultants à contacter pour Microsoft 365 : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-007 : Consultants à contacter pour Power BI (Business Intelligence) : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-008 : Consultants à contacter pour l'informatique technique (serveurs, réseau, installation) : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md
+- mediasoft-consultants-mediasoft-009 : Consultants à contacter pour les sites et applications web : bug, problème ou assistance, par module — Rédigé dans connaissances/consultants-mediasoft.md

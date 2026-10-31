@@ -50,6 +50,7 @@ MD = {
     "sage-gamme.md": ("Sage (gamme)", "Gamme Sage", "Produits", "https://www.mediasoft.tn/sage.tn/", "officielle"),
     "complements-site.md": ("Mediasoft", "Produits et services", "Compléments", "https://mediasoft.com.tn/", "officielle"),
     "web-et-ia.md": ("Mediasoft", "Web et IA", "Développement sur mesure", "https://www.mediasoft.tn/", "officielle"),
+    "consultants-mediasoft.md": ("Mediasoft", "Support", "Consultants par module", "Base Divalto Mediasoft (help desk)", "source_mediasoft"),
 }
 
 

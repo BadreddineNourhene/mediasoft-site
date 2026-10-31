@@ -1,6 +1,9 @@
 # Inventaire des sources
 
-Généré le 2026-10-30 par `build_base.py`.
+Généré le 2026-10-31 par `build_base.py`.
+
+## Base Divalto Mediasoft (help desk)  (1 pages)
+- Base Divalto Mediasoft (help desk)
 
 ## Rédaction Mediasoft  (1 pages)
 - Rédaction Mediasoft
