@@ -5,7 +5,7 @@ Pour un problème, un bug ou une question sur un module précis, le client peut 
 ## Consultants à contacter pour Divalto Infinity : bug, problème ou assistance, par module
 
 Consultants Mediasoft de Divalto Infinity, par module (écrire au(x) consultant(s) de la ligne du module concerné) :
-- Administration (installation, utilisateurs, serveur) : Hamed Lajnef (lajnef.hamed@mediasoft.tn), Rakia Arbia Borgi (borgi.rakia@mediasoft.tn), Ammar Guitouni (guitouni.ammar@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Amir Smati (smati.amir@mediasoft.tn), Habib Njeh (habib.njeh@mediasoft.com.tn), Mayar Nefzi (nefzi.mayar@mediasoft.com.tn), Walid Borgi (borgi.walid@mediasoft.tn)
 - Gestion à l'affaire : Hamed Lajnef (lajnef.hamed@mediasoft.tn), Amir Smati (smati.amir@mediasoft.tn)
 - Comptabilité : Hamed Lajnef (lajnef.hamed@mediasoft.tn), Rakia Arbia Borgi (borgi.rakia@mediasoft.tn), Amir Smati (smati.amir@mediasoft.tn)
 - ERP (paramétrage général) : Hamed Lajnef (lajnef.hamed@mediasoft.tn), Rakia Arbia Borgi (borgi.rakia@mediasoft.tn), Ammar Guitouni (guitouni.ammar@mediasoft.tn)
@@ -16,7 +16,7 @@ Consultants Mediasoft de Divalto Infinity, par module (écrire au(x) consultant(
 ## Consultants à contacter pour Sage (Sage 100) : bug, problème ou assistance, par module
 
 Consultants Mediasoft de Sage (Sage 100), par module (écrire au(x) consultant(s) de la ligne du module concerné) :
-- Administration (installation, utilisateurs, serveur) : Khaoula Ben Nasser (bn.khaoula@mediasoft.tn), Jalel Hermassi (hermassi.jalel@mediasoft.tn), Omeima Harrabi (harrabi.omeima@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Khaoula Ben Nasser (bn.khaoula@mediasoft.tn), Jalel Hermassi (hermassi.jalel@mediasoft.tn), Omeima Harrabi (harrabi.omeima@mediasoft.tn), Walid Borgi (borgi.walid@mediasoft.tn)
 - Gestion à l'affaire : Jalel Hermassi (hermassi.jalel@mediasoft.tn), Omeima Harrabi (harrabi.omeima@mediasoft.tn), Oussama Mamou (mamou.oussama@mediasoft.tn)
 - CRM : Rakia Arbia Borgi (borgi.rakia@mediasoft.tn), Khaoula Ben Nasser (bn.khaoula@mediasoft.tn)
 - Comptabilité : Jalel Hermassi (hermassi.jalel@mediasoft.tn), Khaoula Ben Nasser (bn.khaoula@mediasoft.tn), Omeima Harrabi (harrabi.omeima@mediasoft.tn)
@@ -30,22 +30,24 @@ Consultants Mediasoft de Sage (Sage 100), par module (écrire au(x) consultant(s
 Consultants Mediasoft de Sage 50 (Ciel), par module (écrire au(x) consultant(s) de la ligne du module concerné) :
 - Comptabilité : Khaoula Ben Nasser (bn.khaoula@mediasoft.tn), Omeima Harrabi (harrabi.omeima@mediasoft.tn)
 - Gestion commerciale : Omeima Harrabi (harrabi.omeima@mediasoft.tn), Khaoula Ben Nasser (bn.khaoula@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Walid Borgi (borgi.walid@mediasoft.tn)
 
 ## Consultants à contacter pour Bitrix24 : bug, problème ou assistance, par module
 
 Consultants Mediasoft de Bitrix24, par module (écrire au(x) consultant(s) de la ligne du module concerné) :
 - CRM : Rakia Arbia Borgi (borgi.rakia@mediasoft.tn), Noureddine Bouabidi (bouabidi.noureddine@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Walid Borgi (borgi.walid@mediasoft.tn)
 
 ## Consultants à contacter pour Microsoft 365 : bug, problème ou assistance, par module
 
 Consultants Mediasoft de Microsoft 365, par module (écrire au(x) consultant(s) de la ligne du module concerné) :
-- Administration (installation, utilisateurs, serveur) : Moez Bellasfer (bellasfer.moez@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Moez Bellasfer (bellasfer.moez@mediasoft.tn), Walid Borgi (borgi.walid@mediasoft.tn)
 - Gestion commerciale : Moez Bellasfer (bellasfer.moez@mediasoft.tn), Rakia Arbia Borgi (borgi.rakia@mediasoft.tn)
 
 ## Consultants à contacter pour Power BI (Business Intelligence) : bug, problème ou assistance, par module
 
 Consultants Mediasoft de Power BI (Business Intelligence), par module (écrire au(x) consultant(s) de la ligne du module concerné) :
-- Administration (installation, utilisateurs, serveur) : Mahdi Barhoumi (barhoumi.mahdi@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Mahdi Barhoumi (barhoumi.mahdi@mediasoft.tn), Walid Borgi (borgi.walid@mediasoft.tn)
 - ERP (paramétrage général) : Nahed Mguiss (mguiss.nahed@mediasoft.tn)
 - Gestion commerciale : Nahed Mguiss (mguiss.nahed@mediasoft.tn), Mahdi Barhoumi (barhoumi.mahdi@mediasoft.tn)
 - Paie : Mahdi Barhoumi (barhoumi.mahdi@mediasoft.tn)
@@ -53,10 +55,11 @@ Consultants Mediasoft de Power BI (Business Intelligence), par module (écrire a
 ## Consultants à contacter pour l'informatique technique (serveurs, réseau, installation) : bug, problème ou assistance, par module
 
 Consultants Mediasoft de l'informatique technique (serveurs, réseau, installation), par module (écrire au(x) consultant(s) de la ligne du module concerné) :
-- Administration (installation, utilisateurs, serveur) : Moez Bellasfer (bellasfer.moez@mediasoft.tn), Oussama Mamou (mamou.oussama@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Moez Bellasfer (bellasfer.moez@mediasoft.tn), Oussama Mamou (mamou.oussama@mediasoft.tn), Walid Borgi (borgi.walid@mediasoft.tn)
 - ERP (paramétrage général) : Moez Bellasfer (bellasfer.moez@mediasoft.tn), Mhamdi Ines (mhamdi.ines@mediasoft.tn)
 
 ## Consultants à contacter pour les sites et applications web : bug, problème ou assistance, par module
 
 Consultants Mediasoft de les sites et applications web, par module (écrire au(x) consultant(s) de la ligne du module concerné) :
 - CRM : Ammar Guitouni (guitouni.ammar@mediasoft.tn), Oussama Mamou (mamou.oussama@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Walid Borgi (borgi.walid@mediasoft.tn)

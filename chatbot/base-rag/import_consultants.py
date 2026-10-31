@@ -35,6 +35,17 @@ MODULES = {
     "Affaire": "Gestion à l'affaire",
     "Administration": "Administration (installation, utilisateurs, serveur)",
 }
+# Choix de l'équipe Mediasoft, prioritaires sur le calcul à partir des tickets : (produit, module) → consultants
+MANUEL = {
+    ("Divalto", "Administration (installation, utilisateurs, serveur)"): [
+        {"nom": "Amir Smati", "email": "smati.amir@mediasoft.tn"},
+        {"nom": "Habib Njeh", "email": "habib.njeh@mediasoft.com.tn"},
+        {"nom": "Mayar Nefzi", "email": "nefzi.mayar@mediasoft.com.tn"},
+    ],
+}
+# Consultant(s) ajouté(s) à l'Administration de TOUS les logiciels (choix de l'équipe Mediasoft)
+ADMIN_TOUS = [{"nom": "Walid Borgi", "email": "borgi.walid@mediasoft.tn"}]
+ADMIN = "Administration (installation, utilisateurs, serveur)"
 SUPPORT = (
     "Le support Mediasoft reste joignable par le help desk (https://helpdesk-ms.com/), au +216 31 435 825 (Tunis), "
     "au +216 73 822 546 (Sousse), sur WhatsApp au +216 52 444 444 ou à info@mediasoft.tn."
@@ -78,6 +89,11 @@ def fetch():
         if all(c["email"] != r["email"] for c in lst) and len(lst) < 3:
             nom = (u.get("nom") or r["email"].split("@")[0].replace(".", " ")).title()
             lst.append({"nom": nom, "email": r["email"], "n": r["n"]})
+    for (produit, module), consultants in MANUEL.items():
+        out.setdefault(produit, {})[module] = [{**c, "n": 99} for c in consultants]
+    for produit in PRODUITS:
+        lst = out.setdefault(produit, {}).setdefault(ADMIN, [])
+        lst += [{**c, "n": 99} for c in ADMIN_TOUS if c["email"] not in {x["email"] for x in lst}]
     return out
 
 
