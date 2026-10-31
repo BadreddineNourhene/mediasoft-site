@@ -20,7 +20,6 @@ type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; er
 const TEXTS = {
   fr: {
     welcome: "Bonjour ! Je suis l’assistant Mediasoft. Posez-moi vos questions sur nos solutions : Sage, Divalto, Bitrix24, Microsoft 365, Power BI, applications web et agents IA.",
-    suggestions: ["Que fait Mediasoft ?", "À quoi sert Divalto ?", "Sage 100 ou Sage 50c ?", "Pourquoi Power BI ?"],
     title: "Assistant Mediasoft",
     notice: "Réponses générées par IA, à vérifier auprès d’un conseiller",
     more: "En savoir plus",
@@ -36,7 +35,6 @@ const TEXTS = {
   },
   en: {
     welcome: "Hello! I’m the Mediasoft assistant. Ask me about our solutions: Sage, Divalto, Bitrix24, Microsoft 365, Power BI, web applications and AI agents.",
-    suggestions: ["What does Mediasoft do?", "What is Divalto for?", "Sage 100 or Sage 50c?", "Why Power BI?"],
     title: "Mediasoft assistant",
     notice: "AI-generated answers, to be confirmed with an advisor",
     more: "Learn more",
@@ -52,7 +50,6 @@ const TEXTS = {
   },
   ar: {
     welcome: "مرحبًا! أنا مساعد ميدياسوفت. اسألني عن حلولنا: Sage وDivalto وBitrix24 وMicrosoft 365 وPower BI وتطبيقات الويب ووكلاء الذكاء الاصطناعي.",
-    suggestions: ["ماذا تقدم ميدياسوفت؟", "ما فائدة Divalto؟", "Sage 100 أم Sage 50c؟", "لماذا Power BI؟"],
     title: "مساعد ميدياسوفت",
     notice: "إجابات مولّدة بالذكاء الاصطناعي، يُرجى التأكد منها مع مستشار",
     more: "لمعرفة المزيد",
@@ -290,15 +287,6 @@ export default function ChatBot() {
             {busy && (
               <div className="flex items-center gap-2 ps-10 text-[13.5px] text-[#0b1b33]/60">
                 <Loader2 size={16} className="animate-spin" aria-hidden /> {T.typing}
-              </div>
-            )}
-            {msgs.length === 0 && !busy && (
-              <div className="grid gap-2 ps-10 sm:grid-cols-2">
-                {T.suggestions.map((s) => (
-                  <button key={s} type="button" onClick={() => ask(s)} className="rounded-2xl border border-[#1f5fff]/20 bg-white px-4 py-3 text-start text-[14px] font-medium text-[#1f5fff] shadow-sm transition-colors hover:border-[#1f5fff]/50 hover:bg-[#eef3ff]">
-                    {s}
-                  </button>
-                ))}
               </div>
             )}
             </div>
