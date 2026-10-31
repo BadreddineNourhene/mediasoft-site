@@ -297,7 +297,7 @@ export default function ChatBot() {
             aria-modal="true"
             aria-label={T.title}
             dir={lang === "ar" ? "rtl" : "ltr"}
-            className="fixed inset-y-0 left-0 z-[90] flex h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-[24px_0_80px_-20px_rgba(0,25,58,0.6)] motion-safe:animate-[chatbot-in_0.3s_cubic-bezier(0.2,0.8,0.2,1)] print:hidden sm:w-[min(500px,calc(100vw-48px))] sm:rounded-r-[28px]"
+            className="fixed inset-y-0 left-0 z-[90] flex h-[100dvh] w-full flex-col overflow-hidden bg-white shadow-[24px_0_80px_-20px_rgba(0,25,58,0.6)] motion-safe:animate-[chatbot-in_0.3s_cubic-bezier(0.2,0.8,0.2,1)] print:hidden sm:w-[min(760px,calc(100vw-48px))] sm:rounded-r-[28px]"
           >
             <header className="flex items-center gap-3 bg-gradient-to-br from-[#00193a] via-[#0b2a66] to-[#1f5fff] px-5 pb-5 pt-[max(1.25rem,env(safe-area-inset-top))] text-white">
               <span className="relative grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15 ring-1 ring-white/25">
@@ -330,7 +330,7 @@ export default function ChatBot() {
                 )}
                 <div
                   dir="auto"
-                  className={`max-w-[85%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[13.5px] leading-relaxed ${
+                  className={`max-w-[90%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[13.5px] leading-relaxed ${
                     m.role === "user" ? "rounded-br-md bg-[#1f5fff] text-white" : m.error ? "rounded-bl-md bg-[#fff1ef] text-[#8a2a14]" : "rounded-bl-md bg-white text-[#0b1b33] shadow-sm ring-1 ring-[#00193a]/10"
                   }`}
                 >
