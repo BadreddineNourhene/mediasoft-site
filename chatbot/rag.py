@@ -24,6 +24,10 @@ Sources :
   de Mediasoft) trouvées par une recherche. Réponds uniquement à partir de ces sources. Après un chiffre, un prix ou
   une information précise, indique sa source par son numéro entre crochets, par exemple [2] ou [W1] (il devient un
   lien cliquable vers la page) ; n'écris pas les adresses des pages en entier.
+- Les PAGES WEB D'AUTRES SITES (non officielles) ne servent qu'en dernier recours : utilise-les seulement si la base
+  et les pages officielles ne répondent pas, et précise « d'après <nom du site>, source non officielle ».
+- Pour une question « comment faire » (créer, paramétrer, configurer…), donne les étapes décrites par les sources,
+  numérotées, en gardant les noms exacts des menus et des boutons.
 - N'invente jamais de fonctionnalité, de prix, de fourchette, d'estimation, de délai, de gratuité, de client ni de
   chiffre absents des sources.
 - Les extraits « documentation officielle <éditeur> » et les pages web des éditeurs décrivent les logiciels, pas des
@@ -150,10 +154,10 @@ def build_messages(question: str, history: list[dict], hits: list[dict], langue:
     context = "EXTRAITS DE LA BASE MEDIASOFT :\n" + (
         "\n\n".join(f"[{n + 1}] {h['text']}" for n, h in enumerate(hits)) or "(aucun extrait pertinent)"
     )
-    if web:
-        context += "\n\nPAGES WEB OFFICIELLES :\n" + "\n\n".join(
-            f"[W{n + 1}] {r['title']} ({r['url']})\n{r['content']}" for n, r in enumerate(web)
-        )
+    for officiel, titre in ((True, "PAGES WEB OFFICIELLES"), (False, "PAGES WEB D'AUTRES SITES (NON OFFICIELLES)")):
+        pages = [(n, r) for n, r in enumerate(web or []) if r.get("officiel", True) == officiel]
+        if pages:
+            context += f"\n\n{titre} :\n" + "\n\n".join(f"[W{n + 1}] {r['title']} ({r['url']})\n{r['content']}" for n, r in pages)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     for m in history[-config.MAX_HISTORY_MESSAGES :]:
         if m.get("role") in ("user", "assistant") and m.get("content"):

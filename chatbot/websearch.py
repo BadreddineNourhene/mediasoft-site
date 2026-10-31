@@ -27,11 +27,12 @@ def enabled():
     return bool(config.TAVILY_API_KEY)
 
 
-async def search(query: str, max_results: int = 5):
-    """Pages officielles pertinentes : [{"title", "url", "content"}], ou [] si rien ou en cas d'erreur."""
+async def search(query: str, max_results: int = 5, officiel: bool = True):
+    """Pages pertinentes : [{"title", "url", "content", "officiel"}], ou [] si rien ou en cas d'erreur.
+    officiel=True : sites officiels seulement (WEB_SEARCH_DOMAINS) ; False : tout le web (dernier recours)."""
     if not enabled():
         return []
-    key = query.strip().lower()
+    key = f"{officiel}|{query.strip().lower()}"
     hit = _cache.get(key)
     if hit and time.time() - hit[0] < CACHE_SECONDS:
         return hit[1]
@@ -44,13 +45,18 @@ async def search(query: str, max_results: int = 5):
                     "query": query,
                     "search_depth": "basic",
                     "max_results": max_results,
-                    "include_domains": config.WEB_SEARCH_DOMAINS,
                     "include_answer": False,
+                    **({"include_domains": config.WEB_SEARCH_DOMAINS} if officiel else {}),
                 },
             )
         r.raise_for_status()
         results = [
-            {"title": x.get("title") or x.get("url"), "url": x["url"], "content": (x.get("content") or "")[:1500]}
+            {
+                "title": x.get("title") or x.get("url"),
+                "url": x["url"],
+                "content": (x.get("content") or "")[:1500],
+                "officiel": officiel,
+            }
             for x in r.json().get("results", [])
             if x.get("url") and x.get("content") and not COMMUNAUTE.search(x["url"])
         ]

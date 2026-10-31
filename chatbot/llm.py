@@ -134,6 +134,30 @@ async def translate_query(text):
     return out if out and len(out) < 500 else text
 
 
+async def search_query(question, context=""):
+    """Transforme une question de visiteur (formules de politesse, fautes, autre langue) en requête de recherche web
+    courte et précise, en français, avec le nom du logiciel. En cas d'échec, renvoie la question telle quelle."""
+    messages = [
+        {
+            "role": "system",
+            "content": "Écris une requête de recherche web de 4 à 8 mots, en français, pour trouver la réponse à la question "
+            "dans l'aide en ligne du logiciel. Commence par le nom exact du logiciel (Sage 100, Sage 50, Divalto "
+            "Infinity, Bitrix24, Outlook, Teams, Power BI…), puis l'action et l'objet avec le vocabulaire du logiciel "
+            "(dans un ERP : « fiche article » pour un produit, « fiche client », « pièce de vente », « devis »…). "
+            "Retire les formules de politesse, corrige les fautes, n'ajoute pas de mots comme « documentation », "
+            "« officielle », « tutoriel » ou « guide ». Exemple : « bonjour aidez-moi à créer un article sur divalto » → "
+            "« Divalto Infinity créer une fiche article ». Réponds uniquement par la requête, sans guillemets.",
+        },
+        {"role": "user", "content": f"{context}\nQuestion : {question}".strip()},
+    ]
+    try:
+        out = await generate(messages, [])
+    except LLMError:
+        return question
+    out = (out or "").strip().strip('"«» ').splitlines()[0] if out else ""
+    return out if 3 <= len(out) <= 200 else question
+
+
 async def generate(messages, hits):
     errors = []
     start = time.time()

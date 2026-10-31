@@ -35,7 +35,12 @@ WEB_SEARCH_DOMAINS = [
     d.strip()
     for d in os.getenv(
         "WEB_SEARCH_DOMAINS",
-        "mediasoft.tn,mediasoft.com.tn,sage.com,divalto.com,bitrix24.com,bitrix24.fr,helpdesk.bitrix24.com,"
+        "mediasoft.tn,mediasoft.com.tn,"
+        # Sage : site, aide en ligne Sage 100, base de connaissances
+        "sage.com,sage100cloud.online-help.sage.fr,fr-kb.sage.com,"
+        # Divalto : site et aide en ligne officielle (Confluence)
+        "divalto.com,divalto.atlassian.net,"
+        "bitrix24.com,bitrix24.fr,helpdesk.bitrix24.com,helpdesk.bitrix24.fr,apidocs.bitrix24.com,"
         "support.microsoft.com,learn.microsoft.com,microsoft.com",
     ).split(",")
     if d.strip()
@@ -57,7 +62,7 @@ MIN_SCORE = float(os.getenv("MIN_SCORE", "0.25"))
 # Score minimal (sens) d'un passage pour afficher son lien « En savoir plus » sous la réponse
 MIN_SOURCE_SCORE = float(os.getenv("MIN_SOURCE_SCORE", "0.5"))
 # En dessous de ce score (sens) pour le meilleur passage, la base est jugée peu pertinente : recherche web d'emblée
-WEB_MIN_SCORE = float(os.getenv("WEB_MIN_SCORE", "0.45"))
+WEB_MIN_SCORE = float(os.getenv("WEB_MIN_SCORE", "0.55"))
 
 # Garde-fous
 MAX_QUESTION_CHARS = 600

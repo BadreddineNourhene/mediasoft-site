@@ -69,6 +69,13 @@ _INCONNU = re.compile(
 )
 
 
+# Question « comment faire » (procédure) : la réponse est souvent dans l'aide en ligne de l'éditeur
+PROCEDURE = re.compile(
+    r"comment|cr[ée]er|cr[ée]ation|param[ée]tr|configur|ajouter|modifier|supprimer|installer|[ée]tapes?|proc[ée]dure|"
+    r"how (do|to|can)|create|set ?up|configure|install|steps?|kifech|kifeh|كيف|طريقة|خطوات",
+    re.I,
+)
+
 # Logiciel nommé dans une réponse : sert à préciser la recherche web des questions de suivi
 PRODUIT = re.compile(r"Sage \d+\w*(?: Ciel)?|Sage [A-Z][\w-]+|Divalto(?: Infinity| weavy)?|Bitrix24|Microsoft 365|Power BI")
 
@@ -79,7 +86,8 @@ def _inconnu(answer: str) -> bool:
     return debut.startswith(rag.UNKNOWN) or bool(_INCONNU.search(debut))
 
 
-_REF = re.compile(r"\s*\(?\s*(?:sources?\s*:?\s*)?[\[【]\s*(W?\d+(?:\s*[,;]\s*W?\d+)*)\s*[\]】]\s*\)?", re.I)
+# Espaces seulement autour du renvoi (pas de saut de ligne) : sinon l'étape suivante d'une liste se colle au lien
+_REF = re.compile(r"[ \t]*\(?[ \t]*(?:sources?[ \t]*:?[ \t]*)?[\[【][ \t]*(W?\d+(?:[ \t]*[,;][ \t]*W?\d+)*)[ \t]*[\]】][ \t]*\)?", re.I)
 
 
 def _citations(answer: str, hits: list[dict], web: list[dict]):
@@ -161,24 +169,39 @@ async def chat(body: ChatRequest, request: Request):
     # Base peu pertinente (meilleur score de sens faible) : recherche web d'emblée aussi
     base_faible = not hits or max(h.get("score", 0) for h in hits) < config.WEB_MIN_SCORE
     # Question de suivi (« et ça coûte combien ? ») : la recherche web reprend le logiciel cité dans la réponse précédente
-    web_query = queries[-1]
     last = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
     produit = PRODUIT.search(last) if len(question) < 60 else None
-    if produit and produit.group(0).lower() not in web_query.lower():
-        web_query = f"{produit.group(0)} {web_query}"
+    contexte = f"Logiciel dont il est question : {produit.group(0)}" if produit else ""
+    # « Comment faire » (créer, configurer…) : la documentation des éditeurs est sur le web, recherche d'emblée
+    procedure = bool(PROCEDURE.search(question))
+    sq = None  # requête web, reformulée par le modèle (sans politesses, avec le nom du logiciel) au premier besoin
+
+    async def requete():
+        nonlocal sq
+        if sq is None:
+            sq = await llm.search_query(question, contexte)
+        return sq
+
     web = []
     try:
-        if websearch.enabled() and (commerciale or base_faible):
-            web = await websearch.search(web_query)
+        if websearch.enabled() and (commerciale or base_faible or procedure):
+            web = await websearch.search(await requete())
         answer = await llm.generate(rag.build_messages(question, history, hits, nom_langue, web), hits)
         unknown = _inconnu(answer)
-        # Rien dans la base : recherche web (si pas déjà faite), puis nouvelle réponse avec les pages trouvées
-        if unknown and websearch.enabled() and not web:
-            web = await websearch.search(web_query)
-            if web:
+        # Toujours rien : sites officiels (si pas encore cherchés), puis tout le web en dernier recours
+        if unknown and websearch.enabled():
+            for officiel in (True, False):
+                if officiel and web:
+                    continue
+                vus = {r["url"] for r in web}
+                plus = [r for r in await websearch.search(await requete(), officiel=officiel) if r["url"] not in vus]
+                if not plus:
+                    continue
+                web += plus
                 retry = await llm.generate(rag.build_messages(question, history, hits, nom_langue, web), hits)
                 if retry and not _inconnu(retry):
                     answer, unknown = retry, False
+                    break
     except llm.LLMError as e:
         print(f"[chatbot] erreur du modèle : {e}")
         raise HTTPException(503, langue.message("indisponible", lang) + fallback)
