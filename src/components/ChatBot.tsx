@@ -164,45 +164,54 @@ function ChoiceButtons({ c, onSend, disabled }: { c: Choices; onSend: (q: string
   const [sel, setSel] = useState(() => c.questions.map((q) => q.options[0]));
   const direct = c.questions.length === 1 && !c.submit;
   const fill = (values: string[]) => values.reduce((t, v, n) => t.replaceAll(`{${n}}`, v), c.template ?? "{0}");
+  // Carte comme celle de ChatGPT : options en liste verticale (boutons radio pour un formulaire, lignes cliquables
+  // pour une simple précision), filet entre les questions, bouton noir sur toute la largeur, conseil sous la carte
   return (
-    <div className="ms-10 space-y-3">
-      {c.questions.map((q, i) => (
-        <div key={i} role={direct ? undefined : "radiogroup"} aria-label={q.label}>
-          {q.label && <p className="mb-1.5 text-[12.5px] font-semibold text-[#0b1b33]">{q.label}</p>}
-          <div className="flex flex-wrap gap-1.5">
-            {q.options.map((o) => {
-              const on = !direct && sel[i] === o;
-              return (
-                <button
-                  key={o}
-                  type="button"
-                  disabled={disabled}
-                  role={direct ? undefined : "radio"}
-                  aria-checked={direct ? undefined : on}
-                  onClick={() => (direct ? onSend(fill([o])) : setSel((s) => s.map((v, n) => (n === i ? o : v))))}
-                  className={`rounded-full border px-3 py-1.5 text-start text-[12.5px] font-medium leading-snug transition-colors disabled:opacity-50 ${
-                    on ? "border-[#1f5fff] bg-[#1f5fff] text-white" : "border-[#1f5fff]/30 bg-white text-[#1f5fff] hover:border-[#1f5fff] hover:bg-[#1f5fff]/5"
-                  }`}
-                >
-                  {o}
-                </button>
-              );
-            })}
+    <div className="ms-10 max-w-[90%] space-y-3">
+      <div className="rounded-2xl border border-[#00193a]/12 bg-white p-4 text-[13px] text-[#0b1b33] shadow-sm">
+        {c.questions.map((q, i) => (
+          <div key={i} role={direct ? undefined : "radiogroup"} aria-label={q.label} className={i ? "mt-3 border-t border-[#00193a]/10 pt-3" : ""}>
+            {q.label && <p className="mb-2 font-semibold">{q.label}</p>}
+            <div className="flex flex-col">
+              {q.options.map((o) => {
+                const on = !direct && sel[i] === o;
+                return (
+                  <button
+                    key={o}
+                    type="button"
+                    disabled={disabled}
+                    role={direct ? undefined : "radio"}
+                    aria-checked={direct ? undefined : on}
+                    onClick={() => (direct ? onSend(fill([o])) : setSel((s) => s.map((v, n) => (n === i ? o : v))))}
+                    className="group flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-start leading-snug transition-colors hover:bg-[#f4f7fb] disabled:opacity-50"
+                  >
+                    {direct ? (
+                      <span className="grid h-4 w-4 shrink-0 place-items-center text-[#1f5fff]" aria-hidden>→</span>
+                    ) : (
+                      <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 ${on ? "border-[#0b1b33]" : "border-[#00193a]/25"}`} aria-hidden>
+                        {on && <span className="h-2 w-2 rounded-full bg-[#0b1b33]" />}
+                      </span>
+                    )}
+                    <span className={direct ? "group-hover:text-[#1f5fff]" : ""}>{o}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
-      {/* « Mon conseil » : sous les choix, avant le bouton */}
-      {c.note && <div className="rounded-2xl bg-[#1f5fff]/5 px-4 py-2.5 text-[13px] leading-relaxed text-[#0b1b33] ring-1 ring-[#1f5fff]/15">{renderAnswer(c.note)}</div>}
-      {c.submit && (
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => onSend(fill(sel))}
-          className="rounded-full bg-gradient-to-r from-[#1f5fff] to-[#3d8bff] px-5 py-2.5 text-[13.5px] font-bold text-white shadow-[0_8px_20px_-6px_rgba(31,95,255,0.7)] transition-transform hover:scale-[1.02] disabled:opacity-50"
-        >
-          {c.submit}
-        </button>
-      )}
+        ))}
+        {c.submit && (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => onSend(fill(sel))}
+            className="mt-3 w-full rounded-full bg-[#0b1b33] px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-[#1f5fff] disabled:opacity-50"
+          >
+            {c.submit}
+          </button>
+        )}
+      </div>
+      {/* « Mon conseil » : sous la carte */}
+      {c.note && <div className="px-1 text-[13px] leading-relaxed text-[#0b1b33]">{renderAnswer(c.note)}</div>}
     </div>
   );
 }

@@ -233,6 +233,21 @@ async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, la
     return {"answer": _liens_connus(answer), "sources": [], "lang": lang}
 
 
+# Dernière ligne « CHOIX : a | b | c » écrite par le modèle quand une précision est utile → boutons sous la réponse
+_CHOIX = re.compile(r"^\W*(?:CHOIX|CHOICES?|خيارات)\W*:\s*(.+)$", re.I | re.M)
+
+
+def _choix(answer: str):
+    """Retire les lignes « CHOIX : … » de la réponse et en fait des boutons (la dernière ligne trouvée)."""
+    trouves = _CHOIX.findall(answer)
+    if not trouves:
+        return answer, None
+    options = [o.strip(" *.«»\"") for o in trouves[-1].split("|")]
+    options = list(dict.fromkeys(o for o in options if 0 < len(o) <= 80))[:5]
+    answer = _CHOIX.sub("", answer).strip()
+    return answer, ({"questions": [{"options": options}]} if len(options) >= 2 else None)
+
+
 _LIEN = re.compile(r"\[([^\]\n]+)\]\((https?://[^)\s]+)\)")
 
 
@@ -343,6 +358,7 @@ async def chat(body: ChatRequest, request: Request):
     answer = _sans_contact_final((answer or "").replace(rag.UNKNOWN, "").strip())
     # Renvois aux passages (« [3] », « 【W1】 », « (source [2]) ») → petits liens numérotés vers la page source
     answer, refs = _citations(answer, hits, web)
+    answer, choices = _choix(answer)
     if not answer:
         return {"answer": fallback, "sources": [], "lang": lang}
     # Le modèle écrit parfois « Je n'ai pas cette information. » puis répond quand même en détail (avec les pages web) :
@@ -364,4 +380,4 @@ async def chat(body: ChatRequest, request: Request):
             vus.add(s["url"].rstrip("/"))
             sources.append(s)
     sources = sources[:4]
-    return {"answer": answer, "sources": sources, "lang": lang}
+    return {"answer": answer, "sources": sources, "lang": lang} | ({"choices": choices} if choices else {})
