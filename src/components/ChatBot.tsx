@@ -16,7 +16,7 @@ const STORE = "ms-chatbot-v2";
 type Source = { title: string; url: string };
 /* Boutons proposés sous une réponse (envoyés par l'API) : une seule question sans « submit » → un clic envoie l'option
    (ou « template » où {0} est remplacé) ; sinon un choix par question puis « submit » envoie le template rempli. */
-type Choices = { questions: { label?: string; options: string[] }[]; submit?: string; template?: string };
+type Choices = { questions: { label?: string; options: string[] }[]; note?: string; submit?: string; template?: string };
 type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; error?: boolean; choices?: Choices };
 
 /* Textes de la bulle selon la langue du navigateur ; l'assistant, lui, répond dans la langue de chaque question. */
@@ -191,6 +191,8 @@ function ChoiceButtons({ c, onSend, disabled }: { c: Choices; onSend: (q: string
           </div>
         </div>
       ))}
+      {/* « Mon conseil » : sous les choix, avant le bouton */}
+      {c.note && <div className="rounded-2xl bg-[#1f5fff]/5 px-4 py-2.5 text-[13px] leading-relaxed text-[#0b1b33] ring-1 ring-[#1f5fff]/15">{renderAnswer(c.note)}</div>}
       {c.submit && (
         <button
           type="button"

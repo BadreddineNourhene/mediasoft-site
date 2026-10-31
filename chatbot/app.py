@@ -224,7 +224,7 @@ async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, la
     try:
         # Article détaillé : plus de texte et plus de temps qu'une réponse courte
         answer = await llm.generate(
-            rag.build_redaction_messages(demande, history, hits, nom_langue), hits, max_tokens=7000, deadline=120
+            rag.build_redaction_messages(demande, history, hits, nom_langue), hits, max_tokens=10000, deadline=120
         )
     except llm.LLMError as e:
         print(f"[chatbot] erreur du modèle (rédaction) : {e}")
@@ -269,14 +269,6 @@ async def chat(body: ChatRequest, request: Request):
     query = f"{previous} {question}".strip() if len(question) < 40 and previous else question
     dernier = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
     logiciel = next((label for motif, label in LOGICIELS if re.search(motif, query, re.I)), None)
-    # Réponse « 1 » ou « 2 » à la question « fiche article ou article rédigé ? »
-    if re.search(r"\*\*(Créer une fiche article|Create an item record|إنشاء بطاقة)", dernier):
-        choix = question.strip(" .)").lower()
-        if choix in ("2", "deux", "two", "٢"):
-            answer, choices = langue.assistant_article(logiciel, lang)
-            return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
-        if choix in ("1", "un", "one", "١"):
-            question = query = f"Comment créer une fiche article dans {logiciel or 'le logiciel'} ?"
     if REDACTION.search(query):
         sujet = logiciel or ("Mediasoft" if re.search(r"mediasoft", question, re.I) else None)
         # Article sans précision : comme ChatGPT, plan proposé et choix (type, public, objectif) avant de rédiger ;
@@ -285,8 +277,10 @@ async def chat(body: ChatRequest, request: Request):
             answer, choices = langue.assistant_article(sujet, lang)
             return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
         return await _rediger(query, body, sujet, langue.nom(detectee, body.lang), lang)
+    # « Créer un article sur Divalto » : comme ChatGPT, on part sur un article rédigé (une fiche article se crée
+    # « dans » le logiciel, cas traité plus bas avec la procédure)
     if ARTICLE_SUR.search(question) and logiciel and not FICHE.search(question):
-        answer, choices = langue.article_ambigu(logiciel, lang)
+        answer, choices = langue.assistant_article(logiciel, lang)
         return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
     if ACTION_ERP.search(query) and not NOMME.search(query) and not NOMME.search(dernier):
         answer, choices = langue.quel_logiciel(query, lang)
