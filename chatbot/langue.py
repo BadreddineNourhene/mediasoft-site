@@ -69,27 +69,50 @@ def interface(code: str, navigateur: str = "") -> str:
 
 # Messages fixes (le modèle n'intervient pas) : français pour le français et la derja, anglais pour les langues sans traduction
 _C = config.CONTACT
+# Bloc de contact ajouté par le code (jamais par le modèle) : réponse inconnue, prix, devis, délai, intégration
+_CONTACT = {
+    "fr": config.CONTACT_MESSAGE,
+    "en": "Please contact the Mediasoft team for more details:\n"
+    f"- by e-mail: {_C['email']}\n- on WhatsApp: {_C['whatsapp_num']} ({_C['whatsapp']})\n"
+    f"- through the Contact us page: {_C['formulaire']}",
+    "ar": "يرجى التواصل مع فريق ميدياسوفت لمزيد من المعلومات:\n"
+    f"- عبر البريد الإلكتروني: {_C['email']}\n- عبر واتساب: {_C['whatsapp_num']} ({_C['whatsapp']})\n"
+    f"- عبر صفحة اتصل بنا: {_C['formulaire']}",
+}
 MESSAGES = {
     "fr": {
-        "introuvable": "Je n'ai pas trouvé cette information. " + config.CONTACT_MESSAGE,
+        "contact": _CONTACT["fr"],
+        "introuvable": "Je n'ai pas trouvé cette information. " + _CONTACT["fr"],
         "indisponible": "L'assistant est momentanément indisponible. ",
         "trop": "Trop de questions en peu de temps, merci de patienter une minute.",
     },
     "en": {
-        "introuvable": "I couldn't find this information. Please contact the Mediasoft team for more details:\n"
-        f"- by e-mail: {_C['email']}\n- on WhatsApp: {_C['whatsapp_num']} ({_C['whatsapp']})\n"
-        f"- through the Contact us page: {_C['formulaire']}",
+        "contact": _CONTACT["en"],
+        "introuvable": "I couldn't find this information. " + _CONTACT["en"],
         "indisponible": "The assistant is temporarily unavailable. ",
         "trop": "Too many questions in a short time, please wait a minute.",
     },
     "ar": {
-        "introuvable": "لم أجد هذه المعلومة. يرجى التواصل مع فريق ميدياسوفت لمزيد من المعلومات:\n"
-        f"- عبر البريد الإلكتروني: {_C['email']}\n- عبر واتساب: {_C['whatsapp_num']} ({_C['whatsapp']})\n"
-        f"- عبر صفحة اتصل بنا: {_C['formulaire']}",
+        "contact": _CONTACT["ar"],
+        "introuvable": "لم أجد هذه المعلومة. " + _CONTACT["ar"],
         "indisponible": "المساعد غير متاح حاليًا. ",
         "trop": "عدد كبير من الأسئلة في وقت قصير، يرجى الانتظار دقيقة.",
     },
 }
+
+# Questions commerciales (prix, devis, délai, intégration) : recherche web systématique et bloc de contact en fin de
+# réponse. Français, anglais, arabe, derja.
+COMMERCIAL = re.compile(
+    r"prix|tarif|co[uû]t|combien|budget|devis|abonnement|licen[cs]e|d[ée]lai|dur[ée]e|int[ée]gr|connect|relier|"
+    r"price|pricing|cost|how much|quote|budget|subscription|deadline|how long|integrat|"
+    r"9adech|9addech|9adeh|thaman|soum|"
+    r"سعر|أسعار|ثمن|تكلفة|بكم|كم يكلف|عرض سعر|مدة|ربط|تكامل",
+    re.I,
+)
+
+
+def commerciale(question: str) -> bool:
+    return bool(COMMERCIAL.search(question))
 
 
 def message(cle: str, code: str) -> str:

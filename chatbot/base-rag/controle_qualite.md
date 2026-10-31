@@ -27,10 +27,10 @@
 
 ## Problèmes détectés
 
-- divalto-tarif-001 exclu de l'index : prix en devise étrangère (tarif d'un autre pays) : les prix en Tunisie sont donnés sur devis par Mediasoft
-- divalto-tarif-002 exclu de l'index : prix en devise étrangère (tarif d'un autre pays) : les prix en Tunisie sont donnés sur devis par Mediasoft
-- divalto-demat-001 exclu de l'index : prix en devise étrangère (tarif d'un autre pays) : les prix en Tunisie sont donnés sur devis par Mediasoft
-- divalto-fsm-006 exclu de l'index : prix en devise étrangère (tarif d'un autre pays) : les prix en Tunisie sont donnés sur devis par Mediasoft
+- divalto-tarif-001 : prix publics d'éditeur (affichés comme indicatifs)
+- divalto-tarif-002 : prix publics d'éditeur (affichés comme indicatifs)
+- divalto-demat-001 : prix publics d'éditeur (affichés comme indicatifs)
+- divalto-fsm-006 : prix publics d'éditeur (affichés comme indicatifs)
 - Question en double : « Qu'est-ce que Sage Espace Employés ? » (sage-100-see-001 / mediasoft-sage-gamme-025)
 
 ## Entrées à confirmer avec Mediasoft

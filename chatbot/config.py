@@ -56,6 +56,8 @@ TOP_K = int(os.getenv("TOP_K", "8"))
 MIN_SCORE = float(os.getenv("MIN_SCORE", "0.25"))
 # Score minimal (sens) d'un passage pour afficher son lien « En savoir plus » sous la réponse
 MIN_SOURCE_SCORE = float(os.getenv("MIN_SOURCE_SCORE", "0.5"))
+# En dessous de ce score (sens) pour le meilleur passage, la base est jugée peu pertinente : recherche web d'emblée
+WEB_MIN_SCORE = float(os.getenv("WEB_MIN_SCORE", "0.45"))
 
 # Garde-fous
 MAX_QUESTION_CHARS = 600

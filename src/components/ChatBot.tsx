@@ -7,7 +7,10 @@ import { Bot, Loader2, RotateCcw, Send, X } from "lucide-react";
    Les réponses viennent de l'API Python du dossier mediasoft-chatbot, dont l'adresse est fixée au build
    par NEXT_PUBLIC_CHATBOT_URL. Sans cette variable, la bulle n'est pas affichée. */
 
-const API = process.env.NEXT_PUBLIC_CHATBOT_URL?.replace(/\/$/, "") ?? "";
+// Le chatbot tourne en local seulement : la bulle n'apparaît que si l'API est sur ce poste (127.0.0.1 / localhost),
+// sauf si NEXT_PUBLIC_CHATBOT_ONLINE=1 (API hébergée en ligne). Le site publié sur Render n'affiche donc pas la bulle.
+const API_URL = process.env.NEXT_PUBLIC_CHATBOT_URL?.replace(/\/$/, "") ?? "";
+const API = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(API_URL) || process.env.NEXT_PUBLIC_CHATBOT_ONLINE === "1" ? API_URL : "";
 const STORE = "ms-chatbot-v2";
 
 type Source = { title: string; url: string };
@@ -102,6 +105,17 @@ function renderAnswer(text: string) {
   return text.split("\n").map((raw, i) => {
     const line = raw.trim();
     if (!line) return <span key={i} className="block h-2" />;
+    // Tableau Markdown (le modèle en écrit parfois) : ligne de séparation et filets masqués, cellules en liste
+    if (/^\|?[\s:|-]+\|?$/.test(line) || /^-{3,}$/.test(line)) return null;
+    if (line.startsWith("|")) {
+      const cells = line.split("|").map((c) => c.trim()).filter(Boolean);
+      return (
+        <span key={i} className="flex gap-2 ps-1">
+          <span aria-hidden>•</span>
+          <span>{inline(cells.join(" — "), i)}</span>
+        </span>
+      );
+    }
     const bullet = line.match(/^[-*•]\s+(.*)$/);
     const num = line.match(/^(\d+)[.)]\s+(.*)$/);
     const title = line.match(/^#{1,4}\s+(.*)$/);

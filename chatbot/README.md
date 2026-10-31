@@ -95,10 +95,13 @@ python -m uvicorn app:app --port 8010
 
 ## Mise en ligne
 
-- **Render (gratuit)** : le `render.yaml` à la racine du site crée le service web Python `mediasoft-chatbot` (dossier `chatbot/`). Renseigner `GROQ_API_KEY` dans le tableau de bord
-  Render. Le dossier `base-rag/index/` (l'index) doit être envoyé avec le code. Puis, dans le service du site, ajouter la variable
-  `NEXT_PUBLIC_CHATBOT_URL=https://<adresse-du-chatbot>.onrender.com` et relancer son déploiement.
-  Le service gratuit s'endort après 15 min sans visite : la première question suivante prend ~1 minute.
+- **Aujourd'hui : en local seulement.** Le chatbot tourne sur le poste (`Lancer le chatbot et le site.bat`, port 8010) ;
+  le site publié sur Render (mediasoft-site.onrender.com) n'affiche pas la bulle : `ChatBot.tsx` ne l'affiche que si
+  `NEXT_PUBLIC_CHATBOT_URL` pointe vers 127.0.0.1 / localhost.
+- **Pour le remettre en ligne plus tard** (Render gratuit ou autre hébergeur) : créer un service web Python, dossier
+  `chatbot/`, commande `uvicorn app:app --host 0.0.0.0 --port $PORT`, variables du fichier `.env` ; puis, dans le service
+  du site, mettre `NEXT_PUBLIC_CHATBOT_URL=https://<adresse-de-l-api>` et `NEXT_PUBLIC_CHATBOT_ONLINE=1`, et relancer
+  son déploiement. Le service gratuit de Render s'endort après 15 min sans visite (première question ~1 minute).
 - **Serveur Mediasoft** : lancer `uvicorn app:app --host 0.0.0.0 --port 8000` (service Windows ou tâche planifiée),
   exposé en HTTPS (proxy inverse IIS), et ajouter le domaine du site dans `ALLOWED_ORIGINS`.
 

@@ -152,10 +152,14 @@ def main():
             problems.append(f"Question en double : « {e['question']} » ({seen_q[key]} / {e['id']})")
         seen_q[key] = e.get("id")
         e["chunk"] = chunk_text(e)
-        # Prix publics étrangers (euros, dollars) : trompeurs pour un client tunisien, exclus de l'index
+        # Prix publics d'un éditeur (euros, dollars) : gardés, mais présentés comme indicatifs, le prix en Tunisie étant
+        # établi sur devis par Mediasoft
         if e["origine"] == "editeur" and prix_etranger(e.get("reponse", "")):
-            e["exclu"] = "prix en devise étrangère (tarif d'un autre pays) : les prix en Tunisie sont donnés sur devis par Mediasoft"
-            problems.append(f"{e['id']} exclu de l'index : {e['exclu']}")
+            e["chunk"] += (
+                "\nPrix : prix publics de l'éditeur, publiés pour un autre pays (en devise étrangère, hors taxes, hors mise "
+                "en place) ; indicatifs seulement. En Tunisie, le prix exact est établi sur devis par Mediasoft."
+            )
+            problems.append(f"{e['id']} : prix publics d'éditeur (affichés comme indicatifs)")
 
     with open(HERE / "rag_knowledge_base.jsonl", "w", encoding="utf-8") as f:
         for e in entries:

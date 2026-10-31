@@ -69,6 +69,10 @@ _INCONNU = re.compile(
 )
 
 
+# Logiciel nommé dans une réponse : sert à préciser la recherche web des questions de suivi
+PRODUIT = re.compile(r"Sage \d+\w*(?: Ciel)?|Sage [A-Z][\w-]+|Divalto(?: Infinity| weavy)?|Bitrix24|Microsoft 365|Power BI")
+
+
 def _inconnu(answer: str) -> bool:
     """La réponse dit que la base n'a pas l'information (code [INCONNU] ou formule « je n'ai pas cette information »)."""
     debut = (answer or "").lstrip()[:200]
@@ -120,23 +124,48 @@ async def chat(body: ChatRequest, request: Request):
     history = [m.model_dump() for m in body.history]
     nom_langue = langue.nom(detectee, body.lang)
     fallback = langue.message("introuvable", lang)
+    # Prix, devis, délai, intégration (dans la question ou dans la précédente : « et ça coûte combien ? ») :
+    # recherche web d'emblée sur les sites officiels, et coordonnées de contact en fin de réponse
+    commerciale = langue.commerciale(f"{previous} {question}" if len(question) < 40 else question)
+    # Base peu pertinente (meilleur score de sens faible) : recherche web d'emblée aussi
+    base_faible = not hits or max(h.get("score", 0) for h in hits) < config.WEB_MIN_SCORE
+    # Question de suivi (« et ça coûte combien ? ») : la recherche web reprend le logiciel cité dans la réponse précédente
+    web_query = queries[-1]
+    last = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
+    produit = PRODUIT.search(last) if len(question) < 60 else None
+    if produit and produit.group(0).lower() not in web_query.lower():
+        web_query = f"{produit.group(0)} {web_query}"
+    web = []
     try:
-        answer = await llm.generate(rag.build_messages(question, history, hits, nom_langue), hits)
-        sources = rag.sources(hits)
+        if websearch.enabled() and (commerciale or base_faible):
+            web = await websearch.search(web_query)
+        answer = await llm.generate(rag.build_messages(question, history, hits, nom_langue, web), hits)
         unknown = _inconnu(answer)
-        # La base n'a pas la réponse : recherche web sur les sites officiels, puis nouvelle réponse à partir des pages
-        if unknown and websearch.enabled():
-            results = await websearch.search(queries[-1])
-            if results:
-                web_answer = await llm.generate(rag.build_messages(question, history, results, nom_langue, web=True), [])
-                if web_answer and not _inconnu(web_answer):
-                    answer, unknown = web_answer, False
-                    # Réponse trouvée sur le web : le message de contact final n'est pas utile
-                    answer = _sans_contact_final(answer)
-                    sources = [{"title": r["title"], "url": r["url"]} for r in results[:3]]
+        # Rien dans la base : recherche web (si pas déjà faite), puis nouvelle réponse avec les pages trouvées
+        if unknown and websearch.enabled() and not web:
+            web = await websearch.search(web_query)
+            if web:
+                retry = await llm.generate(rag.build_messages(question, history, hits, nom_langue, web), hits)
+                if retry and not _inconnu(retry):
+                    answer, unknown = retry, False
     except llm.LLMError as e:
         print(f"[chatbot] erreur du modèle : {e}")
         raise HTTPException(503, langue.message("indisponible", lang) + fallback)
-    answer = _sans_double_contact((answer or "").replace(rag.UNKNOWN, "").strip())
-    # Réponse « je n'ai pas cette information » : les pages trouvées ne sont pas pertinentes, on ne les affiche pas
-    return {"answer": answer or fallback, "sources": [] if unknown or not answer else sources, "lang": lang}
+
+    answer = _sans_contact_final((answer or "").replace(rag.UNKNOWN, "").strip())
+    # Renvois internes aux passages (« [3] », « (source [W1]) ») : sans intérêt pour le visiteur
+    answer = re.sub(r"\s*\((?:source\s*)?\[W?\d+\]\)|\s*\[W?\d+\]", "", answer).strip()
+    if not answer:
+        return {"answer": fallback, "sources": [], "lang": lang}
+    # Le modèle écrit parfois « Je n'ai pas cette information. » puis répond quand même en détail (avec les pages web) :
+    # on retire cette première phrase et la réponse est traitée comme trouvée
+    first, _, rest = answer.partition("\n")
+    if unknown and _INCONNU.search(first) and len(rest.strip()) > 300:
+        answer, unknown = rest.strip(), False
+    # Coordonnées ajoutées par le code (le modèle ne les écrit plus) : information introuvable ou question commerciale
+    if (unknown or commerciale) and config.CONTACT["formulaire"] not in answer:
+        answer += "\n\n" + langue.message("contact", lang)
+    # Liens sous la réponse : pages web réellement citées dans la réponse, puis pages du site ; aucun si introuvable
+    cited = [{"title": r["title"], "url": r["url"]} for r in web if r["url"].rstrip("/") in answer]
+    sources = [] if unknown else (cited + [s for s in rag.sources(hits) if s not in cited])[:3]
+    return {"answer": answer, "sources": sources, "lang": lang}
