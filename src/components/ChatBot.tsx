@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { ArrowUp, Bot, Check, FileText, Globe, Lightbulb, Loader2, MessageCircle, Mic, Paperclip, PenLine, Plus, RotateCcw, Square, X } from "lucide-react";
+import { ArrowUp, Bot, Check, FileText, Globe, Lightbulb, Loader2, Mic, Paperclip, Plus, RotateCcw, Square, X } from "lucide-react";
 
 /* Assistant virtuel Mediasoft (RAG) : bulle en bas à gauche (Tidio reste en bas à droite sur l'accueil).
    Les réponses viennent de l'API Python du dossier mediasoft-chatbot, dont l'adresse est fixée au build
@@ -59,11 +59,6 @@ const TEXTS = {
     detail: "Réponse détaillée",
     detailD: "Une réponse complète et approfondie",
     detailShort: "Détaillée",
-    article: "Rédiger un article",
-    articleD: "Plan, choix du type et du public, puis l’article",
-    articleAsk: "Je veux rédiger un article",
-    advisor: "Parler à un conseiller",
-    advisorD: "Sur WhatsApp, avec l’équipe Mediasoft",
     removeMode: "Désactiver",
     webOn: "Recherche web activée : chaque question est aussi cherchée sur internet",
     mic: "Dicter ma question",
@@ -99,11 +94,6 @@ const TEXTS = {
     detail: "Detailed answer",
     detailD: "A complete, in-depth answer",
     detailShort: "Detailed",
-    article: "Write an article",
-    articleD: "Outline, type and audience, then the article",
-    articleAsk: "I want to write an article",
-    advisor: "Talk to an advisor",
-    advisorD: "On WhatsApp, with the Mediasoft team",
     removeMode: "Turn off",
     webOn: "Web search on: each question is also searched on the internet",
     mic: "Dictate my question",
@@ -139,11 +129,6 @@ const TEXTS = {
     detail: "إجابة مفصّلة",
     detailD: "إجابة كاملة ومعمّقة",
     detailShort: "مفصّلة",
-    article: "كتابة مقال",
-    articleD: "مخطط، اختيار النوع والجمهور، ثم المقال",
-    articleAsk: "أريد كتابة مقال",
-    advisor: "التحدث إلى مستشار",
-    advisorD: "عبر واتساب مع فريق ميدياسوفت",
     removeMode: "إلغاء التفعيل",
     webOn: "البحث على الويب مفعّل: يُبحث عن كل سؤال على الإنترنت أيضًا",
     mic: "إملاء سؤالي",
@@ -555,8 +540,6 @@ export default function ChatBot() {
                         { icon: Paperclip, label: T.files, desc: T.filesD, run: () => picker.current?.click() },
                         { icon: Globe, label: T.web, desc: T.webD, on: web, run: () => setWeb((v) => !v) },
                         { icon: Lightbulb, label: T.detail, desc: T.detailD, on: detail, run: () => setDetail((v) => !v) },
-                        { icon: PenLine, label: T.article, desc: T.articleD, run: () => ask(T.articleAsk) },
-                        { icon: MessageCircle, label: T.advisor, desc: T.advisorD, run: () => window.open(`https://wa.me/${WHATSAPP}`, "_blank", "noopener") },
                       ] as { icon: typeof Globe; label: string; desc: string; on?: boolean; run: () => void }[]
                     ).map(({ icon: Icon, label, desc, on, run }) => (
                       <button
@@ -564,7 +547,6 @@ export default function ChatBot() {
                         type="button"
                         role={on === undefined ? "menuitem" : "menuitemcheckbox"}
                         aria-checked={on}
-                        disabled={busy && label === T.article}
                         onClick={() => {
                           setMenu(false);
                           run();
