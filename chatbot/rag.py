@@ -174,7 +174,10 @@ def build_messages(question: str, history: list[dict], hits: list[dict], langue:
     """Prompt complet : document joint par le visiteur, extraits de la base Mediasoft, et pages web si une recherche
     web a été faite."""
     context = (
-        f"DOCUMENT JOINT PAR LE VISITEUR ({document['nom']}) :\n{document['texte']}\n\n" if document else ""
+        f"DOCUMENT JOINT PAR LE VISITEUR ({document['nom']} ; document long : passages utiles à la question, séparés "
+        f"par […]) :\n{document['texte']}\n\n"
+        if document
+        else ""
     ) + "EXTRAITS DE LA BASE MEDIASOFT :\n" + (
         "\n\n".join(f"[{n + 1}] {h['text']}" for n, h in enumerate(hits)) or "(aucun extrait pertinent)"
     )

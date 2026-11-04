@@ -398,7 +398,7 @@ export default function ChatBot() {
       const res = await fetch(`${API}/api/fichier?lang=${encodeURIComponent(navigator.language)}`, {
         method: "POST",
         body: form,
-        signal: AbortSignal.timeout(60_000),
+        signal: AbortSignal.timeout(120_000),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.detail || "Erreur");

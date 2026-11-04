@@ -58,6 +58,9 @@ INDEX_DIR = BASE_DIR / "index"
 
 # Recherche
 TOP_K = int(os.getenv("TOP_K", "8"))
+# Question « comment faire » : recherche web seulement si le meilleur passage de la base (aides officielles) est en
+# dessous de ce score de sens
+PROCEDURE_WEB_SCORE = float(os.getenv("PROCEDURE_WEB_SCORE", "0.68"))
 MIN_SCORE = float(os.getenv("MIN_SCORE", "0.25"))
 # Score minimal (sens) d'un passage pour afficher son lien « En savoir plus » sous la réponse
 MIN_SOURCE_SCORE = float(os.getenv("MIN_SOURCE_SCORE", "0.5"))

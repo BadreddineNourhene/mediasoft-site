@@ -331,7 +331,8 @@ async def chat(body: ChatRequest, request: Request):
     query = f"{previous} {question}".strip() if len(question) < 40 and previous else question
     dernier = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
     logiciel = next((label for motif, label in LOGICIELS if re.search(motif, query, re.I)), None)
-    doc = body.document.model_dump() if body.document else None
+    # Document long : seuls ses passages utiles à la question vont au modèle (réponse plus rapide, tout le fichier lu)
+    doc = {"nom": body.document.nom, "texte": fichiers.extraits(body.document.texte, query)} if body.document else None
     # Avec un fichier joint, la question porte sur le document : pas d'aiguillage vers l'assistant d'article ni vers
     # « sur quel logiciel ? »
     if REDACTION.search(query) and not doc:
@@ -390,7 +391,9 @@ async def chat(body: ChatRequest, request: Request):
 
     web = []
     try:
-        if websearch.enabled() and (body.web or ((commerciale or base_faible or procedure) and not doc)):
+        # « Comment faire » : l'aide officielle de l'éditeur est dans la base ; le web seulement si elle répond mal
+        procedure_web = procedure and max((h.get("score", 0) for h in hits), default=0) < config.PROCEDURE_WEB_SCORE
+        if websearch.enabled() and (body.web or ((commerciale or base_faible or procedure_web) and not doc)):
             web = await websearch.search(await requete())
             # Recherche web demandée par le visiteur : tout le web aussi, pas seulement les sites officiels
             if body.web:
