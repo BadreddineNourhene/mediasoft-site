@@ -108,6 +108,11 @@ textarea {
   border-radius: 6px;
 }
 
+/* Saisie du chatbot : le focus est déjà montré par le contour de la carte de saisie */
+.chat-input:focus-visible {
+  outline: none;
+}
+
 /* Lenis (lenis/dist/lenis.css) */
 html.lenis,
 html.lenis body {

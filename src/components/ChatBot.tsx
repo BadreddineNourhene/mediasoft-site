@@ -606,7 +606,7 @@ export default function ChatBot() {
                       dir="auto"
                       placeholder={T.placeholder}
                       aria-label={T.placeholder}
-                      className="block max-h-[132px] min-h-11 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-2.5 text-[15px] leading-6 outline-none [scrollbar-width:thin]"
+                      className="chat-input block max-h-[132px] min-h-11 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-2.5 text-[15px] leading-6 outline-none [scrollbar-width:thin]"
                     />
                     {/* Modes actifs (comme « Think » chez ChatGPT) : un clic les désactive */}
                     {(
