@@ -34,11 +34,11 @@ export const catHref = (slug: CategorySlug) => `${BASE}/category/${slug}/`;
 
 /* Page ERP divalto infinity */
 export const erp = {
-  seoTitle: "ERP divalto infinity : le logiciel ERP 100 % cloud des PME et ETI",
+  seoTitle: "ERP divalto infinity : le logiciel ERP cloud ou sur site des PME et ETI",
   description:
-    "Divalto infinity, ERP complet et 100 % cloud pour PME et ETI : gestion commerciale, GPAO, gestion à l’affaire, WMS, comptabilité, GMAO et qualité. Revendeur Divalto en Tunisie : Mediasoft.",
+    "Divalto infinity, ERP complet, en cloud ou sur site, pour PME et ETI : gestion commerciale, GPAO, gestion à l’affaire, WMS, comptabilité, GMAO et qualité. Revendeur Divalto en Tunisie : Mediasoft.",
   reasons: [
-    { t: "100 % cloud", d: "Toute la puissance de l’ERP, sans les contraintes d’infrastructure." },
+    { t: "Cloud ou sur site", d: "En SaaS sans contraintes d’infrastructure, ou installé sur vos propres serveurs." },
     { t: "Ouvert", d: "Interopérable avec vos outils : MES, open banking, e-virement, e-paiement, APS…" },
     { t: "Pensé métier", d: "Une compréhension fine des besoins de chaque activité." },
     { t: "Toujours à jour", d: "Conforme aux dernières réglementations, sécurisé et évolutif." },

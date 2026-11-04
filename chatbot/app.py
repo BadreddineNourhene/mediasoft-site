@@ -234,7 +234,7 @@ async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, la
         print(f"[chatbot] erreur du modèle (rédaction) : {e}")
         raise HTTPException(503, langue.message("indisponible", lang) + langue.message("introuvable", lang))
     answer, _ = _citations((answer or "").replace(rag.UNKNOWN, "").strip(), hits, [])
-    return {"answer": _liens_connus(answer), "sources": [], "lang": lang}
+    return {"answer": _deploiement(_liens_connus(answer), sujet), "sources": [], "lang": lang}
 
 
 # Dernière ligne « CHOIX : a | b | c » écrite par le modèle quand une précision est utile → boutons sous la réponse
@@ -250,6 +250,17 @@ def _choix(answer: str):
     options = list(dict.fromkeys(o for o in options if 0 < len(o) <= 80))[:5]
     answer = _CHOIX.sub("", answer).strip()
     return answer, ({"questions": [{"options": options}]} if len(options) >= 2 else None)
+
+
+# Divalto Infinity s'installe aussi sur les serveurs du client (On-Premise) : jamais « 100 % cloud » (seule la
+# plateforme Divalto one l'est), même si une page de présentation le dit
+_CLOUD = re.compile(r"(?<!one )100\s?%\s?(?:cloud|en ligne|SaaS)", re.I)
+
+
+def _deploiement(answer: str, sujet: str | None) -> str:
+    if sujet and "divalto" in sujet.lower():
+        return _CLOUD.sub("en cloud (SaaS) ou sur site (On-Premise)", answer)
+    return answer
 
 
 _LIEN = re.compile(r"\[([^\]\n]+)\]\((https?://[^)\s]+)\)")
@@ -369,7 +380,7 @@ async def chat(body: ChatRequest, request: Request):
     answer = _sans_contact_final((answer or "").replace(rag.UNKNOWN, "").strip())
     # Renvois aux passages (« [3] », « 【W1】 », « (source [2]) ») → petits liens numérotés vers la page source
     answer, refs = _citations(answer, hits, web)
-    answer, choices = _choix(answer)
+    answer, choices = _choix(_deploiement(answer, logiciel or (re.search(r"divalto", query, re.I) and "divalto")))
     if not answer:
         return {"answer": fallback, "sources": [], "lang": lang}
     # Le modèle écrit parfois « Je n'ai pas cette information. » puis répond quand même en détail (avec les pages web) :

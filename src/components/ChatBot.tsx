@@ -27,6 +27,7 @@ const TEXTS = {
     notice: "Réponses générées par IA, à vérifier auprès d’un conseiller",
     more: "En savoir plus",
     typing: "L’assistant rédige sa réponse…",
+    long: "Réponse détaillée en préparation, encore quelques secondes…",
     placeholder: "Votre question…",
     send: "Envoyer",
     close: "Fermer",
@@ -43,6 +44,7 @@ const TEXTS = {
     notice: "AI-generated answers, to be confirmed with an advisor",
     more: "Learn more",
     typing: "The assistant is writing…",
+    long: "Preparing a detailed answer, just a few more seconds…",
     placeholder: "Your question…",
     send: "Send",
     close: "Close",
@@ -59,6 +61,7 @@ const TEXTS = {
     notice: "إجابات مولّدة بالذكاء الاصطناعي، يُرجى التأكد منها مع مستشار",
     more: "لمعرفة المزيد",
     typing: "المساعد يكتب الإجابة…",
+    long: "جارٍ إعداد إجابة مفصّلة، بضع ثوانٍ أخرى…",
     placeholder: "سؤالك…",
     send: "إرسال",
     close: "إغلاق",
@@ -119,7 +122,7 @@ function withRefs(s: string, k: string) {
         target="_blank"
         rel="noopener noreferrer"
         title={parts[j + 1]}
-        className="mx-0.5 inline-grid h-[18px] min-w-[18px] place-items-center rounded-full bg-[#1f5fff]/10 px-1 align-super text-[10.5px] font-bold leading-none text-[#1f5fff] no-underline hover:bg-[#1f5fff] hover:text-white"
+        className="mx-0.5 inline-grid h-[22px] min-w-[22px] place-items-center rounded-full bg-[#1f5fff]/10 px-1.5 align-super text-[11.5px] font-bold leading-none text-[#1f5fff] no-underline hover:bg-[#1f5fff] hover:text-white active:scale-95"
       >
         {p}
       </a>
@@ -172,7 +175,7 @@ function ChoiceButtons({ c, onSend, disabled, next }: { c: Choices; onSend: (q: 
   // toute la largeur, conseil sous la carte
   return (
     <div className="ms-10 max-w-[90%] space-y-3">
-      <div className="rounded-2xl border border-[#00193a]/12 bg-white p-4 text-[13px] text-[#0b1b33] shadow-sm">
+      <div className="rounded-2xl border border-[#00193a]/12 bg-white p-4 text-[14.5px] text-[#0b1b33] shadow-sm">
         {c.questions.map((q, i) => (
           <div key={i} role="radiogroup" aria-label={q.label} className={i ? "mt-3 border-t border-[#00193a]/10 pt-3" : ""}>
             {q.label && <p className="mb-2 font-semibold">{q.label}</p>}
@@ -188,10 +191,10 @@ function ChoiceButtons({ c, onSend, disabled, next }: { c: Choices; onSend: (q: 
                     aria-checked={on}
                     onClick={() => setSel((s) => s.map((v, n) => (n === i ? o : v)))}
                     onDoubleClick={() => single && onSend(fill([o]))}
-                    className="flex items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-start leading-snug transition-colors hover:bg-[#f4f7fb] disabled:opacity-50"
+                    className="flex min-h-11 items-center gap-3 rounded-lg px-2 py-2 text-start leading-snug transition-colors hover:bg-[#f4f7fb] active:bg-[#e8eef8] disabled:opacity-50"
                   >
-                    <span className={`grid h-4 w-4 shrink-0 place-items-center rounded-full border-2 ${on ? "border-[#0b1b33]" : "border-[#00193a]/25"}`} aria-hidden>
-                      {on && <span className="h-2 w-2 rounded-full bg-[#0b1b33]" />}
+                    <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${on ? "border-[#0b1b33]" : "border-[#00193a]/30"}`} aria-hidden>
+                      {on && <span className="h-2.5 w-2.5 rounded-full bg-[#0b1b33]" />}
                     </span>
                     <span>{o}</span>
                   </button>
@@ -204,13 +207,13 @@ function ChoiceButtons({ c, onSend, disabled, next }: { c: Choices; onSend: (q: 
           type="button"
           disabled={disabled || sel.some((v) => !v)}
           onClick={() => onSend(fill(sel))}
-          className="mt-3 w-full rounded-full bg-[#0b1b33] px-5 py-2.5 text-[13px] font-bold text-white transition-colors hover:bg-[#1f5fff] disabled:opacity-40 disabled:hover:bg-[#0b1b33]"
+          className="mt-3 min-h-11 w-full rounded-full bg-[#0b1b33] px-5 py-2.5 text-[14.5px] font-bold text-white transition hover:bg-[#1f5fff] active:scale-[0.98] disabled:opacity-40 disabled:hover:bg-[#0b1b33] disabled:active:scale-100"
         >
           {c.submit ?? next}
         </button>
       </div>
       {/* « Mon conseil » : sous la carte */}
-      {c.note && <div className="px-1 text-[13px] leading-relaxed text-[#0b1b33]">{renderAnswer(c.note)}</div>}
+      {c.note && <div className="px-1 text-[14.5px] leading-relaxed text-[#0b1b33]">{renderAnswer(c.note)}</div>}
     </div>
   );
 }
@@ -223,7 +226,8 @@ export default function ChatBot() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const list = useRef<HTMLDivElement>(null);
-  const field = useRef<HTMLInputElement>(null);
+  const field = useRef<HTMLTextAreaElement>(null);
+  const [slow, setSlow] = useState(false);
 
   // Conversation gardée le temps de la visite (changement de page compris)
   useEffect(() => {
@@ -236,7 +240,8 @@ export default function ChatBot() {
     try {
       sessionStorage.setItem(STORE, JSON.stringify(msgs.slice(-30)));
     } catch {}
-    list.current?.scrollTo({ top: list.current.scrollHeight, behavior: "smooth" });
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    list.current?.scrollTo({ top: list.current.scrollHeight, behavior: reduce ? "auto" : "smooth" });
   }, [msgs]);
   useEffect(() => {
     if (!open) return;
@@ -249,6 +254,20 @@ export default function ChatBot() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+
+  useEffect(() => {
+    if (!busy) return setSlow(false);
+    const t = setTimeout(() => setSlow(true), 8000);
+    return () => clearTimeout(t);
+  }, [busy]);
+
+  // La zone de saisie s'agrandit avec le texte (5 lignes au plus)
+  useEffect(() => {
+    const el = field.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 132)}px`;
+  }, [input, open]);
 
   if (!API) return null;
   const T = TEXTS[lang];
@@ -314,14 +333,14 @@ export default function ChatBot() {
               </span>
               <span className="min-w-0 flex-1 leading-tight">
                 <span className="block font-display text-[18px] font-bold">{T.title}</span>
-                <span className="mt-0.5 block text-[12.5px] text-white/70">{T.notice}</span>
+                <span className="mt-0.5 block text-[13px] text-white/80">{T.notice}</span>
               </span>
               {msgs.length > 0 && (
-                <button type="button" onClick={() => setMsgs([])} className="grid h-10 w-10 shrink-0 place-items-center rounded-full hover:bg-white/15" aria-label={T.reset} title={T.reset}>
+                <button type="button" onClick={() => setMsgs([])} className="grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-white/15 active:bg-white/25" aria-label={T.reset} title={T.reset}>
                   <RotateCcw size={18} />
                 </button>
               )}
-              <button type="button" onClick={() => setOpen(false)} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label={T.closeLabel}>
+              <button type="button" onClick={() => setOpen(false)} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30" aria-label={T.closeLabel}>
                 <X size={20} />
               </button>
             </header>
@@ -338,16 +357,16 @@ export default function ChatBot() {
                 )}
                 <div
                   dir="auto"
-                  className={`max-w-[90%] whitespace-pre-line rounded-2xl px-4 py-2.5 text-[13.5px] leading-relaxed ${
+                  className={`max-w-[90%] whitespace-pre-line rounded-2xl px-4 py-3 text-[15px] leading-relaxed ${
                     m.role === "user" ? "rounded-br-md bg-[#1f5fff] text-white" : m.error ? "rounded-bl-md bg-[#fff1ef] text-[#8a2a14]" : "rounded-bl-md bg-white text-[#0b1b33] shadow-sm ring-1 ring-[#00193a]/10"
                   }`}
                 >
                   {m.role === "assistant" ? renderAnswer(m.content) : m.content}
                   {!!m.sources?.length && (
                     <span className="mt-2 flex flex-col gap-1 border-t border-line pt-2">
-                      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-soft">{T.more}</span>
+                      <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-ink-soft">{T.more}</span>
                       {m.sources.map((s) => (
-                        <a key={s.url} href={s.url} className="truncate text-[12.5px] font-medium text-[#1f5fff] hover:underline">
+                        <a key={s.url} href={s.url} className="truncate py-1 text-[14px] font-medium text-[#1f5fff] hover:underline">
                           {s.title}
                         </a>
                       ))}
@@ -360,24 +379,31 @@ export default function ChatBot() {
               </div>
             ))}
             {busy && (
-              <div className="flex items-center gap-2 ps-10 text-[13.5px] text-[#0b1b33]/60">
-                <Loader2 size={16} className="animate-spin" aria-hidden /> {T.typing}
+              <div className="flex items-center gap-2 ps-10 text-[14px] text-[#0b1b33]/75" role="status">
+                <Loader2 size={16} className="motion-safe:animate-spin" aria-hidden /> {slow ? T.long : T.typing}
               </div>
             )}
             </div>
 
-            <form onSubmit={onSubmit} className="flex items-center gap-2 border-t border-[#00193a]/10 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
-              <input
+            <form onSubmit={onSubmit} className="flex items-end gap-2 border-t border-[#00193a]/10 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+              <textarea
                 ref={field}
+                rows={1}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                    e.preventDefault();
+                    ask(input);
+                  }
+                }}
                 maxLength={600}
                 dir="auto"
                 placeholder={T.placeholder}
                 aria-label={T.placeholder}
-                className="min-w-0 flex-1 rounded-full border border-[#00193a]/15 bg-[#f4f7fb] px-5 py-3.5 text-[15px] outline-none transition-colors focus:border-[#1f5fff] focus:bg-white"
+                className="min-h-12 min-w-0 flex-1 resize-none rounded-3xl border border-[#00193a]/15 bg-[#f4f7fb] px-5 py-3 text-[15px] leading-6 outline-none transition-colors focus:border-[#1f5fff] focus:bg-white"
               />
-              <button type="submit" disabled={busy || !input.trim()} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1f5fff] text-white shadow-[0_8px_20px_-6px_rgba(31,95,255,0.7)] transition-opacity disabled:opacity-40" aria-label={T.send}>
+              <button type="submit" disabled={busy || !input.trim()} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1f5fff] text-white shadow-[0_8px_20px_-6px_rgba(31,95,255,0.7)] transition active:scale-95 disabled:opacity-40 disabled:active:scale-100" aria-label={T.send}>
                 <Send size={18} className={lang === "ar" ? "-scale-x-100" : ""} />
               </button>
             </form>
@@ -393,10 +419,11 @@ export default function ChatBot() {
         onClick={() => setOpen(true)}
         aria-expanded={false}
         aria-label={T.openLabel}
-        className="group relative flex h-16 items-center gap-2.5 rounded-full bg-gradient-to-r from-[#1f5fff] to-[#3d8bff] pl-4 pr-6 text-white shadow-[0_16px_36px_-8px_rgba(31,95,255,0.75)] ring-4 ring-white transition-transform hover:scale-[1.04]"
+        className="group relative flex h-16 items-center gap-2.5 rounded-full bg-gradient-to-r from-[#1f5fff] to-[#3d8bff] pl-4 pr-6 text-white shadow-[0_16px_36px_-8px_rgba(31,95,255,0.75)] ring-4 ring-white transition-transform motion-safe:hover:scale-[1.04] active:scale-[0.97]"
       >
-        {/* Halo animé tant que la conversation n'a pas commencé */}
-        {msgs.length === 0 && <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-[#1f5fff]/40" aria-hidden />}
+        {/* Halo : quelques pulsations tant que la conversation n'a pas commencé (aucune si le visiteur a demandé de
+            réduire les animations) */}
+        {msgs.length === 0 && <span className="absolute inset-0 -z-10 rounded-full bg-[#1f5fff]/40 motion-safe:animate-[ping_1s_cubic-bezier(0,0,0.2,1)_4]" aria-hidden />}
         <span className="relative grid h-10 w-10 place-items-center rounded-full bg-white/20">
           <Bot size={22} />
           <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-[#22c55e] ring-2 ring-[#1f5fff]" aria-hidden />

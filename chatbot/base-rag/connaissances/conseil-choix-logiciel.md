@@ -21,7 +21,7 @@ Pour une PME (10 à 250 salariés) qui a besoin d'une comptabilité et d'une ges
 
 ## Beaucoup de factures, beaucoup de clients, activité complexe : Divalto Infinity
 
-Quand l'entreprise a un fort volume d'activité (beaucoup de factures, de clients, de fournisseurs et d'articles), de nombreux utilisateurs, plusieurs dépôts, agences ou sociétés, ou des métiers complexes (production, entrepôt, gestion à l'affaire, traçabilité, maintenance), Mediasoft conseille d'installer l'ERP Divalto Infinity. Il réunit dans une seule base de données la gestion commerciale, la production (GPAO), l'entrepôt (WMS), la comptabilité et finances, la gestion à l'affaire, la maintenance et la qualité, avec la dématérialisation des factures et le CRM. C'est la solution des PME structurées et des ETI (plus de 250 salariés), 100 % cloud, avec des versions prêtes pour chaque secteur.
+Quand l'entreprise a un fort volume d'activité (beaucoup de factures, de clients, de fournisseurs et d'articles), de nombreux utilisateurs, plusieurs dépôts, agences ou sociétés, ou des métiers complexes (production, entrepôt, gestion à l'affaire, traçabilité, maintenance), Mediasoft conseille d'installer l'ERP Divalto Infinity. Il réunit dans une seule base de données la gestion commerciale, la production (GPAO), l'entrepôt (WMS), la comptabilité et finances, la gestion à l'affaire, la maintenance et la qualité, avec la dématérialisation des factures et le CRM. C'est la solution des PME structurées et des ETI (plus de 250 salariés), disponible en cloud (SaaS) ou installé sur les serveurs de l'entreprise (On-Premise), avec des versions prêtes pour chaque secteur.
 
 ## Signes qu'il est temps de passer de Sage à Divalto
 

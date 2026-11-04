@@ -160,7 +160,7 @@ Power BI est une plateforme évolutive et unifiée pour la business intelligence
 
 ## Proposez-vous l'hébergement cloud ?
 
-Oui. Mediasoft propose une offre « Hébergement Cloud », que l'on peut choisir comme objet de demande dans le formulaire de contact https://mediasoft-site.onrender.com/contact. Plusieurs solutions proposées par Mediasoft fonctionnent aussi dans le cloud : Divalto Infinity (100 % cloud), Bitrix24 (version cloud hébergée par Bitrix24), Microsoft 365 et Power BI. Pour étudier un projet d'hébergement cloud : +216 31 435 825 (Tunis), +216 73 822 546 (Sousse) ou WhatsApp +216 52 444 444.
+Oui. Mediasoft propose une offre « Hébergement Cloud », que l'on peut choisir comme objet de demande dans le formulaire de contact https://mediasoft-site.onrender.com/contact. Plusieurs solutions proposées par Mediasoft fonctionnent aussi dans le cloud : Divalto Infinity (en cloud SaaS, ou installé sur les serveurs de l'entreprise en On-Premise), Bitrix24 (version cloud hébergée par Bitrix24), Microsoft 365 et Power BI. Pour étudier un projet d'hébergement cloud : +216 31 435 825 (Tunis), +216 73 822 546 (Sousse) ou WhatsApp +216 52 444 444.
 
 ## Comment laisser un avis Google sur Mediasoft ?
 

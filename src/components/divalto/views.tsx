@@ -562,10 +562,10 @@ export function ErpView() {
           <Crumbs light items={[{ label: "ERP divalto infinity" }]} />
           <div className="mt-10 grid items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <div>
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-4 py-1.5 text-[13px] font-semibold text-white/80">ERP pour PME et ETI · 100 % cloud</p>
+              <p className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-4 py-1.5 text-[13px] font-semibold text-white/80">ERP pour PME et ETI · Cloud ou sur site</p>
               <TwoTone light title="Toute l’entreprise," accent="sur une seule plateforme." className="mt-6 text-[clamp(38px,4.6vw,66px)] leading-[1.02]" />
               <p className="mt-6 max-w-[540px] text-[clamp(16.5px,1.25vw,18.5px)] leading-relaxed text-white/70">
-                Divalto infinity est un logiciel ERP complet dédié aux PME et aux ETI. 100 % cloud, il rassemble les outils de votre quotidien et s’adapte à votre activité.
+                Divalto infinity est un logiciel ERP complet dédié aux PME et aux ETI. En cloud ou installé sur vos serveurs, il rassemble les outils de votre quotidien et s’adapte à votre activité.
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <PrimaryCta href={links.contact} light>

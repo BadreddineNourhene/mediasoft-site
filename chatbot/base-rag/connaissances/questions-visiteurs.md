@@ -53,7 +53,7 @@ Mediasoft accompagne les TPE, PME et ETI tunisiennes de tous secteurs : industri
 
 ## Qu'est-ce que Divalto Infinity ?
 
-Divalto Infinity est un logiciel ERP et CRM complet, 100 % cloud, dédié aux PME et aux ETI. Il réunit dans une seule base de données sept modules : gestion commerciale, production (GPAO), gestion à l'affaire, entrepôt (WMS), comptabilité et finances, maintenance et qualité, avec aussi la dématérialisation des factures et la mobilité. Il est ouvert à d'autres outils (MES, open banking, e-virement, e-paiement, APS), toujours à jour et conforme aux réglementations. Des solutions métiers prêtes à l'emploi existent par secteur. Mediasoft est revendeur Divalto en Tunisie.
+Divalto Infinity est un logiciel ERP et CRM complet, disponible en cloud (SaaS) ou installé sur les serveurs de l'entreprise (On-Premise), dédié aux PME et aux ETI. Il réunit dans une seule base de données sept modules : gestion commerciale, production (GPAO), gestion à l'affaire, entrepôt (WMS), comptabilité et finances, maintenance et qualité, avec aussi la dématérialisation des factures et la mobilité. Il est ouvert à d'autres outils (MES, open banking, e-virement, e-paiement, APS), toujours à jour et conforme aux réglementations. Des solutions métiers prêtes à l'emploi existent par secteur. Mediasoft est revendeur Divalto en Tunisie.
 
 ## Divalto existe-t-il pour mon secteur ?
 
@@ -100,4 +100,4 @@ Oui. Mediasoft réalise l'intégration des systèmes et des connecteurs pour que
 
 ## Peut-on travailler à distance ou sur mobile ?
 
-Oui : Divalto Infinity est 100 % cloud et propose la mobilité, Sage 100 fonctionne avec une connexion Cloud (Microsoft Azure), Bitrix24 existe sur le web, sur mobile (Android, iPhone) et sur ordinateur, et Microsoft 365 (Teams, Outlook, OneDrive) est accessible partout, sur ordinateur, tablette et téléphone.
+Oui : Divalto Infinity est accessible par navigateur web et propose la mobilité (en cloud SaaS comme en installation sur vos serveurs), Sage 100 fonctionne avec une connexion Cloud (Microsoft Azure), Bitrix24 existe sur le web, sur mobile (Android, iPhone) et sur ordinateur, et Microsoft 365 (Teams, Outlook, OneDrive) est accessible partout, sur ordinateur, tablette et téléphone.
