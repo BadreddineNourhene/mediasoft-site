@@ -87,7 +87,7 @@ class KnowledgeBase:
     def __init__(self):
         meta = json.loads((config.INDEX_DIR / "chunks.json").read_text(encoding="utf-8"))
         self.chunks = meta["chunks"]
-        self.vectors = np.load(config.INDEX_DIR / "index.npz")["vectors"]
+        self.vectors = np.load(config.INDEX_DIR / "index.npz")["vectors"].astype(np.float32)
         self.model = Embedder()
         # Index par mots-clés (BM25), en complément des vecteurs : le petit modèle d'embeddings rate souvent
         # les mots précis (« bureaux », « Gabès », « TeamViewer »…)

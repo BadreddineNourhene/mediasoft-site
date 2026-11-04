@@ -8,7 +8,9 @@ Sources :
      base-rag/build_base.py) : Sage, Divalto, Bitrix24, Microsoft 365 ;
   4. l'aide en ligne officielle Divalto (base-rag/divalto_wiki.jsonl, produite par base-rag/import_divalto_wiki.py) ;
   5. l'aide en ligne officielle Bitrix24 (base-rag/bitrix24_helpdesk.jsonl, produite par
-     base-rag/import_bitrix24_helpdesk.py).
+     base-rag/import_bitrix24_helpdesk.py) ;
+  6. la documentation officielle Power BI de Microsoft Learn (base-rag/powerbi_learn.jsonl, produite par
+     base-rag/import_powerbi_learn.py).
 
 Chaque page est découpée en passages (environ 900 caractères, rattachés à leur titre), puis chaque
 passage est transformé en vecteur par un modèle d'embeddings gratuit exécuté en local.
@@ -37,6 +39,7 @@ RAG_BASE = config.BASE_DIR / "rag_knowledge_base.jsonl"
 AIDES = [
     (config.BASE_DIR / "divalto_wiki.jsonl", "divalto_wiki", "Aide Divalto"),
     (config.BASE_DIR / "bitrix24_helpdesk.jsonl", "bitrix_helpdesk", "Aide Bitrix24"),
+    (config.BASE_DIR / "powerbi_learn.jsonl", "powerbi_learn", "Documentation Power BI"),
 ]
 CHUNK_CHARS = 900
 SKIP_FILES = {"404.html", "_not-found.html", "login.html", "politique-de-confidentialite.html", "assistance.html"}
@@ -208,7 +211,8 @@ def main():
         vectors[i::n] = r
 
     config.INDEX_DIR.mkdir(exist_ok=True)
-    np.savez_compressed(config.INDEX_DIR / "index.npz", vectors=vectors)
+    # Demi-précision : fichier deux fois plus léger (limite de 100 Mo par fichier sur GitHub), sans effet sur le classement
+    np.savez_compressed(config.INDEX_DIR / "index.npz", vectors=vectors.astype(np.float16))
     (config.INDEX_DIR / "chunks.json").write_text(
         json.dumps({"model": config.EMBED_MODEL, "chunks": chunks}, ensure_ascii=False, indent=1), encoding="utf-8"
     )

@@ -40,10 +40,10 @@ BRUIT = re.compile(
 )
 
 
-def get(url: str):
+def get(url: str, data: bytes | None = None):
     for n in range(3):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Mediasoft-chatbot-import)"})
+            req = urllib.request.Request(url, data=data, headers={"User-Agent": "Mozilla/5.0 (Mediasoft-chatbot-import)"})
             with urllib.request.urlopen(req, timeout=60) as r:
                 return r.read().decode("utf-8", errors="ignore")
         except Exception as e:
@@ -73,7 +73,16 @@ def importer(base: str, espace: str, f, deja: set):
         chemin = file.popleft()
         html = get(base + chemin)
         time.sleep(PAUSE)
-        for lien in LIENS.findall(html):
+        rub = re.fullmatch(r"/section/(\d+)/", chemin)
+        if rub:
+            # Articles d'une rubrique : chargés par le menu avec la même requête que le site (POST sur la page)
+            html += get(base + chemin, f"sectionId={rub.group(1)}&ajaxSectionRequest=Y".encode())
+            time.sleep(PAUSE)
+        # Les sous-rubriques ne sont pas en liens dans la page (menu chargé par script) : leur liste complète est
+        # dans « sectionsParentMap » ; chaque page de rubrique donne ensuite ses articles
+        carte = re.search(r'"sectionsParentMap":\{(.*?)\}', html)
+        rubriques = [f"/section/{i}/" for i in re.findall(r'"(\d+)":', carte.group(1))] if carte else []
+        for lien in LIENS.findall(html) + rubriques:
             if lien not in vus:
                 vus.add(lien)
                 file.append(lien)

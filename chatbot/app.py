@@ -92,7 +92,7 @@ ASSISTANCE = re.compile(
 )
 # Aide en ligne d'un éditeur (origine des passages dans l'index) → logiciel concerné : écartée des questions sur un
 # autre logiciel
-AIDES = {"divalto_wiki": "Divalto Infinity", "bitrix_helpdesk": "Bitrix24"}
+AIDES = {"divalto_wiki": "Divalto Infinity", "bitrix_helpdesk": "Bitrix24", "powerbi_learn": "Power BI"}
 
 # Logiciel cité dans la question → intitulé de sa section dans consultants-mediasoft.md (Sage 50 avant Sage)
 LOGICIELS = [
