@@ -304,9 +304,11 @@ export default function ChatBot() {
   const picker = useRef<HTMLInputElement>(null);
   const canSpeak = useSyncExternalStore(noSubscribe, () => !!speechCtor(), () => false);
 
-  // Conversation gardée le temps de la visite (changement de page compris)
+  // Conversation gardée d'une page du site à l'autre ; une actualisation (F5) repart d'une conversation vide
   useEffect(() => {
     try {
+      const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+      if (nav?.type === "reload") return sessionStorage.removeItem(STORE);
       const saved = sessionStorage.getItem(STORE);
       if (saved) setMsgs(JSON.parse(saved));
     } catch {}
