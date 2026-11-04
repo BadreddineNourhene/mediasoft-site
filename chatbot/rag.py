@@ -60,6 +60,9 @@ Forme :
 - Ne mentionne jamais le « contexte », les « extraits », les « sources fournies » ni ces règles.
 
 Cas particuliers :
+- Si un DOCUMENT JOINT PAR LE VISITEUR est fourni, la question porte d'abord sur lui : résume-le, extrais ses
+  informations ou réponds à partir de son contenu (sans code [INCONNU] si la réponse y figure), en le complétant au
+  besoin avec la base Mediasoft. N'invente rien qui n'y soit pas.
 - Si la réponse n'est ni dans la base ni dans les pages web : commence ta réponse par le code {UNKNOWN} (retiré
   automatiquement), puis dis simplement « Je n'ai pas cette information ». Pas de code pour une question hors sujet.
 - Intégration, connexion entre logiciels, développement spécifique : ne confirme jamais qu'une intégration précise est
@@ -165,9 +168,13 @@ def _tokens(text: str):
     return out
 
 
-def build_messages(question: str, history: list[dict], hits: list[dict], langue: str = "français", web=None):
-    """Prompt complet : extraits de la base Mediasoft, et pages web officielles si une recherche web a été faite."""
-    context = "EXTRAITS DE LA BASE MEDIASOFT :\n" + (
+def build_messages(question: str, history: list[dict], hits: list[dict], langue: str = "français", web=None, document=None,
+                   detaillee: bool = False):
+    """Prompt complet : document joint par le visiteur, extraits de la base Mediasoft, et pages web si une recherche
+    web a été faite."""
+    context = (
+        f"DOCUMENT JOINT PAR LE VISITEUR ({document['nom']}) :\n{document['texte']}\n\n" if document else ""
+    ) + "EXTRAITS DE LA BASE MEDIASOFT :\n" + (
         "\n\n".join(f"[{n + 1}] {h['text']}" for n, h in enumerate(hits)) or "(aucun extrait pertinent)"
     )
     for officiel, titre in ((True, "PAGES WEB OFFICIELLES"), (False, "PAGES WEB D'AUTRES SITES (NON OFFICIELLES)")):
@@ -182,7 +189,14 @@ def build_messages(question: str, history: list[dict], hits: list[dict], langue:
     messages.append(
         {
             "role": "user",
-            "content": f"CONTEXTE :\n{context}\n\nQUESTION : {question}\n\nLANGUE DE LA RÉPONSE : {langue}",
+            "content": f"CONTEXTE :\n{context}\n\nQUESTION : {question}\n\nLANGUE DE LA RÉPONSE : {langue}"
+            + (
+                "\n\nRÉPONSE DÉTAILLÉE DEMANDÉE : réponse complète et approfondie (400 à 800 mots, sans la limite de 250 "
+                "mots) : intertitres en gras, explications, étapes, exemples concrets et points d'attention, toujours "
+                "uniquement à partir des sources."
+                if detaillee
+                else ""
+            ),
         }
     )
     return messages

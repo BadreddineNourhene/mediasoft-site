@@ -15,11 +15,12 @@ import re
 import time
 from collections import defaultdict, deque
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 import config
+import fichiers
 import langue
 import llm
 import rag
@@ -54,10 +55,21 @@ class Message(BaseModel):
     content: str
 
 
+class Document(BaseModel):
+    nom: str = Field(max_length=200)
+    texte: str = Field(max_length=fichiers.TEXTE_MAX)
+
+
 class ChatRequest(BaseModel):
     question: str = Field(min_length=1, max_length=config.MAX_QUESTION_CHARS)
     history: list[Message] = []
     lang: str = Field("", max_length=12)
+    # Bouton « Recherche web » du site : recherche sur internet pour chaque question, en plus de la base
+    web: bool = False
+    # Mode « Réponse détaillée » du menu + : réponse longue et structurée
+    detail: bool = False
+    # Fichier joint (texte extrait par /api/fichier), renvoyé avec chaque question de la conversation
+    document: Document | None = None
 
 
 # « Je n'ai pas cette information » dans les langues courantes : le modèle oublie parfois le code [INCONNU]
@@ -285,6 +297,20 @@ def health():
     return {"status": "ok", "provider": config.LLM_PROVIDER, "passages": len(kb.chunks), "models": llm.status()}
 
 
+@app.post("/api/fichier")
+async def fichier(request: Request, file: UploadFile = File(...), lang: str = ""):
+    """Texte d'un fichier joint (PDF, Word, Excel, CSV, texte) ; le fichier lui-même n'est pas conservé."""
+    code = langue.interface("", lang)
+    ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0].strip()
+    if _rate_limited(ip):
+        raise HTTPException(429, langue.message("trop", code))
+    data = await file.read(fichiers.TAILLE_MAX + 1)
+    try:
+        return fichiers.extraire(file.filename or "fichier", data)
+    except fichiers.FichierInvalide as e:
+        raise HTTPException(400, langue.message(f"fichier_{e}", code))
+
+
 @app.post("/api/chat")
 async def chat(body: ChatRequest, request: Request):
     ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0].strip()
@@ -299,7 +325,10 @@ async def chat(body: ChatRequest, request: Request):
     query = f"{previous} {question}".strip() if len(question) < 40 and previous else question
     dernier = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
     logiciel = next((label for motif, label in LOGICIELS if re.search(motif, query, re.I)), None)
-    if REDACTION.search(query):
+    doc = body.document.model_dump() if body.document else None
+    # Avec un fichier joint, la question porte sur le document : pas d'aiguillage vers l'assistant d'article ni vers
+    # « sur quel logiciel ? »
+    if REDACTION.search(query) and not doc:
         sujet = logiciel or ("Mediasoft" if re.search(r"mediasoft", question, re.I) else None)
         # Article sans précision : comme ChatGPT, plan proposé et choix (type, public, objectif) avant de rédiger ;
         # un post LinkedIn, une newsletter ou une demande déjà précisée sont rédigés directement
@@ -310,14 +339,14 @@ async def chat(body: ChatRequest, request: Request):
     # « Créer un article sur Divalto » : comme ChatGPT, on part sur un article rédigé (une fiche article se crée
     # « dans » le logiciel, cas traité plus bas avec la procédure)
     # « Créer un article » sans logiciel ni « comment » : rédaction (plan et formulaire, solution en 1re question)
-    if (ARTICLE_CREER.search(question) and not FICHE.search(question) and not NOMME.search(question)
+    if (not doc and ARTICLE_CREER.search(question) and not FICHE.search(question) and not NOMME.search(question)
             and not re.search(r"comment|[ée]tapes?|proc[ée]dure|how", question, re.I)):
         answer, choices = langue.assistant_article(None, lang)
         return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
-    if ARTICLE_SUR.search(question) and logiciel and not FICHE.search(question):
+    if not doc and ARTICLE_SUR.search(question) and logiciel and not FICHE.search(question):
         answer, choices = langue.assistant_article(logiciel, lang)
         return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
-    if ACTION_ERP.search(query) and not NOMME.search(query) and not NOMME.search(dernier):
+    if not doc and ACTION_ERP.search(query) and not NOMME.search(query) and not NOMME.search(dernier):
         answer, choices = langue.quel_logiciel(query, lang)
         return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
     # La base est en français et le modèle de recherche comprend mal les dialectes (derja, arabe tunisien) :
@@ -355,9 +384,16 @@ async def chat(body: ChatRequest, request: Request):
 
     web = []
     try:
-        if websearch.enabled() and (commerciale or base_faible or procedure):
+        if websearch.enabled() and (body.web or ((commerciale or base_faible or procedure) and not doc)):
             web = await websearch.search(await requete())
-        answer = await llm.generate(rag.build_messages(question, history, hits, nom_langue, web), hits)
+            # Recherche web demandée par le visiteur : tout le web aussi, pas seulement les sites officiels
+            if body.web:
+                vus = {r["url"] for r in web}
+                web += [r for r in await websearch.search(await requete(), officiel=False) if r["url"] not in vus]
+        answer = await llm.generate(
+            rag.build_messages(question, history, hits, nom_langue, web, doc, body.detail), hits,
+            max_tokens=4000 if body.detail else 1500,
+        )
         unknown = _inconnu(answer)
         # Toujours rien : sites officiels (si pas encore cherchés), puis tout le web en dernier recours
         if unknown and websearch.enabled():
@@ -369,7 +405,10 @@ async def chat(body: ChatRequest, request: Request):
                 if not plus:
                     continue
                 web += plus
-                retry = await llm.generate(rag.build_messages(question, history, hits, nom_langue, web), hits)
+                retry = await llm.generate(
+                    rag.build_messages(question, history, hits, nom_langue, web, doc, body.detail), hits,
+                    max_tokens=4000 if body.detail else 1500,
+                )
                 if retry and not _inconnu(retry):
                     answer, unknown = retry, False
                     break

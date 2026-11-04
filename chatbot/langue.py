@@ -87,6 +87,10 @@ MESSAGES = {
         "introuvable": "Je n'ai pas trouvé cette information. " + _CONTACT["fr"],
         "indisponible": "L'assistant est momentanément indisponible. ",
         "trop": "Trop de questions en peu de temps, merci de patienter une minute.",
+        "fichier_format": "Format non pris en charge. Joignez un PDF, un Word (.docx), un Excel (.xlsx), un CSV ou un fichier texte.",
+        "fichier_taille": "Fichier trop volumineux (10 Mo au plus).",
+        "fichier_lecture": "Je n'arrive pas à lire ce fichier. Vérifiez qu'il n'est pas protégé par un mot de passe.",
+        "fichier_vide": "Ce fichier ne contient pas de texte lisible (par exemple un PDF scanné).",
     },
     "en": {
         "contact": _CONTACT["en"],
@@ -94,6 +98,10 @@ MESSAGES = {
         "introuvable": "I couldn't find this information. " + _CONTACT["en"],
         "indisponible": "The assistant is temporarily unavailable. ",
         "trop": "Too many questions in a short time, please wait a minute.",
+        "fichier_format": "Unsupported format. Attach a PDF, Word (.docx), Excel (.xlsx), CSV or text file.",
+        "fichier_taille": "File too large (10 MB maximum).",
+        "fichier_lecture": "I can't read this file. Check that it isn't password-protected.",
+        "fichier_vide": "This file has no readable text (for example a scanned PDF).",
     },
     "ar": {
         "contact": _CONTACT["ar"],
@@ -101,6 +109,10 @@ MESSAGES = {
         "introuvable": "لم أجد هذه المعلومة. " + _CONTACT["ar"],
         "indisponible": "المساعد غير متاح حاليًا. ",
         "trop": "عدد كبير من الأسئلة في وقت قصير، يرجى الانتظار دقيقة.",
+        "fichier_format": "صيغة غير مدعومة. أرفق ملف PDF أو Word (.docx) أو Excel (.xlsx) أو CSV أو ملفًا نصيًا.",
+        "fichier_taille": "الملف كبير جدًا (10 ميغابايت كحد أقصى).",
+        "fichier_lecture": "لا أستطيع قراءة هذا الملف. تأكد من أنه غير محمي بكلمة مرور.",
+        "fichier_vide": "لا يحتوي هذا الملف على نص قابل للقراءة (مثل ملف PDF ممسوح ضوئيًا).",
     },
 }
 

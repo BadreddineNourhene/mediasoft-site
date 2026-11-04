@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
-import { Bot, Loader2, RotateCcw, Send, X } from "lucide-react";
+import { ArrowUp, Bot, Check, FileText, Globe, Lightbulb, Loader2, MessageCircle, Mic, Paperclip, PenLine, Plus, RotateCcw, Square, X } from "lucide-react";
 
 /* Assistant virtuel Mediasoft (RAG) : bulle en bas à gauche (Tidio reste en bas à droite sur l'accueil).
    Les réponses viennent de l'API Python du dossier mediasoft-chatbot, dont l'adresse est fixée au build
@@ -17,7 +17,18 @@ type Source = { title: string; url: string };
 /* Boutons proposés sous une réponse (envoyés par l'API) : une seule question sans « submit » → un clic envoie l'option
    (ou « template » où {0} est remplacé) ; sinon un choix par question puis « submit » envoie le template rempli. */
 type Choices = { questions: { label?: string; options: string[] }[]; note?: string; submit?: string; template?: string };
-type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; error?: boolean; choices?: Choices };
+type Msg = { role: "user" | "assistant"; content: string; sources?: Source[]; error?: boolean; choices?: Choices; file?: string };
+// Fichier joint : texte extrait par l'API (/api/fichier), renvoyé avec chaque question tant qu'il reste joint
+type Doc = { nom: string; texte: string };
+const ACCEPT = ".pdf,.docx,.xlsx,.xlsm,.csv,.txt,.md";
+// Dictée vocale du navigateur (Chrome, Edge, Safari) : le bouton micro n'apparaît que si elle existe
+type Speech = { lang: string; interimResults: boolean; continuous: boolean; start(): void; stop(): void;
+  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void) | null;
+  onend: (() => void) | null; onerror: ((e: { error: string }) => void) | null };
+const speechCtor = (): (new () => Speech) | undefined => {
+  const w = window as unknown as { SpeechRecognition?: new () => Speech; webkitSpeechRecognition?: new () => Speech };
+  return w.SpeechRecognition ?? w.webkitSpeechRecognition;
+};
 
 /* Textes de la bulle selon la langue du navigateur ; l'assistant, lui, répond dans la langue de chaque question. */
 const TEXTS = {
@@ -35,6 +46,29 @@ const TEXTS = {
     openLabel: "Ouvrir l’assistant Mediasoft",
     cta: "Une question ?",
     reset: "Nouvelle conversation",
+    attach: "Joindre un fichier (PDF, Word, Excel, CSV, texte)",
+    removeFile: "Retirer le fichier",
+    reading: "Lecture du fichier…",
+    summarize: "Résume ce document et dis-moi ce qu’il faut retenir.",
+    web: "Recherche web",
+    webD: "Trouver des informations récentes sur internet",
+    webShort: "Recherche",
+    plus: "Ajouter des fichiers et plus",
+    files: "Ajouter des fichiers",
+    filesD: "PDF, Word, Excel, CSV ou texte, depuis l’ordinateur",
+    detail: "Réponse détaillée",
+    detailD: "Une réponse complète et approfondie",
+    detailShort: "Détaillée",
+    article: "Rédiger un article",
+    articleD: "Plan, choix du type et du public, puis l’article",
+    articleAsk: "Je veux rédiger un article",
+    advisor: "Parler à un conseiller",
+    advisorD: "Sur WhatsApp, avec l’équipe Mediasoft",
+    removeMode: "Désactiver",
+    webOn: "Recherche web activée : chaque question est aussi cherchée sur internet",
+    mic: "Dicter ma question",
+    micStop: "Arrêter la dictée",
+    micDenied: "Accès au micro refusé : autorisez-le dans les réglages du navigateur pour dicter vos questions.",
     next: "Continuer",
     down: "L’assistant est momentanément indisponible. Merci de contacter l’équipe Mediasoft :\n- par e-mail : info@mediasoft.tn\n- par WhatsApp : +216 52 444 444\n- via la page Contactez-nous : https://mediasoft-site.onrender.com/contact",
   },
@@ -52,6 +86,29 @@ const TEXTS = {
     openLabel: "Open the Mediasoft assistant",
     cta: "Any question?",
     reset: "New conversation",
+    attach: "Attach a file (PDF, Word, Excel, CSV, text)",
+    removeFile: "Remove the file",
+    reading: "Reading the file…",
+    summarize: "Summarise this document and tell me the key points.",
+    web: "Web search",
+    webD: "Find recent information on the internet",
+    webShort: "Search",
+    plus: "Add files and more",
+    files: "Add files",
+    filesD: "PDF, Word, Excel, CSV or text, from your computer",
+    detail: "Detailed answer",
+    detailD: "A complete, in-depth answer",
+    detailShort: "Detailed",
+    article: "Write an article",
+    articleD: "Outline, type and audience, then the article",
+    articleAsk: "I want to write an article",
+    advisor: "Talk to an advisor",
+    advisorD: "On WhatsApp, with the Mediasoft team",
+    removeMode: "Turn off",
+    webOn: "Web search on: each question is also searched on the internet",
+    mic: "Dictate my question",
+    micStop: "Stop dictation",
+    micDenied: "Microphone access denied: allow it in your browser settings to dictate your questions.",
     next: "Continue",
     down: "The assistant is temporarily unavailable. Please contact the Mediasoft team:\n- by e-mail: info@mediasoft.tn\n- on WhatsApp: +216 52 444 444\n- through the Contact us page: https://mediasoft-site.onrender.com/contact",
   },
@@ -69,6 +126,29 @@ const TEXTS = {
     openLabel: "فتح مساعد ميدياسوفت",
     cta: "لديك سؤال؟",
     reset: "محادثة جديدة",
+    attach: "إرفاق ملف (PDF، Word، Excel، CSV، نص)",
+    removeFile: "إزالة الملف",
+    reading: "جارٍ قراءة الملف…",
+    summarize: "لخّص هذا المستند وأخبرني بأهم ما فيه.",
+    web: "بحث على الويب",
+    webD: "العثور على معلومات حديثة على الإنترنت",
+    webShort: "بحث",
+    plus: "إضافة ملفات والمزيد",
+    files: "إضافة ملفات",
+    filesD: "PDF أو Word أو Excel أو CSV أو نص، من الحاسوب",
+    detail: "إجابة مفصّلة",
+    detailD: "إجابة كاملة ومعمّقة",
+    detailShort: "مفصّلة",
+    article: "كتابة مقال",
+    articleD: "مخطط، اختيار النوع والجمهور، ثم المقال",
+    articleAsk: "أريد كتابة مقال",
+    advisor: "التحدث إلى مستشار",
+    advisorD: "عبر واتساب مع فريق ميدياسوفت",
+    removeMode: "إلغاء التفعيل",
+    webOn: "البحث على الويب مفعّل: يُبحث عن كل سؤال على الإنترنت أيضًا",
+    mic: "إملاء سؤالي",
+    micStop: "إيقاف الإملاء",
+    micDenied: "تم رفض الوصول إلى الميكروفون: اسمح به في إعدادات المتصفح لإملاء أسئلتك.",
     next: "متابعة",
     down: "المساعد غير متاح حاليًا. يرجى التواصل مع فريق ميدياسوفت:\n- عبر البريد الإلكتروني: info@mediasoft.tn\n- عبر واتساب: +216 52 444 444\n- عبر صفحة اتصل بنا: https://mediasoft-site.onrender.com/contact",
   },
@@ -228,6 +308,16 @@ export default function ChatBot() {
   const list = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const [slow, setSlow] = useState(false);
+  const [doc, setDoc] = useState<Doc | null>(null);
+  const [reading, setReading] = useState(false);
+  const [web, setWeb] = useState(false);
+  const [detail, setDetail] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const menuBox = useRef<HTMLDivElement>(null);
+  const [listening, setListening] = useState(false);
+  const rec = useRef<Speech | null>(null);
+  const picker = useRef<HTMLInputElement>(null);
+  const canSpeak = useSyncExternalStore(noSubscribe, () => !!speechCtor(), () => false);
 
   // Conversation gardée le temps de la visite (changement de page compris)
   useEffect(() => {
@@ -248,11 +338,19 @@ export default function ChatBot() {
     field.current?.focus();
     // Réveille le serveur (l'hébergement gratuit s'endort après 15 min) pendant que le visiteur écrit sa question
     fetch(`${API}/api/health`, { signal: AbortSignal.timeout(90_000) }).catch(() => {});
-    // Échap referme le panneau
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
   }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    // Échap referme le menu + s'il est ouvert, sinon le panneau ; un clic hors du menu le referme
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && (menu ? setMenu(false) : setOpen(false));
+    const onDown = (e: MouseEvent) => menu && !menuBox.current?.contains(e.target as Node) && setMenu(false);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("mousedown", onDown);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("mousedown", onDown);
+    };
+  }, [open, menu]);
 
 
   useEffect(() => {
@@ -273,10 +371,13 @@ export default function ChatBot() {
   const T = TEXTS[lang];
 
   const ask = async (question: string) => {
-    const q = question.trim();
-    if (!q || busy) return;
+    rec.current?.stop();
+    const q = question.trim() || (doc ? T.summarize : "");
+    if (!q || busy || reading) return;
     const history = msgs.filter((m) => !m.error).map(({ role, content }) => ({ role, content }));
-    setMsgs((m) => [...m, { role: "user", content: q }]);
+    // Le nom du fichier s'affiche sur la première question posée après l'avoir joint
+    const first = !!doc && !msgs.some((m) => m.file === doc.nom);
+    setMsgs((m) => [...m, { role: "user", content: q, file: first ? doc?.nom : undefined }]);
     setInput("");
     setBusy(true);
     try {
@@ -284,7 +385,7 @@ export default function ChatBot() {
       const res = await fetch(`${API}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q.slice(0, 600), history, lang: navigator.language }),
+        body: JSON.stringify({ question: q.slice(0, 600), history, lang: navigator.language, web, detail, document: doc }),
         signal: AbortSignal.timeout(150_000),
       });
       const json = await res.json().catch(() => ({}));
@@ -300,6 +401,59 @@ export default function ChatBot() {
     } finally {
       setBusy(false);
     }
+  };
+
+  // Fichier : l'API en extrait le texte (le fichier n'est pas conservé) ; une erreur s'affiche dans la conversation
+  const attach = async (file: File | undefined) => {
+    if (!file) return;
+    setReading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch(`${API}/api/fichier?lang=${encodeURIComponent(navigator.language)}`, {
+        method: "POST",
+        body: form,
+        signal: AbortSignal.timeout(60_000),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.detail || "Erreur");
+      setDoc({ nom: json.nom, texte: json.texte });
+      field.current?.focus();
+    } catch (e) {
+      const detail = e instanceof Error && e.name === "Error" ? e.message : "";
+      setMsgs((m) => [...m, { role: "assistant", error: true, content: detail || T.down }]);
+    } finally {
+      setReading(false);
+      if (picker.current) picker.current.value = "";
+    }
+  };
+
+  // Dictée : le texte reconnu s'ajoute à ce qui est déjà écrit ; un second appui arrête
+  const toggleMic = () => {
+    if (listening) return rec.current?.stop();
+    const Ctor = speechCtor();
+    if (!Ctor) return;
+    const r = new Ctor();
+    r.lang = navigator.language || "fr-FR";
+    r.interimResults = true;
+    r.continuous = false;
+    const base = input.trim();
+    r.onresult = (e) => {
+      const said = Array.from(e.results, (res) => res[0].transcript).join(" ");
+      setInput(base ? `${base} ${said}` : said);
+    };
+    r.onerror = (e) => {
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+        setMsgs((m) => [...m, { role: "assistant", error: true, content: T.micDenied }]);
+      }
+    };
+    r.onend = () => {
+      setListening(false);
+      rec.current = null;
+    };
+    rec.current = r;
+    setListening(true);
+    r.start();
   };
 
   const onSubmit = (e: FormEvent) => {
@@ -336,7 +490,7 @@ export default function ChatBot() {
                 <span className="mt-0.5 block text-[13px] text-white/80">{T.notice}</span>
               </span>
               {msgs.length > 0 && (
-                <button type="button" onClick={() => setMsgs([])} className="grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-white/15 active:bg-white/25" aria-label={T.reset} title={T.reset}>
+                <button type="button" onClick={() => { setMsgs([]); setDoc(null); }} className="grid h-11 w-11 shrink-0 place-items-center rounded-full hover:bg-white/15 active:bg-white/25" aria-label={T.reset} title={T.reset}>
                   <RotateCcw size={18} />
                 </button>
               )}
@@ -361,6 +515,11 @@ export default function ChatBot() {
                     m.role === "user" ? "rounded-br-md bg-[#1f5fff] text-white" : m.error ? "rounded-bl-md bg-[#fff1ef] text-[#8a2a14]" : "rounded-bl-md bg-white text-[#0b1b33] shadow-sm ring-1 ring-[#00193a]/10"
                   }`}
                 >
+                  {m.file && (
+                    <span className="mb-1.5 flex items-center gap-1.5 rounded-lg bg-white/15 px-2 py-1 text-[13px] font-medium">
+                      <FileText size={14} aria-hidden /> <span className="truncate">{m.file}</span>
+                    </span>
+                  )}
                   {m.role === "assistant" ? renderAnswer(m.content) : m.content}
                   {!!m.sources?.length && (
                     <span className="mt-2 flex flex-col gap-1 border-t border-line pt-2">
@@ -385,27 +544,130 @@ export default function ChatBot() {
             )}
             </div>
 
-            <form onSubmit={onSubmit} className="flex items-end gap-2 border-t border-[#00193a]/10 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
-              <textarea
-                ref={field}
-                rows={1}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                    e.preventDefault();
-                    ask(input);
-                  }
-                }}
-                maxLength={600}
-                dir="auto"
-                placeholder={T.placeholder}
-                aria-label={T.placeholder}
-                className="min-h-12 min-w-0 flex-1 resize-none rounded-3xl border border-[#00193a]/15 bg-[#f4f7fb] px-5 py-3 text-[15px] leading-6 outline-none transition-colors focus:border-[#1f5fff] focus:bg-white"
-              />
-              <button type="submit" disabled={busy || !input.trim()} className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1f5fff] text-white shadow-[0_8px_20px_-6px_rgba(31,95,255,0.7)] transition active:scale-95 disabled:opacity-40 disabled:active:scale-100" aria-label={T.send}>
-                <Send size={18} className={lang === "ar" ? "-scale-x-100" : ""} />
-              </button>
+            <form onSubmit={onSubmit} className="border-t border-[#00193a]/10 bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+              <input ref={picker} type="file" accept={ACCEPT} hidden onChange={(e) => attach(e.target.files?.[0])} />
+              <div ref={menuBox} className="relative">
+                {/* Menu « + » comme ChatGPT : s'ouvre au-dessus de la zone de saisie */}
+                {menu && (
+                  <div role="menu" aria-label={T.plus} className="absolute bottom-full start-0 z-10 mb-2 w-[min(380px,100%)] rounded-2xl border border-[#00193a]/12 bg-white p-1.5 shadow-[0_18px_50px_-12px_rgba(0,25,58,0.35)] motion-safe:animate-[chatbot-fade_0.15s_ease-out]">
+                    {(
+                      [
+                        { icon: Paperclip, label: T.files, desc: T.filesD, run: () => picker.current?.click() },
+                        { icon: Globe, label: T.web, desc: T.webD, on: web, run: () => setWeb((v) => !v) },
+                        { icon: Lightbulb, label: T.detail, desc: T.detailD, on: detail, run: () => setDetail((v) => !v) },
+                        { icon: PenLine, label: T.article, desc: T.articleD, run: () => ask(T.articleAsk) },
+                        { icon: MessageCircle, label: T.advisor, desc: T.advisorD, run: () => window.open(`https://wa.me/${WHATSAPP}`, "_blank", "noopener") },
+                      ] as { icon: typeof Globe; label: string; desc: string; on?: boolean; run: () => void }[]
+                    ).map(({ icon: Icon, label, desc, on, run }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        role={on === undefined ? "menuitem" : "menuitemcheckbox"}
+                        aria-checked={on}
+                        disabled={busy && label === T.article}
+                        onClick={() => {
+                          setMenu(false);
+                          run();
+                          field.current?.focus();
+                        }}
+                        className="flex min-h-11 w-full items-center gap-3 rounded-xl px-3 py-2 text-start transition-colors hover:bg-[#f4f7fb] active:bg-[#e8eef8] disabled:opacity-40"
+                      >
+                        <Icon size={18} className={on ? "shrink-0 text-[#1f5fff]" : "shrink-0 text-[#0b1b33]"} aria-hidden />
+                        <span className="min-w-0 flex-1 leading-tight">
+                          <span className="block text-[14.5px] font-medium text-[#0b1b33]">{label}</span>
+                          <span className="block text-[13px] text-[#0b1b33]/65">{desc}</span>
+                        </span>
+                        {on && <Check size={18} className="shrink-0 text-[#1f5fff]" aria-hidden />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="rounded-[28px] border border-[#00193a]/15 bg-white p-1.5 shadow-[0_4px_18px_-8px_rgba(0,25,58,0.25)] transition-colors focus-within:border-[#1f5fff]">
+                  {(doc || reading) && (
+                    <div className="flex px-1.5 pb-1 pt-1">
+                      <span className="flex max-w-full items-center gap-2 rounded-xl border border-[#00193a]/12 bg-[#f4f7fb] py-1.5 pe-1 ps-2.5 text-[13.5px] text-[#0b1b33]">
+                        {reading ? <Loader2 size={16} className="shrink-0 motion-safe:animate-spin" aria-hidden /> : <FileText size={16} className="shrink-0 text-[#1f5fff]" aria-hidden />}
+                        <span className="truncate">{reading ? T.reading : doc?.nom}</span>
+                        {doc && !reading && (
+                          <button type="button" onClick={() => setDoc(null)} className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-white active:bg-[#e8eef8]" aria-label={T.removeFile} title={T.removeFile}>
+                            <X size={14} />
+                          </button>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-end gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setMenu((v) => !v)}
+                      aria-haspopup="menu"
+                      aria-expanded={menu}
+                      aria-label={T.plus}
+                      title={T.plus}
+                      className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition-colors ${menu ? "bg-[#00193a]/10" : "hover:bg-[#00193a]/[0.06]"} active:bg-[#00193a]/10`}
+                    >
+                      <Plus size={20} className={`transition-transform ${menu ? "rotate-45" : ""}`} />
+                    </button>
+                    <textarea
+                      ref={field}
+                      rows={1}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                          e.preventDefault();
+                          ask(input);
+                        }
+                      }}
+                      maxLength={600}
+                      dir="auto"
+                      placeholder={T.placeholder}
+                      aria-label={T.placeholder}
+                      className="block max-h-[132px] min-h-11 min-w-0 flex-1 resize-none overflow-y-auto bg-transparent px-1 py-2.5 text-[15px] leading-6 outline-none [scrollbar-width:thin]"
+                    />
+                    {/* Modes actifs (comme « Think » chez ChatGPT) : un clic les désactive */}
+                    {(
+                      [
+                        { on: web, icon: Globe, label: T.webShort, off: () => setWeb(false) },
+                        { on: detail, icon: Lightbulb, label: T.detailShort, off: () => setDetail(false) },
+                      ] as const
+                    ).map(({ on, icon: Icon, label, off }) =>
+                      on ? (
+                        <button
+                          key={label}
+                          type="button"
+                          onClick={off}
+                          title={`${T.removeMode} : ${label}`}
+                          aria-label={`${T.removeMode} : ${label}`}
+                          className="group flex h-11 shrink-0 items-center gap-1.5 rounded-full px-3 text-[14px] font-medium text-[#1f5fff] hover:bg-[#1f5fff]/10 active:bg-[#1f5fff]/15"
+                        >
+                          <Icon size={17} className="group-hover:hidden" aria-hidden />
+                          <X size={17} className="hidden group-hover:block" aria-hidden />
+                          <span className="hidden sm:inline">{label}</span>
+                        </button>
+                      ) : null,
+                    )}
+                    {canSpeak && (
+                      <button
+                        type="button"
+                        onClick={toggleMic}
+                        aria-pressed={listening}
+                        aria-label={listening ? T.micStop : T.mic}
+                        title={listening ? T.micStop : T.mic}
+                        className={`grid h-11 w-11 shrink-0 place-items-center rounded-full transition-colors ${
+                          listening ? "bg-[#e5484d] text-white motion-safe:animate-pulse" : "text-[#0b1b33] hover:bg-[#00193a]/[0.06] active:bg-[#00193a]/10"
+                        }`}
+                      >
+                        {listening ? <Square size={16} fill="currentColor" /> : <Mic size={20} />}
+                      </button>
+                    )}
+                    <button type="submit" disabled={busy || reading || (!input.trim() && !doc)} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#1f5fff] text-white transition hover:bg-[#0b47e0] active:scale-95 disabled:bg-[#00193a]/15 disabled:active:scale-100" aria-label={T.send}>
+                      <ArrowUp size={20} />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </form>
           </section>
         </>
