@@ -20,7 +20,13 @@ def _pdf(data: bytes) -> str:
     from pypdf import PdfReader
 
     reader = PdfReader(io.BytesIO(data))
-    return "\n\n".join((page.extract_text() or "").strip() for page in reader.pages)
+    pages, n = [], 0
+    for page in reader.pages:  # lecture arrêtée dès que le texte gardé est atteint (long PDF : quelques secondes)
+        pages.append((page.extract_text() or "").strip())
+        n += len(pages[-1])
+        if n > TEXTE_MAX:
+            break
+    return "\n\n".join(pages)
 
 
 def _docx(data: bytes) -> str:
@@ -38,12 +44,15 @@ def _xlsx(data: bytes) -> str:
     import openpyxl
 
     wb = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
-    lignes = []
+    lignes, n = [], 0
     for ws in wb.worksheets:
         lignes.append(f"## Feuille {ws.title}")
         for row in ws.iter_rows(values_only=True):
             if any(v is not None for v in row):
                 lignes.append(" | ".join("" if v is None else str(v) for v in row))
+                n += len(lignes[-1])
+                if n > TEXTE_MAX:  # même arrêt que pour un PDF
+                    return "\n".join(lignes)
     return "\n".join(lignes)
 
 

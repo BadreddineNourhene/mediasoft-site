@@ -11,6 +11,7 @@
 Lancement local :  uvicorn app:app --port 8000
 """
 
+import asyncio
 import re
 import time
 from collections import defaultdict, deque
@@ -310,7 +311,8 @@ async def fichier(request: Request, file: UploadFile = File(...), lang: str = ""
         raise HTTPException(429, langue.message("trop", code))
     data = await file.read(fichiers.TAILLE_MAX + 1)
     try:
-        return fichiers.extraire(file.filename or "fichier", data)
+        # Lecture dans un fil à part : un gros fichier ne bloque pas les questions des autres visiteurs
+        return await asyncio.to_thread(fichiers.extraire, file.filename or "fichier", data)
     except fichiers.FichierInvalide as e:
         raise HTTPException(400, langue.message(f"fichier_{e}", code))
 
