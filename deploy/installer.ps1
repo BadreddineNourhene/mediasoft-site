@@ -47,11 +47,17 @@ $liaisons = @()
 foreach ($s in @($ancien) + @(Get-Website | Where-Object Name -eq $NomSite)) {
     foreach ($b in $s.Bindings.Collection) {
         if ($b.bindingInformation -like "*:$Domaine" -and -not ($liaisons | Where-Object { $_.bindingInformation -eq $b.bindingInformation -and $_.protocol -eq $b.protocol })) {
-            $liaisons += @{ protocol = $b.protocol; bindingInformation = $b.bindingInformation; sslFlags = $b.sslFlags }
+            # IIS rend l'option SSL en texte (« Sni », « CentralCertStore ») ou en nombre : la création attend un nombre
+            $f = "$($b.sslFlags)"
+            $flags = if ($f -match '^\d+$') { [int]$f } else { ([int]($f -match 'Sni')) + 2 * [int]($f -match 'Central') }
+            $liaisons += @{ protocol = $b.protocol; bindingInformation = $b.bindingInformation; sslFlags = $flags }
         }
     }
 }
-if (-not $liaisons) { $liaisons = @(@{ protocol = "http"; bindingInformation = "*:80:$Domaine"; sslFlags = 0 }) }
+# http (port 80) pour ce domaine : la règle du web.config redirige vers https
+if (-not ($liaisons | Where-Object { $_.protocol -eq "http" })) {
+    $liaisons += @{ protocol = "http"; bindingInformation = "*:80:$Domaine"; sslFlags = 0 }
+}
 Write-Host "Ancien site arrêté : $(($ancien | ForEach-Object Name) -join ', ')"
 Write-Host "Liaisons reprises : $(($liaisons | ForEach-Object { "$($_.protocol) $($_.bindingInformation)" }) -join ' ; ')"
 if (-not ($liaisons | Where-Object protocol -eq "https")) {
