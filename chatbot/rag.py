@@ -103,7 +103,8 @@ class KnowledgeBase:
         self.postings = {t: (np.array(ids, dtype=np.int32), np.array(fs, dtype=np.float32)) for t, (ids, fs) in postings.items()}
         n = len(docs)
         self.idf = {t: math.log(1 + (n - len(ids) + 0.5) / (len(ids) + 0.5)) for t, (ids, _) in self.postings.items()}
-        # Origine de chaque passage (ex. « divalto_wiki ») : permet d'écarter l'aide Divalto d'une question sur Sage
+        # Origine de chaque passage (« divalto_wiki », « bitrix_helpdesk ») : permet d'écarter l'aide d'un éditeur
+        # d'une question sur un autre logiciel
         self.source = np.array([c.get("source", "") for c in self.chunks])
 
     def _bm25(self, query: str, k1=1.5, b=0.75):
@@ -115,7 +116,7 @@ class KnowledgeBase:
                 scores[ids] += self.idf[t] * f * (k1 + 1) / (f + k1 * (1 - b + b * self.doc_len[ids] / avg))
         return scores
 
-    def search(self, query: str | list[str], k: int = config.TOP_K, sans: str | None = None):
+    def search(self, query: str | list[str], k: int = config.TOP_K, sans: tuple[str, ...] = ()):
         """Passages les plus utiles pour la requête, ou pour [question, traduction française].
 
         Deux classements fusionnés par rang (« reciprocal rank fusion ») : proximité de sens (embeddings, sur toutes les
@@ -127,8 +128,8 @@ class KnowledgeBase:
         q = self.model.embed(queries)
         sem = (self.vectors @ q.T).max(axis=1)
         lex = self._bm25(queries[-1])
-        if sans:  # passages d'une origine écartée (« sans ») : jamais retenus
-            exclus = self.source == sans
+        if sans:  # passages des origines écartées (« sans ») : jamais retenus
+            exclus = np.isin(self.source, sans)
             sem, lex = np.where(exclus, -1.0, sem), np.where(exclus, 0.0, lex)
         lex_norm = lex / lex.max() if lex.max() > 0 else lex
 

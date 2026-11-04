@@ -90,6 +90,10 @@ ASSISTANCE = re.compile(
     r"issue|error|problem|help|contact|who |mochkla|mouchkla|ma ye5dem|ma y7el|t3atl|مشكل|خطأ|مساعدة|اتصل|عطل",
     re.I,
 )
+# Aide en ligne d'un éditeur (origine des passages dans l'index) → logiciel concerné : écartée des questions sur un
+# autre logiciel
+AIDES = {"divalto_wiki": "Divalto Infinity", "bitrix_helpdesk": "Bitrix24"}
+
 # Logiciel cité dans la question → intitulé de sa section dans consultants-mediasoft.md (Sage 50 avant Sage)
 LOGICIELS = [
     (r"divalto", "Divalto Infinity"),
@@ -217,9 +221,9 @@ def _sans_double_contact(answer: str) -> str:
 async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, lang: str):
     """Rédige un article (ou un post) à partir de passages variés de la base sur le logiciel demandé."""
     sujet = logiciel or "Mediasoft"
-    # L'aide en ligne Divalto (procédures, paramétrage) sert l'article technique sur Divalto ; un article marketing
-    # s'appuie sur les pages de présentation
-    sans = None if sujet == "Divalto Infinity" and re.search(r"technique", demande, re.I) else "divalto_wiki"
+    # Les aides en ligne (procédures, paramétrage) servent l'article technique sur leur logiciel ; un article
+    # marketing s'appuie sur les pages de présentation
+    sans = tuple(s for s in AIDES if not (re.search(r"technique", demande, re.I) and AIDES[s] == sujet))
     hits, vus = [], set()
     for q in (
         f"{sujet} présentation du logiciel",
@@ -355,7 +359,7 @@ async def chat(body: ChatRequest, request: Request):
     if detectee != "fr":
         queries.append(await llm.translate_query(query))
     # Question sur un autre logiciel que Divalto : l'aide en ligne Divalto est écartée
-    sans = "divalto_wiki" if logiciel and logiciel != "Divalto Infinity" else None
+    sans = tuple(s for s, lui in AIDES.items() if logiciel and logiciel != lui)
     hits = _consultants(f"{question} {queries[-1]}", kb.search(queries, sans=sans))
 
     history = [m.model_dump() for m in body.history]

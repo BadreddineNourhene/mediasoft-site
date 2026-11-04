@@ -6,7 +6,9 @@ Sources :
   2. les fichiers Markdown du dossier base-rag/connaissances/ (faits rédigés à la main : coordonnées, services…) ;
   3. la base des documentations officielles des éditeurs (base-rag/rag_knowledge_base.jsonl, produite par
      base-rag/build_base.py) : Sage, Divalto, Bitrix24, Microsoft 365 ;
-  4. l'aide en ligne officielle Divalto (base-rag/divalto_wiki.jsonl, produite par base-rag/import_divalto_wiki.py).
+  4. l'aide en ligne officielle Divalto (base-rag/divalto_wiki.jsonl, produite par base-rag/import_divalto_wiki.py) ;
+  5. l'aide en ligne officielle Bitrix24 (base-rag/bitrix24_helpdesk.jsonl, produite par
+     base-rag/import_bitrix24_helpdesk.py).
 
 Chaque page est découpée en passages (environ 900 caractères, rattachés à leur titre), puis chaque
 passage est transformé en vecteur par un modèle d'embeddings gratuit exécuté en local.
@@ -31,7 +33,11 @@ from embedder import Embedder
 
 PUBLIC_SITE = "https://www.mediasoft.tn"
 RAG_BASE = config.BASE_DIR / "rag_knowledge_base.jsonl"
-DIVALTO_WIKI = config.BASE_DIR / "divalto_wiki.jsonl"
+# Aides en ligne des éditeurs : fichier, origine des passages (filtre par logiciel dans rag.py), titre affiché
+AIDES = [
+    (config.BASE_DIR / "divalto_wiki.jsonl", "divalto_wiki", "Aide Divalto"),
+    (config.BASE_DIR / "bitrix24_helpdesk.jsonl", "bitrix_helpdesk", "Aide Bitrix24"),
+]
 CHUNK_CHARS = 900
 SKIP_FILES = {"404.html", "_not-found.html", "login.html", "politique-de-confidentialite.html", "assistance.html"}
 # Textes d'interface sans intérêt pour répondre aux clients
@@ -164,26 +170,31 @@ def main():
                 add(e["chunk"], f"{e['logiciel']} : {e['titre']}", e.get("source_url"))
                 n_editeur += len(chunks) - before
 
-    # Aide en ligne officielle Divalto (base-rag/import_divalto_wiki.py) : chaque passage garde le chemin de sa page
+    # Aides en ligne officielles (Divalto, Bitrix24) : chaque passage garde le chemin de sa page
     # (« Commerce > Fichiers > Article ») et le lien vers la page, cité dans les réponses
-    n_wiki = 0
-    if DIVALTO_WIKI.exists():
-        for line in DIVALTO_WIKI.read_text(encoding="utf-8").splitlines():
+    n_aides = {}
+    for fichier, source, nom in AIDES:
+        n_aides[nom] = 0
+        if not fichier.exists():
+            continue
+        for line in fichier.read_text(encoding="utf-8").splitlines():
             try:
                 p = json.loads(line)
             except ValueError:  # dernière ligne incomplète pendant un import en cours
                 continue
-            title = f"Aide Divalto : {p['titre']}"
+            title = f"{nom} : {p['titre']}"
             chemin = " > ".join(p["chemin"] + [p["titre"]])
             for heading, lines in p["sections"]:
-                for c in chunk(f"Aide officielle {p['espace']} — {chemin}", heading if heading != p["titre"] else "", lines):
+                for c in chunk(f"{p['espace']} — {chemin}", heading if heading != p["titre"] else "", lines):
                     before = len(chunks)
-                    add(c, title, p["url"], source="divalto_wiki")
-                    n_wiki += len(chunks) - before
+                    add(c, title, p["url"], source=source)
+                    n_aides[nom] += len(chunks) - before
 
     print(
         f"{n_pages} pages du site + {len(list(config.KNOWLEDGE_DIR.glob('*.md')))} fichier(s) de connaissances "
-        f"+ {n_editeur} entrées des éditeurs + {n_wiki} passages de l'aide Divalto : {len(chunks)} passages"
+        f"+ {n_editeur} entrées des éditeurs + "
+        + " + ".join(f"{n} passages ({nom})" for nom, n in n_aides.items())
+        + f" : {len(chunks)} passages"
     )
     # Le modèle tourne sur un seul cœur (pour garder peu de mémoire en service) : pour indexer des dizaines de
     # milliers de passages, on répartit le calcul sur plusieurs processus

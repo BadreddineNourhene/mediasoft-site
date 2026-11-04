@@ -40,7 +40,7 @@ WEB_SEARCH_DOMAINS = [
         "sage.com,sage100cloud.online-help.sage.fr,fr-kb.sage.com,"
         # Divalto : site et aide en ligne officielle (Confluence)
         "divalto.com,divalto.atlassian.net,"
-        "bitrix24.com,bitrix24.fr,helpdesk.bitrix24.com,helpdesk.bitrix24.fr,apidocs.bitrix24.com,"
+        "bitrix24.com,bitrix24.fr,helpdesk.bitrix24.com,helpdesk.bitrix24.fr,apidocs.bitrix24.com,training.bitrix24.com,"
         "support.microsoft.com,learn.microsoft.com,microsoft.com",
     ).split(",")
     if d.strip()
