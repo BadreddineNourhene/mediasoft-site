@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
+import { usePathname } from "next/navigation";
 import { ArrowUp, Bot, Check, FileText, Globe, Lightbulb, Loader2, Mic, Paperclip, Plus, RotateCcw, Square, X } from "lucide-react";
 
 /* Assistant virtuel Mediasoft (RAG) : bulle en bas à gauche (Tidio reste en bas à droite sur l'accueil).
@@ -324,6 +325,21 @@ export default function ChatBot() {
   const rec = useRef<Speech | null>(null);
   const picker = useRef<HTMLInputElement>(null);
   const canSpeak = useSyncExternalStore(noSubscribe, () => !!speechCtor(), () => false);
+  // Pied de page visible : la bulle s'efface pour ne pas cacher ses liens et le copyright. Le pied de page est rendu
+  // par chaque page, d'où une nouvelle observation à chaque changement de page.
+  const pathname = usePathname();
+  const [footer, setFooter] = useState(false);
+  useEffect(() => {
+    const el = document.querySelector("footer");
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const obs = new IntersectionObserver(([e]) => setFooter(e.isIntersecting), { threshold: 0 });
+    obs.observe(el);
+    // Page suivante sans pied de page encore visible : la bulle réapparaît
+    return () => {
+      obs.disconnect();
+      setFooter(false);
+    };
+  }, [pathname]);
 
   // Conversation gardée d'une page du site à l'autre ; une actualisation (F5) repart d'une conversation vide
   useEffect(() => {
@@ -724,9 +740,15 @@ export default function ChatBot() {
 
       {!open && (
       // Bulle de lancement, en bas à gauche
-      <div className="fixed bottom-4 left-4 z-[90] print:hidden sm:bottom-5 sm:left-5">
+      <div
+        className={`fixed bottom-4 left-4 z-[90] transition-all duration-300 print:hidden sm:bottom-5 sm:left-5 ${
+          footer ? "pointer-events-none translate-y-6 opacity-0" : "translate-y-0 opacity-100"
+        }`}
+        aria-hidden={footer || undefined}
+      >
       <button
         type="button"
+        tabIndex={footer ? -1 : undefined}
         onClick={() => setOpen(true)}
         aria-expanded={false}
         aria-label={T.openLabel}

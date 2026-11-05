@@ -40,9 +40,13 @@ MANUEL = {
     ("Divalto", "Administration (installation, utilisateurs, serveur)"): [
         {"nom": "Amir Smati", "email": "smati.amir@mediasoft.tn"},
         {"nom": "Habib Njeh", "email": "habib.njeh@mediasoft.com.tn"},
-        {"nom": "Mayar Nefzi", "email": "nefzi.mayar@mediasoft.com.tn"},
+    ],
+    ("Web", "Développement fullstack (sites web, applications web, intégrations)"): [
+        {"nom": "Amine Cherni", "email": "cherni.amine@mediasoft.tn"},
     ],
 }
+# Retirés de la liste à la demande de l'équipe Mediasoft, même s'ils ont traité des tickets
+EXCLUS = {"nefzi.mayar@mediasoft.com.tn"}
 # Consultant(s) ajouté(s) à l'Administration de TOUS les logiciels (choix de l'équipe Mediasoft)
 ADMIN_TOUS = [{"nom": "Walid Borgi", "email": "borgi.walid@mediasoft.tn"}]
 ADMIN = "Administration (installation, utilisateurs, serveur)"
@@ -82,6 +86,8 @@ def fetch():
         u = users.get(r["email"], {})
         if u.get("hsdt") and str(u["hsdt"])[:10] <= date.today().isoformat():
             continue  # a quitté Mediasoft
+        if r["email"] in EXCLUS:
+            continue
         produit, module = str(r["Produit"]).strip(), MODULES.get(str(r["Module"]).strip(), str(r["Module"]).strip())
         if produit not in PRODUITS:
             continue

@@ -5,7 +5,7 @@ Pour un problème, un bug ou une question sur un module précis, le client peut 
 ## Consultants à contacter pour Divalto Infinity : bug, problème ou assistance, par module
 
 Consultants Mediasoft de Divalto Infinity, par module (écrire au(x) consultant(s) de la ligne du module concerné) :
-- Administration (installation, utilisateurs, serveur) : Amir Smati (smati.amir@mediasoft.tn), Habib Njeh (habib.njeh@mediasoft.com.tn), Mayar Nefzi (nefzi.mayar@mediasoft.com.tn), Walid Borgi (borgi.walid@mediasoft.tn)
+- Administration (installation, utilisateurs, serveur) : Amir Smati (smati.amir@mediasoft.tn), Habib Njeh (habib.njeh@mediasoft.com.tn), Walid Borgi (borgi.walid@mediasoft.tn)
 - Gestion à l'affaire : Hamed Lajnef (lajnef.hamed@mediasoft.tn), Amir Smati (smati.amir@mediasoft.tn)
 - Comptabilité : Hamed Lajnef (lajnef.hamed@mediasoft.tn), Rakia Arbia Borgi (borgi.rakia@mediasoft.tn), Amir Smati (smati.amir@mediasoft.tn)
 - ERP (paramétrage général) : Hamed Lajnef (lajnef.hamed@mediasoft.tn), Rakia Arbia Borgi (borgi.rakia@mediasoft.tn), Ammar Guitouni (guitouni.ammar@mediasoft.tn)
@@ -61,5 +61,6 @@ Consultants Mediasoft de l'informatique technique (serveurs, réseau, installati
 ## Consultants à contacter pour les sites et applications web : bug, problème ou assistance, par module
 
 Consultants Mediasoft de les sites et applications web, par module (écrire au(x) consultant(s) de la ligne du module concerné) :
+- Développement fullstack (sites web, applications web, intégrations) : Amine Cherni (cherni.amine@mediasoft.tn)
 - CRM : Ammar Guitouni (guitouni.ammar@mediasoft.tn), Oussama Mamou (mamou.oussama@mediasoft.tn)
 - Administration (installation, utilisateurs, serveur) : Walid Borgi (borgi.walid@mediasoft.tn)
