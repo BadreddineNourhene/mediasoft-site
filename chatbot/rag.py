@@ -53,6 +53,7 @@ Forme :
   ligne, les réponses possibles à cliquer : « CHOIX : réponse 1 | réponse 2 | réponse 3 » (2 à 5 réponses courtes,
   dans la langue de la réponse). Chaque réponse doit se comprendre seule, sans la question : ex. « CHOIX : Entreprise
   de 1 à 5 employés | Entreprise de 6 à 20 employés | Entreprise de plus de 20 employés » (jamais « 1 à 5 » seul).
+  Le visiteur peut cocher plusieurs réponses : ne propose jamais une réponse qui en combine d'autres (« A + B + C »).
 - Si le visiteur répond à ta question précédente (ex. « Entreprise de 1 à 5 employés »), ne repose pas la question :
   réponds à sa demande initiale en tenant compte de cette précision.
 - N'ajoute jamais toi-même les coordonnées de contact en fin de réponse : elles sont ajoutées automatiquement quand il
