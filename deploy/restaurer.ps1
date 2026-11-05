@@ -7,7 +7,8 @@ Import-Module WebAdministration
 Stop-Website -Name $NomSite -ErrorAction SilentlyContinue
 Stop-ScheduledTask -TaskName "Mediasoft Chatbot" -ErrorAction SilentlyContinue
 Disable-ScheduledTask -TaskName "Mediasoft Chatbot" -ErrorAction SilentlyContinue | Out-Null
-Get-NetTCPConnection -LocalPort 8010 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+Get-NetTCPConnection -LocalPort 8010 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique |
+    ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }  # déjà fermé par l'arrêt de la tâche : rien à faire
 if (Test-Path "$ici\ancien-site.txt") {
     foreach ($s in (Get-Content "$ici\ancien-site.txt" -Encoding UTF8).Split("|")) {
         if ($s) { Start-Website -Name $s; Write-Host "Site « $s » redémarré" -ForegroundColor Green }

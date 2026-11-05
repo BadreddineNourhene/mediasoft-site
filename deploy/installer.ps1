@@ -73,7 +73,8 @@ if ($manque) { Arret "paquet incomplet dans $ici (manque : $($manque -join ', ')
 # ---------------------------------------------------------------- 2. Chatbot : fichiers et dépendances Python
 Etape "2/7 Chatbot : copie et dépendances (premier lancement : quelques minutes)"
 Stop-ScheduledTask -TaskName $tache -ErrorAction SilentlyContinue
-Get-NetTCPConnection -LocalPort 8010 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
+Get-NetTCPConnection -LocalPort 8010 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique |
+    ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }  # déjà fermé par l'arrêt de la tâche : rien à faire
 # /E : ajoute et remplace, ne supprime rien dans le chatbot installé
 robocopy "$ici\chatbot" $DossierChatbot /E /XD venv logs /R:1 /W:1 /NFL /NDL /NJH /NP | Out-Null
 if ($LASTEXITCODE -ge 8) { Arret "copie du chatbot impossible (robocopy $LASTEXITCODE)." }
