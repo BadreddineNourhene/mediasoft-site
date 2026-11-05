@@ -5,6 +5,7 @@ LLM_PROVIDER donne les fournisseurs, dans l'ordre d'essai, séparés par des vir
   - gemini     : API gratuite de Google Gemini ;
   - openrouter : modèles gratuits d'OpenRouter (suffixe « :free ») ;
   - nvidia     : modèles gratuits de NVIDIA (build.nvidia.com) ;
+  - mistral    : offre gratuite de Mistral (console.mistral.ai), relais rapide quand le quota de Groq est atteint ;
   - extractif  : aucun modèle de langage, on renvoie le passage le plus pertinent (dernier secours).
 Chaque fournisseur peut avoir plusieurs modèles (GROQ_MODEL, OPENROUTER_MODEL… séparés par des virgules) : on essaie
 tous les modèles du premier fournisseur, puis ceux du suivant, etc. Un modèle qui atteint son quota gratuit ou tombe en
@@ -47,8 +48,12 @@ OPENAI_COMPATIBLES = {
     ),
     "openrouter": ("https://openrouter.ai/api/v1/chat/completions", config.OPENROUTER_API_KEY, config.OPENROUTER_MODEL),
     "nvidia": ("https://integrate.api.nvidia.com/v1/chat/completions", config.NVIDIA_API_KEY, config.NVIDIA_MODEL),
+    "mistral": ("https://api.mistral.ai/v1/chat/completions", config.MISTRAL_API_KEY, config.MISTRAL_MODEL),
 }
 HOUR = 3600
+# Fournisseurs rapides (premier mot en 1 à 2 s) : on attend quelques secondes la fin de leur pause plutôt que de passer
+# aux autres, bien plus lents
+RAPIDES = {"groq", "mistral"}
 
 # (fournisseur, modèle ou None pour tout le fournisseur) → instant de fin de pause
 _paused: dict[tuple[str, str | None], float] = {}
@@ -232,7 +237,7 @@ async def generate(messages, hits, max_tokens=1500, deadline=None, on_token=None
             return None
 
     modeles = chain()
-    rapide = modeles[0][0] if modeles else None  # premier fournisseur (Groq) : le plus rapide
+    rapides = [(p, m) for p, m in modeles if p in RAPIDES]
     attendu = False
     for provider, model in modeles:
         if provider == "extractif":
@@ -242,15 +247,14 @@ async def generate(messages, hits, max_tokens=1500, deadline=None, on_token=None
         now = time.time()
         # Au-delà du temps maximal par question, on ne tente plus de modèle (on passe au secours extractif s'il y en a un)
         remaining = deadline - (now - start)
-        # Avant de passer à un fournisseur plus lent : un modèle du premier fournisseur dont le quota se libère dans
-        # quelques secondes répond plus vite que lui
-        if provider != rapide and not attendu:
+        # Avant de passer à un fournisseur lent (OpenRouter, NVIDIA) : un modèle rapide (Groq, Mistral) dont le quota se
+        # libère dans quelques secondes répond plus vite que lui
+        if provider not in RAPIDES and rapides and not attendu:
             attendu = True
-            fin, libre = min((max(_paused.get((rapide, m), 0), _paused.get((rapide, None), 0)), m)
-                             for p, m in modeles if p == rapide)
+            fin, p_libre, m_libre = min((max(_paused.get((p, m), 0), _paused.get((p, None), 0)), p, m) for p, m in rapides)
             if 0 < fin - now <= config.LLM_ATTENTE and remaining - (fin - now) > 3:
                 await asyncio.sleep(fin - now)
-                if (answer := await essayer(rapide, libre, deadline - (time.time() - start))) is not None:
+                if (answer := await essayer(p_libre, m_libre, deadline - (time.time() - start))) is not None:
                     return answer
                 now = time.time()
                 remaining = deadline - (now - start)

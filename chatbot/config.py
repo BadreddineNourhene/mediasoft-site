@@ -25,6 +25,9 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
 OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,nvidia/nemotron-3-ultra-550b-a55b:free,poolside/laguna-s-2.1:free,dots-studio/dots-3-note-preview:free,google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "").strip()
 NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "openai/gpt-oss-20b,nvidia/nemotron-3-ultra-550b-a55b,minimaxai/minimax-m3.1-flash")
+# Mistral (offre gratuite « Experiment », console.mistral.ai) : quota par minute bien plus large que Groq gratuit
+MISTRAL_API_KEY = os.getenv("MISTRAL_API_KEY", "").strip()
+MISTRAL_MODEL = os.getenv("MISTRAL_MODEL", "mistral-small-latest")
 # Chaque *_MODEL peut lister plusieurs modèles séparés par des virgules, essayés dans l'ordre.
 # Un modèle en échec (quota, panne) est sauté pendant LLM_COOLDOWN secondes ;
 # une question n'attend jamais plus de LLM_DEADLINE secondes avant le secours extractif.
