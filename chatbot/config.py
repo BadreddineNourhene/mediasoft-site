@@ -20,7 +20,7 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b,qwen/qwen3.8-27b,opena
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
-OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-ultra-550b-a55b:free,poolside/laguna-s-2.1:free,dots-studio/dots-3-note-preview:free,google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free")
+OPENROUTER_MODEL = os.getenv("OPENROUTER_MODEL", "nvidia/nemotron-3.5-super-vl:free,nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,nvidia/nemotron-3-ultra-550b-a55b:free,poolside/laguna-s-2.1:free,dots-studio/dots-3-note-preview:free,google/gemma-4-31b-it:free,google/gemma-4-26b-a4b-it:free")
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "").strip()
 NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "openai/gpt-oss-20b,nvidia/nemotron-3-ultra-550b-a55b,minimaxai/minimax-m3.1-flash")
 # Chaque *_MODEL peut lister plusieurs modèles séparés par des virgules, essayés dans l'ordre.
@@ -28,6 +28,9 @@ NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "openai/gpt-oss-20b,nvidia/nemotron-3-u
 # une question n'attend jamais plus de LLM_DEADLINE secondes avant le secours extractif.
 LLM_COOLDOWN = int(os.getenv("LLM_COOLDOWN", "120"))
 LLM_DEADLINE = int(os.getenv("LLM_DEADLINE", "60"))
+# Streaming : un modèle qui n'a écrit aucun mot après LLM_PREMIER_MOT secondes (il « réfléchit » trop longtemps) est
+# abandonné pour le suivant
+LLM_PREMIER_MOT = int(os.getenv("LLM_PREMIER_MOT", "45"))
 
 # Recherche web de secours (websearch.py), active seulement avec une clé Tavily ; limitée aux sites officiels
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "").strip()

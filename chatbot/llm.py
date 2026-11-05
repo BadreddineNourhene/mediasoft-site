@@ -12,6 +12,7 @@ panne est mis en pause quelques minutes, et le suivant prend le relais. Groq, Ge
 le format d'API d'OpenAI.
 """
 
+import json
 import logging
 import time
 
@@ -78,28 +79,66 @@ def status():
     ]
 
 
-async def _openai_compatible(name, model, messages, timeout, max_tokens=1500):
+def _echec(r):
+    """Réponse d'erreur de l'API → pause adaptée (quota, accès, modèle refusé, panne)."""
+    if r.status_code == 429:
+        retry = r.headers.get("retry-after", "")
+        return _Pause("quota gratuit atteint", float(retry) if retry.isdigit() else config.LLM_COOLDOWN)
+    if r.status_code in (401, 402, 403):
+        return _Pause(f"accès refusé ({r.status_code}) : {r.text[:150]}", HOUR, whole_provider=True)
+    if r.status_code in (400, 404):
+        return _Pause(f"modèle refusé ({r.status_code}) : {r.text[:150]}", HOUR)
+    return _Pause(f"a répondu {r.status_code} : {r.text[:150]}", config.LLM_COOLDOWN)
+
+
+async def _flux(url, key, payload, timeout, on_token):
+    """Même appel en streaming : chaque morceau de texte est transmis à on_token dès qu'il arrive."""
+    morceaux = []
+    debut = time.time()
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        async with client.stream("POST", url, headers={"Authorization": f"Bearer {key}"}, json=payload | {"stream": True}) as r:
+            if r.status_code >= 400:
+                await r.aread()
+                raise _echec(r)
+            async for ligne in r.aiter_lines():
+                # Modèle qui « réfléchit » sans rien écrire : on passe au suivant plutôt que de faire attendre le visiteur
+                if not morceaux and time.time() - debut > config.LLM_PREMIER_MOT:
+                    raise _Pause(f"aucun mot après {config.LLM_PREMIER_MOT} s", config.LLM_COOLDOWN)
+                if not ligne.startswith("data:"):
+                    continue
+                data = ligne[5:].strip()
+                if data == "[DONE]":
+                    break
+                try:
+                    texte = (json.loads(data)["choices"][0].get("delta") or {}).get("content") or ""
+                except (KeyError, IndexError, TypeError, ValueError):
+                    continue  # morceau sans texte (raisonnement, statistiques d'usage)
+                if texte:
+                    morceaux.append(texte)
+                    await on_token(texte)
+    return "".join(morceaux).strip()
+
+
+async def _openai_compatible(name, model, messages, timeout, max_tokens=1500, on_token=None):
     url, key, _ = OPENAI_COMPATIBLES[name]
     if not key:
         raise _Pause(f"{name.upper()}_API_KEY manquante dans .env", HOUR, whole_provider=True)
+    payload = {"model": model, "messages": messages, "temperature": 0.2, "max_tokens": max_tokens}
+    if on_token:
+        try:
+            answer = await _flux(url, key, payload, timeout, on_token)
+        except httpx.HTTPError as e:
+            raise _Pause(f"injoignable : {type(e).__name__} {e}".rstrip(), config.LLM_COOLDOWN) from e
+        if not answer:
+            raise _Pause("réponse vide", config.LLM_COOLDOWN)
+        return answer
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
-            r = await client.post(
-                url,
-                headers={"Authorization": f"Bearer {key}"},
-                json={"model": model, "messages": messages, "temperature": 0.2, "max_tokens": max_tokens},
-            )
+            r = await client.post(url, headers={"Authorization": f"Bearer {key}"}, json=payload)
     except httpx.HTTPError as e:
         raise _Pause(f"injoignable : {type(e).__name__} {e}".rstrip(), config.LLM_COOLDOWN) from e
-    if r.status_code == 429:
-        retry = r.headers.get("retry-after", "")
-        raise _Pause("quota gratuit atteint", float(retry) if retry.isdigit() else config.LLM_COOLDOWN)
-    if r.status_code in (401, 402, 403):
-        raise _Pause(f"accès refusé ({r.status_code}) : {r.text[:150]}", HOUR, whole_provider=True)
-    if r.status_code in (400, 404):
-        raise _Pause(f"modèle refusé ({r.status_code}) : {r.text[:150]}", HOUR)
     if r.status_code >= 400:
-        raise _Pause(f"a répondu {r.status_code} : {r.text[:150]}", config.LLM_COOLDOWN)
+        raise _echec(r)
     try:
         answer = (r.json()["choices"][0]["message"]["content"] or "").strip()
     except (KeyError, IndexError, TypeError, ValueError) as e:
@@ -158,10 +197,19 @@ async def search_query(question, context=""):
     return out if 3 <= len(out) <= 200 else question
 
 
-async def generate(messages, hits, max_tokens=1500, deadline=None):
+async def generate(messages, hits, max_tokens=1500, deadline=None, on_token=None, on_reset=None):
+    """Réponse du premier modèle disponible. Avec on_token (streaming), chaque morceau de texte lui est transmis dès
+    qu'il arrive ; si un modèle échoue en cours de réponse, on_reset efface le début déjà transmis avant le suivant."""
     errors = []
     start = time.time()
     deadline = deadline or config.LLM_DEADLINE
+    transmis = False
+
+    async def suivre(texte):
+        nonlocal transmis
+        transmis = True
+        await on_token(texte)
+
     for provider, model in chain():
         if provider == "extractif":
             return _extractif(hits)
@@ -173,9 +221,15 @@ async def generate(messages, hits, max_tokens=1500, deadline=None):
         if _is_paused(provider, model, now) or remaining < 3:
             continue
         try:
-            return await _openai_compatible(provider, model, messages, timeout=min(max(60, deadline - 30), remaining), max_tokens=max_tokens)
+            return await _openai_compatible(
+                provider, model, messages, timeout=min(max(60, deadline - 30), remaining), max_tokens=max_tokens,
+                on_token=suivre if on_token else None,
+            )
         except _Pause as e:
             _paused[(provider, None if e.whole_provider else model)] = time.time() + e.seconds
             log.warning("Modèle %s/%s mis en pause %ds : %s", provider, model, e.seconds, e)
             errors.append(f"{provider}/{model} : {e}")
+            if transmis and on_reset:
+                await on_reset()
+                transmis = False
     raise LLMError(" | ".join(errors) or "Tous les modèles sont en pause (quotas gratuits atteints)")

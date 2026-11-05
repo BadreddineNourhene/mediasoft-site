@@ -230,6 +230,15 @@ function renderAnswer(text: string) {
   });
 }
 
+/* Texte en cours de rédaction (streaming) : ligne « CHOIX : … », code [INCONNU] et renvois « [1] » / « 【W1】 » masqués,
+   la réponse finale les remplace par les choix et les petits liens numérotés */
+const brouillon = (s: string) =>
+  s
+    .replace(/^\W*(?:CHOIX|CHOICES?|خيارات)\W*:.*$/gim, "")
+    .replace(/\[INCONNU\]/g, "")
+    .replace(/【[^】]*】?|\[(?:W?\d+(?:\s*[,;]\s*W?\d+)*)\]/g, "")
+    .trimEnd();
+
 function ChoiceButtons({ c, onSend, disabled, next }: { c: Choices; onSend: (q: string) => void; disabled: boolean; next: string }) {
   // Formulaire (plusieurs questions) : la première option de chaque question est cochée d'office (celle conseillée) ;
   // simple précision (une question) : rien n'est coché, le visiteur choisit puis valide
@@ -293,6 +302,8 @@ export default function ChatBot() {
   const list = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLTextAreaElement>(null);
   const [slow, setSlow] = useState(false);
+  // Réponse en cours de rédaction, affichée au fil du streaming
+  const [live, setLive] = useState("");
   const [doc, setDoc] = useState<Doc | null>(null);
   const [reading, setReading] = useState(false);
   const [web, setWeb] = useState(false);
@@ -340,6 +351,11 @@ export default function ChatBot() {
   }, [open, menu]);
 
 
+  // La conversation suit le texte qui s'écrit
+  useEffect(() => {
+    if (live) list.current?.scrollTo({ top: list.current.scrollHeight });
+  }, [live]);
+
   useEffect(() => {
     if (!busy) return setSlow(false);
     const t = setTimeout(() => setSlow(true), 8000);
@@ -368,16 +384,43 @@ export default function ChatBot() {
     setInput("");
     setBusy(true);
     try {
+      // Streaming : une ligne JSON par événement (texte au fil de la rédaction, puis réponse finale) ;
       // 150 s au plus (article détaillé compris) : au-delà, message d'indisponibilité plutôt qu'une attente sans fin
-      const res = await fetch(`${API}/api/chat`, {
+      const res = await fetch(`${API}/api/chat/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: q.slice(0, 600), history, lang: navigator.language, web, detail, document: doc }),
         signal: AbortSignal.timeout(150_000),
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.detail || "Erreur");
-      setMsgs((m) => [...m, { role: "assistant", content: json.answer, sources: json.sources, choices: json.choices }]);
+      if (!res.ok || !res.body) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.detail || "Erreur");
+      }
+      const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+      let buf = "";
+      let texte = "";
+      let fini = false;
+      while (!fini) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buf += value;
+        for (let n = buf.indexOf("\n"); n >= 0 && !fini; n = buf.indexOf("\n")) {
+          const ligne = buf.slice(0, n).trim();
+          buf = buf.slice(n + 1);
+          if (!ligne) continue;
+          const e = JSON.parse(ligne);
+          if (e.t === "delta") setLive((texte += e.v));
+          else if (e.t === "reset") setLive((texte = ""));
+          else if (e.t === "error") throw new Error(e.v?.detail ?? "");
+          else if (e.t === "done") {
+            const json = e.v;
+            setMsgs((m) => [...m, { role: "assistant", content: json.answer, sources: json.sources, choices: json.choices }]);
+            fini = true;
+          }
+        }
+      }
+      // Flux coupé avant la réponse finale (réseau) : message d'indisponibilité
+      if (!fini) throw new TypeError("flux interrompu");
     } catch (e) {
       // Seul le message renvoyé par l'API est affiché tel quel ; réseau coupé ou délai dépassé → message d'indisponibilité
       const detail = e instanceof Error && e.name === "Error" ? e.message : "";
@@ -386,6 +429,7 @@ export default function ChatBot() {
         { role: "assistant", error: true, content: detail || T.down },
       ]);
     } finally {
+      setLive("");
       setBusy(false);
     }
   };
@@ -524,7 +568,18 @@ export default function ChatBot() {
               {m.choices && i === msgs.length && <ChoiceButtons key={i} c={m.choices} onSend={ask} disabled={busy} next={T.next} />}
               </div>
             ))}
-            {busy && (
+            {busy && brouillon(live) ? (
+              // Réponse qui s'écrit : même bulle que les réponses ; lue par les lecteurs d'écran une fois terminée
+              <div className="flex items-end gap-2" aria-live="off">
+                <span className="mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-[#00193a] text-white" aria-hidden>
+                  <Bot size={16} />
+                </span>
+                <div dir="auto" className="max-w-[90%] whitespace-pre-line rounded-2xl rounded-bl-md bg-white px-4 py-3 text-[15px] leading-relaxed text-[#0b1b33] shadow-sm ring-1 ring-[#00193a]/10">
+                  {renderAnswer(brouillon(live))}
+                  <span className="ms-0.5 inline-block h-4 w-1.5 translate-y-0.5 rounded-sm bg-[#1f5fff] motion-safe:animate-pulse" aria-hidden />
+                </div>
+              </div>
+            ) : busy && (
               <div className="flex items-center gap-2 ps-10 text-[14px] text-[#0b1b33]/75" role="status">
                 <Loader2 size={16} className="motion-safe:animate-spin" aria-hidden /> {slow ? T.long : T.typing}
               </div>

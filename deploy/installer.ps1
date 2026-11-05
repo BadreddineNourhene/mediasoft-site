@@ -98,6 +98,8 @@ Etape "4/7 IIS : relais /api vers le chatbot"
 Set-WebConfigurationProperty -PSPath "MACHINE/WEBROOT/APPHOST" -Filter "system.webServer/proxy" -Name "enabled" -Value $true
 # Article détaillé : jusqu'à 2 minutes de rédaction
 Set-WebConfigurationProperty -PSPath "MACHINE/WEBROOT/APPHOST" -Filter "system.webServer/proxy" -Name "timeout" -Value "00:03:00"
+# Réponses en streaming : transmises au navigateur dès qu'elles arrivent (par défaut ARR garde 4 Mo avant d'envoyer)
+Set-WebConfigurationProperty -PSPath "MACHINE/WEBROOT/APPHOST" -Filter "system.webServer/proxy" -Name "responseBufferLimit" -Value 0
 
 # ---------------------------------------------------------------- 5. Fichiers du site
 Etape "5/7 Fichiers du site ($DossierSite)"

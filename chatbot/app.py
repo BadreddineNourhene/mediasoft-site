@@ -1,6 +1,10 @@
 """API du chatbot Mediasoft (FastAPI).
 
   GET  /api/health  : état du service (modèles et ceux en pause, nombre de passages indexés)
+  POST /api/chat/stream : même requête ; réponse en streaming, une ligne JSON par événement :
+                      {"t": "delta", "v": "texte"} au fil de la rédaction, {"t": "reset"} (texte déjà envoyé à effacer :
+                      autre modèle ou nouvelle tentative), puis {"t": "done", "v": <réponse de /api/chat>} ou
+                      {"t": "error", "v": {"status", "detail"}}
   POST /api/chat    : {"question": "...", "history": [{"role": "user"|"assistant", "content": "..."}], "lang": "fr"}
                       → {"answer": "...", "sources": [{"title", "url"}], "lang": "fr", "choices"?: {...}}
                       « choices » (facultatif) : boutons proposés sous la réponse, {"questions": [{"label"?, "options"}],
@@ -12,12 +16,15 @@ Lancement local :  uvicorn app:app --port 8000
 """
 
 import asyncio
+import json
 import re
 import time
 from collections import defaultdict, deque
+from contextvars import ContextVar
 
 from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 import config
@@ -36,6 +43,24 @@ app.add_middleware(
 )
 
 kb = rag.KnowledgeBase()
+
+# Requête en streaming (/api/chat/stream) : fonction qui envoie un événement au navigateur ; None pour /api/chat
+_envoi: ContextVar = ContextVar("envoi", default=None)
+
+
+def _flux() -> dict:
+    """Paramètres de streaming de llm.generate pour la réponse au visiteur (rien hors streaming)."""
+    envoyer = _envoi.get()
+    if not envoyer:
+        return {}
+
+    async def morceau(texte):
+        await envoyer("delta", texte)
+
+    async def effacer():
+        await envoyer("reset")
+
+    return {"on_token": morceau, "on_reset": effacer}
 
 # Limite simple par adresse IP (mémoire du processus)
 _calls: dict[str, deque] = defaultdict(deque)
@@ -245,7 +270,8 @@ async def _rediger(demande: str, body, logiciel: str | None, nom_langue: str, la
     try:
         # Article détaillé : plus de texte et plus de temps qu'une réponse courte
         answer = await llm.generate(
-            rag.build_redaction_messages(demande, history, hits, nom_langue), hits, max_tokens=10000, deadline=120
+            rag.build_redaction_messages(demande, history, hits, nom_langue), hits, max_tokens=10000, deadline=120,
+            **_flux(),
         )
     except llm.LLMError as e:
         print(f"[chatbot] erreur du modèle (rédaction) : {e}")
@@ -401,7 +427,7 @@ async def chat(body: ChatRequest, request: Request):
                 web += [r for r in await websearch.search(await requete(), officiel=False) if r["url"] not in vus]
         answer = await llm.generate(
             rag.build_messages(question, history, hits, nom_langue, web, doc, body.detail), hits,
-            max_tokens=4000 if body.detail else 1500,
+            max_tokens=4000 if body.detail else 1500, **_flux(),
         )
         unknown = _inconnu(answer)
         # Toujours rien : sites officiels (si pas encore cherchés), puis tout le web en dernier recours
@@ -414,9 +440,13 @@ async def chat(body: ChatRequest, request: Request):
                 if not plus:
                     continue
                 web += plus
+                # Nouvelle tentative avec les pages web : la première réponse (« je n'ai pas cette information »)
+                # s'efface à l'écran
+                if (flux := _flux()):
+                    await flux["on_reset"]()
                 retry = await llm.generate(
                     rag.build_messages(question, history, hits, nom_langue, web, doc, body.detail), hits,
-                    max_tokens=4000 if body.detail else 1500,
+                    max_tokens=4000 if body.detail else 1500, **flux,
                 )
                 if retry and not _inconnu(retry):
                     answer, unknown = retry, False
@@ -451,3 +481,35 @@ async def chat(body: ChatRequest, request: Request):
             sources.append(s)
     sources = sources[:4]
     return {"answer": answer, "sources": sources, "lang": lang} | ({"choices": choices} if choices else {})
+
+
+@app.post("/api/chat/stream")
+async def chat_stream(body: ChatRequest, request: Request):
+    """Même réponse que /api/chat, envoyée au fil de la rédaction (une ligne JSON par événement, voir en tête)."""
+    file: asyncio.Queue = asyncio.Queue()
+
+    async def envoyer(t, v=None):
+        await file.put({"t": t, "v": v})
+
+    async def repondre():
+        _envoi.set(envoyer)  # contexte propre à cette tâche
+        try:
+            await envoyer("done", await chat(body, request))
+        except HTTPException as e:
+            await envoyer("error", {"status": e.status_code, "detail": e.detail})
+        except Exception as e:  # erreur imprévue : le visiteur voit le message d'indisponibilité
+            print(f"[chatbot] erreur (streaming) : {type(e).__name__} {e}")
+            await envoyer("error", {"status": 500, "detail": ""})
+        finally:
+            await file.put(None)
+
+    tache = asyncio.create_task(repondre())
+
+    async def lignes():
+        while (evenement := await file.get()) is not None:
+            yield json.dumps(evenement, ensure_ascii=False) + "\n"
+        await tache
+
+    # no-cache / X-Accel-Buffering : aucun intermédiaire ne doit garder la réponse avant de la transmettre
+    return StreamingResponse(lignes(), media_type="application/x-ndjson",
+                             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
