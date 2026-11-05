@@ -53,7 +53,7 @@ OPENAI_COMPATIBLES = {
 HOUR = 3600
 # Fournisseurs rapides (premier mot en 1 à 2 s) : on attend quelques secondes la fin de leur pause plutôt que de passer
 # aux autres, bien plus lents
-RAPIDES = {"groq", "mistral"}
+RAPIDES = {"groq", "gemini", "mistral"}
 
 # (fournisseur, modèle ou None pour tout le fournisseur) → instant de fin de pause
 _paused: dict[tuple[str, str | None], float] = {}
