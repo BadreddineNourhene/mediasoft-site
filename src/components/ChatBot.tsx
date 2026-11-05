@@ -139,8 +139,9 @@ const TEXTS = {
   },
 };
 type Lang = keyof typeof TEXTS;
-const browserLang = (): Lang => {
-  const l = navigator.language.slice(0, 2).toLowerCase();
+// Langue de la page (<html lang="fr">), pas celle du navigateur : le site est en français, la bulle aussi
+const pageLang = (): Lang => {
+  const l = (document.documentElement.lang || "fr").slice(0, 2).toLowerCase();
   return l in TEXTS ? (l as Lang) : "fr";
 };
 const noSubscribe = () => () => {};
@@ -294,8 +295,8 @@ function ChoiceButtons({ c, onSend, disabled, next }: { c: Choices; onSend: (q: 
 
 export default function ChatBot() {
   const [open, setOpen] = useState(false);
-  // Français au rendu statique, puis langue du navigateur une fois la page chargée
-  const lang = useSyncExternalStore(noSubscribe, browserLang, (): Lang => "fr");
+  // Langue de la page (français) ; les réponses, elles, suivent la langue de chaque question
+  const lang = useSyncExternalStore(noSubscribe, pageLang, (): Lang => "fr");
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -389,7 +390,7 @@ export default function ChatBot() {
       const res = await fetch(`${API}/api/chat/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: q.slice(0, 600), history, lang: navigator.language, web, detail, document: doc }),
+        body: JSON.stringify({ question: q.slice(0, 600), history, lang, web, detail, document: doc }),
         signal: AbortSignal.timeout(150_000),
       });
       if (!res.ok || !res.body) {
@@ -441,7 +442,7 @@ export default function ChatBot() {
     try {
       const form = new FormData();
       form.append("file", file);
-      const res = await fetch(`${API}/api/fichier?lang=${encodeURIComponent(navigator.language)}`, {
+      const res = await fetch(`${API}/api/fichier?lang=${lang}`, {
         method: "POST",
         body: form,
         signal: AbortSignal.timeout(120_000),
