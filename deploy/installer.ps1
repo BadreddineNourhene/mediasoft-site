@@ -64,11 +64,18 @@ if (-not ($liaisons | Where-Object protocol -eq "https")) {
     Write-Host "ATTENTION : aucune liaison https pour $Domaine (le site sera en http). Ajoutez le certificat ensuite dans IIS > Liaisons." -ForegroundColor Yellow
 }
 
+# Paquet complet avant de toucher au chatbot ou au site en service (un zip extrait à moitié ne doit rien casser)
+$manque = @("chatbot\requirements.txt", "chatbot\app.py", "chatbot\.env", "chatbot\base-rag\index\index.npz",
+            "chatbot\base-rag\model\encoder.onnx", "site\index.html", "site\web.config") |
+    Where-Object { -not (Test-Path "$ici\$_") }
+if ($manque) { Arret "paquet incomplet dans $ici (manque : $($manque -join ', ')). Extrayez le zip complet deploiement-mediasoft.zip puis relancez." }
+
 # ---------------------------------------------------------------- 2. Chatbot : fichiers et dépendances Python
 Etape "2/7 Chatbot : copie et dépendances (premier lancement : quelques minutes)"
 Stop-ScheduledTask -TaskName $tache -ErrorAction SilentlyContinue
 Get-NetTCPConnection -LocalPort 8010 -State Listen -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }
-robocopy "$ici\chatbot" $DossierChatbot /MIR /XD venv logs /R:1 /W:1 /NFL /NDL /NJH /NP | Out-Null
+# /E : ajoute et remplace, ne supprime rien dans le chatbot installé
+robocopy "$ici\chatbot" $DossierChatbot /E /XD venv logs /R:1 /W:1 /NFL /NDL /NJH /NP | Out-Null
 if ($LASTEXITCODE -ge 8) { Arret "copie du chatbot impossible (robocopy $LASTEXITCODE)." }
 $venv = "$DossierChatbot\venv\Scripts\python.exe"
 if (-not (Test-Path $venv)) { & python -m venv "$DossierChatbot\venv" }
