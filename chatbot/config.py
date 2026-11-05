@@ -81,7 +81,10 @@ WEB_MIN_SCORE = float(os.getenv("WEB_MIN_SCORE", "0.55"))
 
 # Garde-fous
 MAX_QUESTION_CHARS = 600
-MAX_HISTORY_MESSAGES = 6
+# Mémoire de la conversation : 5 derniers échanges ; les plus anciens sont abrégés (quota de jetons du modèle)
+MAX_HISTORY_MESSAGES = 10
+HISTORY_RECENT_CHARS = 1500
+HISTORY_OLD_CHARS = 400
 RATE_LIMIT_PER_MINUTE = int(os.getenv("RATE_LIMIT_PER_MINUTE", "20"))
 
 # Coordonnées proposées quand le chatbot ne sait pas répondre

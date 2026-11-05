@@ -191,9 +191,13 @@ def build_messages(question: str, history: list[dict], hits: list[dict], langue:
         if pages:
             context += f"\n\n{titre} :\n" + "\n\n".join(f"[W{n + 1}] {r['title']} ({r['url']})\n{r['content']}" for n, r in pages)
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
-    for m in history[-config.MAX_HISTORY_MESSAGES :]:
+    recents = history[-config.MAX_HISTORY_MESSAGES :]
+    for n, m in enumerate(recents):
         if m.get("role") in ("user", "assistant") and m.get("content"):
-            messages.append({"role": m["role"], "content": str(m["content"])[:1500]})
+            # Dernier échange en entier, les précédents abrégés : la conversation reste suivie sans dépasser le quota
+            limite = config.HISTORY_RECENT_CHARS if n >= len(recents) - 2 else config.HISTORY_OLD_CHARS
+            texte = str(m["content"])
+            messages.append({"role": m["role"], "content": texte if len(texte) <= limite else texte[:limite] + " […]"})
     # Langue rappelée après la question : sinon les extraits, en français, l'emportent
     messages.append(
         {

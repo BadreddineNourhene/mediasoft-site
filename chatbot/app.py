@@ -390,8 +390,13 @@ async def _repondre(body: ChatRequest, request: Request):
     previous = next((m.content for m in reversed(body.history) if m.role == "user"), "")
     # Question longue sans logiciel nommé (« lequel est meilleur pour la production ? » après « Sage ou Divalto ? ») :
     # les logiciels de la question précédente restent ceux de la conversation
-    suivi = previous and (len(question) < 40 or (not NOMME.search(question) and NOMME.search(previous)))
+    suivi = previous and (len(question) < 40 or not NOMME.search(question))
     query = f"{previous} {question}".strip() if suivi else question
+    # Suivi d'un suivi (« et son prix ? » après « lequel est meilleur ? ») : les logiciels viennent de la dernière
+    # question de la conversation qui en nommait
+    if suivi and not NOMME.search(query):
+        contexte = next((m.content for m in reversed(body.history) if m.role == "user" and NOMME.search(m.content)), "")
+        query = f"{' '.join(dict.fromkeys(NOMME.findall(contexte)))} {query}".strip()
     dernier = next((m.content for m in reversed(body.history) if m.role == "assistant"), "")
     logiciel = next((label for motif, label in LOGICIELS if re.search(motif, query, re.I)), None)
     # Document long : seuls ses passages utiles à la question vont au modèle (réponse plus rapide, tout le fichier lu)
