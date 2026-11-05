@@ -422,8 +422,32 @@ async def _repondre(body: ChatRequest, request: Request):
     if detectee != "fr":
         queries.append(await llm.translate_query(query))
     # Question sur un autre logiciel que Divalto : l'aide en ligne Divalto est écartée
-    sans = tuple(s for s, lui in AIDES.items() if logiciel and logiciel != lui)
-    hits = _consultants(f"{question} {queries[-1]}", kb.search(queries, sans=sans))
+    # Logiciels nommés ; « Sage 50 » seul n'est pas aussi « Sage 100 »
+    tous = [label for motif, label in LOGICIELS
+            if re.search(motif, re.sub(r"sage ?50", " ", query, flags=re.I) if label == "Sage (Sage 100)" else query, re.I)]
+    sans = tuple(s for s, lui in AIDES.items() if tous and lui not in tous)
+    if len(tous) >= 2:
+        # Comparaison (« différence entre Sage et Divalto ») : un seul classement ne remonte qu'un des logiciels (le
+        # plus présent dans la base) ; on cherche chacun à part, sans le nom des autres, et on alterne leurs passages
+        motifs = dict((label, motif) for motif, label in LOGICIELS)
+
+        def sans_autres(q: str, lui: str) -> str:
+            for autre in tous:
+                if autre != lui:
+                    q = re.sub(motifs[autre], " ", q, flags=re.I)
+            return f"{q} {lui}"
+
+        par_logiciel = [kb.search([sans_autres(q, lui) for q in queries], k=5, sans=sans) for lui in tous]
+        hits, vus = [], set()
+        for rang in range(5):
+            for liste in par_logiciel:
+                if rang < len(liste) and liste[rang]["text"] not in vus:
+                    vus.add(liste[rang]["text"])
+                    hits.append(liste[rang])
+        hits = hits[: max(config.TOP_K, 4 * len(tous))]
+    else:
+        hits = kb.search(queries, sans=sans)
+    hits = _consultants(f"{question} {queries[-1]}", hits)
 
     history = [m.model_dump() for m in body.history]
     nom_langue = langue.nom(detectee, body.lang)
