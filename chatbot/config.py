@@ -17,6 +17,8 @@ LLM_PROVIDERS = [p.strip().lower() for p in os.getenv("LLM_PROVIDER", "groq").sp
 LLM_PROVIDER = ",".join(LLM_PROVIDERS)
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b,qwen/qwen3.8-27b,openai/gpt-oss-20b")
+# Réflexion des modèles Groq avant d'écrire : low (rapide) ; vide = réglage du modèle
+GROQ_REASONING = os.getenv("GROQ_REASONING", "low").strip()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-latest")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
@@ -31,6 +33,9 @@ LLM_DEADLINE = int(os.getenv("LLM_DEADLINE", "60"))
 # Streaming : un modèle qui n'a écrit aucun mot après LLM_PREMIER_MOT secondes (il « réfléchit » trop longtemps) est
 # abandonné pour le suivant
 LLM_PREMIER_MOT = int(os.getenv("LLM_PREMIER_MOT", "45"))
+# Quota du premier fournisseur (Groq) libéré dans au plus LLM_ATTENTE secondes : on l'attend plutôt que de passer à
+# un fournisseur plus lent
+LLM_ATTENTE = float(os.getenv("LLM_ATTENTE", "4"))
 
 # Recherche web de secours (websearch.py), active seulement avec une clé Tavily ; limitée aux sites officiels
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY", "").strip()

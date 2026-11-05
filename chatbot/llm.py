@@ -12,6 +12,7 @@ panne est mis en pause quelques minutes, et le suivant prend le relais. Groq, Ge
 le format d'API d'OpenAI.
 """
 
+import asyncio
 import json
 import logging
 import time
@@ -124,6 +125,10 @@ async def _openai_compatible(name, model, messages, timeout, max_tokens=1500, on
     if not key:
         raise _Pause(f"{name.upper()}_API_KEY manquante dans .env", HOUR, whole_provider=True)
     payload = {"model": model, "messages": messages, "temperature": 0.2, "max_tokens": max_tokens}
+    # Groq : réflexion courte avant d'écrire (premier mot plus tôt, moins de quota par minute consommé) ;
+    # gpt-oss accepte low / medium / high, Qwen none / default
+    if name == "groq" and config.GROQ_REASONING:
+        payload["reasoning_effort"] = config.GROQ_REASONING if model.startswith("openai/gpt-oss") else "none"
     if on_token:
         try:
             answer = await _flux(url, key, payload, timeout, on_token)
@@ -167,7 +172,7 @@ async def translate_query(text):
         {"role": "user", "content": text},
     ]
     try:
-        out = await generate(messages, [])
+        out = await generate(messages, [], max_tokens=300)  # une ligne : peu de quota réservé
     except LLMError:
         return text
     return out if out and len(out) < 500 else text
@@ -190,7 +195,7 @@ async def search_query(question, context=""):
         {"role": "user", "content": f"{context}\nQuestion : {question}".strip()},
     ]
     try:
-        out = await generate(messages, [])
+        out = await generate(messages, [], max_tokens=300)  # une ligne : peu de quota réservé
     except LLMError:
         return question
     out = (out or "").strip().strip('"«» ').splitlines()[0] if out else ""
@@ -210,16 +215,8 @@ async def generate(messages, hits, max_tokens=1500, deadline=None, on_token=None
         transmis = True
         await on_token(texte)
 
-    for provider, model in chain():
-        if provider == "extractif":
-            return _extractif(hits)
-        if provider not in OPENAI_COMPATIBLES:
-            raise LLMError(f"LLM_PROVIDER inconnu : {provider} ({', '.join([*OPENAI_COMPATIBLES, 'extractif'])})")
-        now = time.time()
-        # Au-delà du temps maximal par question, on ne tente plus de modèle (on passe au secours extractif s'il y en a un)
-        remaining = deadline - (now - start)
-        if _is_paused(provider, model, now) or remaining < 3:
-            continue
+    async def essayer(provider, model, remaining):
+        nonlocal transmis
         try:
             return await _openai_compatible(
                 provider, model, messages, timeout=min(max(60, deadline - 30), remaining), max_tokens=max_tokens,
@@ -232,4 +229,33 @@ async def generate(messages, hits, max_tokens=1500, deadline=None, on_token=None
             if transmis and on_reset:
                 await on_reset()
                 transmis = False
+            return None
+
+    modeles = chain()
+    rapide = modeles[0][0] if modeles else None  # premier fournisseur (Groq) : le plus rapide
+    attendu = False
+    for provider, model in modeles:
+        if provider == "extractif":
+            return _extractif(hits)
+        if provider not in OPENAI_COMPATIBLES:
+            raise LLMError(f"LLM_PROVIDER inconnu : {provider} ({', '.join([*OPENAI_COMPATIBLES, 'extractif'])})")
+        now = time.time()
+        # Au-delà du temps maximal par question, on ne tente plus de modèle (on passe au secours extractif s'il y en a un)
+        remaining = deadline - (now - start)
+        # Avant de passer à un fournisseur plus lent : un modèle du premier fournisseur dont le quota se libère dans
+        # quelques secondes répond plus vite que lui
+        if provider != rapide and not attendu:
+            attendu = True
+            fin, libre = min((max(_paused.get((rapide, m), 0), _paused.get((rapide, None), 0)), m)
+                             for p, m in modeles if p == rapide)
+            if 0 < fin - now <= config.LLM_ATTENTE and remaining - (fin - now) > 3:
+                await asyncio.sleep(fin - now)
+                if (answer := await essayer(rapide, libre, deadline - (time.time() - start))) is not None:
+                    return answer
+                now = time.time()
+                remaining = deadline - (now - start)
+        if _is_paused(provider, model, now) or remaining < 3:
+            continue
+        if (answer := await essayer(provider, model, remaining)) is not None:
+            return answer
     raise LLMError(" | ".join(errors) or "Tous les modèles sont en pause (quotas gratuits atteints)")

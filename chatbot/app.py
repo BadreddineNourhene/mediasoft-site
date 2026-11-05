@@ -343,14 +343,47 @@ async def fichier(request: Request, file: UploadFile = File(...), lang: str = ""
         raise HTTPException(400, langue.message(f"fichier_{e}", code))
 
 
+# Réponses déjà données (même question, même conversation avant elle, mêmes options) : renvoyées aussitôt, sans
+# modèle de langage ni quota consommé. Pas de mémoire avec un fichier joint ni pour une recherche web demandée
+# (résultats du moment). Effacée au redémarrage du chatbot.
+_DEJA: dict[str, tuple[float, dict]] = {}
+DEJA_DUREE = 6 * 3600
+DEJA_MAX = 500
+
+
+def _cle(body) -> str | None:
+    if body.document or body.web:
+        return None
+    question = re.sub(r"\s+", " ", body.question.strip().lower())
+    avant = [(m.role, m.content) for m in body.history][-config.MAX_HISTORY_MESSAGES:]
+    return json.dumps([question, avant, body.lang[:2].lower(), body.detail], ensure_ascii=False)
+
+
 @app.post("/api/chat")
 async def chat(body: ChatRequest, request: Request):
+    cle = _cle(body)
+    deja = _DEJA.get(cle) if cle else None
+    if deja and time.time() - deja[0] < DEJA_DUREE:
+        return deja[1]
+    reponse = await _repondre(body, request)
+    if cle:
+        if len(_DEJA) >= DEJA_MAX:  # la plus ancienne s'en va
+            _DEJA.pop(next(iter(_DEJA)))
+        _DEJA[cle] = (time.time(), reponse)
+    return reponse
+
+
+async def _repondre(body: ChatRequest, request: Request):
     ip = request.headers.get("x-forwarded-for", request.client.host if request.client else "?").split(",")[0].strip()
     question = body.question.strip()
     detectee = langue.detecter(question)
     lang = langue.interface(detectee, body.lang)
     if _rate_limited(ip):
         raise HTTPException(429, langue.message("trop", lang))
+    # « Bonjour », « hello » : réponse immédiate avec les choix habituels, sans modèle de langage
+    if langue.SALUT.match(question) and not body.document:
+        answer, choices = langue.salutation(lang)
+        return {"answer": answer, "sources": [], "lang": lang, "choices": choices}
 
     # La recherche tient compte de la question précédente (questions de suivi : « et son prix ? »)
     previous = next((m.content for m in reversed(body.history) if m.role == "user"), "")
@@ -427,7 +460,7 @@ async def chat(body: ChatRequest, request: Request):
                 web += [r for r in await websearch.search(await requete(), officiel=False) if r["url"] not in vus]
         answer = await llm.generate(
             rag.build_messages(question, history, hits, nom_langue, web, doc, body.detail), hits,
-            max_tokens=4000 if body.detail else 1500, **_flux(),
+            max_tokens=4000 if body.detail else 1000, **_flux(),
         )
         unknown = _inconnu(answer)
         # Toujours rien : sites officiels (si pas encore cherchés), puis tout le web en dernier recours
@@ -446,7 +479,7 @@ async def chat(body: ChatRequest, request: Request):
                     await flux["on_reset"]()
                 retry = await llm.generate(
                     rag.build_messages(question, history, hits, nom_langue, web, doc, body.detail), hits,
-                    max_tokens=4000 if body.detail else 1500, **flux,
+                    max_tokens=4000 if body.detail else 1000, **flux,
                 )
                 if retry and not _inconnu(retry):
                     answer, unknown = retry, False

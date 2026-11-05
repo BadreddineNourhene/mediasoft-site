@@ -116,6 +116,30 @@ MESSAGES = {
     },
 }
 
+# Simple salutation (« bonjour », « hello », « aslema »…) : réponse immédiate, sans modèle de langage
+SALUT = re.compile(
+    r"^\W*(bonjour|bonsoir|salut|slt|coucou|hello|hi|hey|good (morning|afternoon|evening)|aslema|ahla|salam|"
+    r"marhba|مرحبا|السلام عليكم|اهلا|أهلا)( à (vous|tous)| (there|everyone|all))?[\s!.,?😊👋]*$",
+    re.I,
+)
+_SALUTATION = {
+    "fr": ("Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+           ["Je voudrais une démonstration", "Je souhaite un devis", "J'ai une question sur une solution",
+            "Je voudrais parler à un consultant"]),
+    "en": ("Hello! How can I help you today?",
+           ["I'd like to see a product demo", "I need a price quote", "I have a question about a solution",
+            "I'd like to speak with a consultant"]),
+    "ar": ("مرحبًا! كيف يمكنني مساعدتك اليوم؟",
+           ["أود رؤية عرض توضيحي", "أحتاج إلى عرض سعر", "لدي سؤال حول أحد الحلول", "أود التحدث مع مستشار"]),
+}
+
+
+def salutation(code: str):
+    """Réponse à une salutation et choix proposés (même forme que les choix écrits par le modèle)."""
+    texte, options = _SALUTATION.get("fr" if code == "tn" else code, _SALUTATION["en"])
+    return texte, {"questions": [{"options": options}]}
+
+
 # Questions commerciales (prix, devis, délai, intégration) : recherche web systématique et bloc de contact en fin de
 # réponse. Français, anglais, arabe, derja.
 COMMERCIAL = re.compile(
