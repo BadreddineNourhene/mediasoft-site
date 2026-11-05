@@ -493,6 +493,9 @@ async def _repondre(body: ChatRequest, request: Request):
     # Renvois aux passages (« [3] », « 【W1】 », « (source [2]) ») → petits liens numérotés vers la page source
     answer, refs = _citations(answer, hits, web)
     answer, choices = _choix(_deploiement(answer, logiciel or (re.search(r"divalto", query, re.I) and "divalto")))
+    # « Comment faire » : la procédure se suffit à elle-même, pas de choix sous la réponse
+    if procedure:
+        choices = None
     if not answer:
         return {"answer": fallback, "sources": [], "lang": lang}
     # Le modèle écrit parfois « Je n'ai pas cette information. » puis répond quand même en détail (avec les pages web) :
