@@ -189,7 +189,8 @@ def _inconnu(answer: str) -> bool:
 # Espaces seulement autour du renvoi (pas de saut de ligne) : sinon l'étape suivante d'une liste se colle au lien
 _REF = re.compile(
     r"[ \t]*\(?[ \t]*(?:(?:voir|cf\.?|see)[ \t]+)?(?:(?:la|the)[ \t]+)?(?:sources?[ \t]*:?[ \t]*)?"
-    r"[\[【][ \t]*(W?\d+(?:[ \t]*[,;][ \t]*W?\d+)*)[ \t]*[\]】][ \t]*\)?",
+    # « 【2†】 », « 【2†L3-L8】 » : forme de renvoi propre à gpt-oss (croix puis lignes citées), traitée comme « [2] »
+    r"[\[【][ \t]*(W?\d+(?:[ \t]*[,;][ \t]*W?\d+)*)[ \t]*(?:†[^\]】\n]{0,40})?[\]】][ \t]*\)?",
     re.I,
 )
 
