@@ -41,15 +41,16 @@ class _Pause(LLMError):
 # nom : (adresse de l'API, clé, modèles)
 OPENAI_COMPATIBLES = {
     "groq": ("https://api.groq.com/openai/v1/chat/completions", config.GROQ_API_KEY, config.GROQ_MODEL),
-    "gemini": (
-        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
-        config.GEMINI_API_KEY,
-        config.GEMINI_MODEL,
-    ),
     "openrouter": ("https://openrouter.ai/api/v1/chat/completions", config.OPENROUTER_API_KEY, config.OPENROUTER_MODEL),
     "nvidia": ("https://integrate.api.nvidia.com/v1/chat/completions", config.NVIDIA_API_KEY, config.NVIDIA_MODEL),
     "mistral": ("https://api.mistral.ai/v1/chat/completions", config.MISTRAL_API_KEY, config.MISTRAL_MODEL),
 }
+# Gemini : une entrée par clé (GEMINI_API_KEY peut en lister plusieurs, séparées par des virgules) ; quand la première
+# atteint son quota ou est en panne, la suivante prend le relais (« gemini », « gemini#2 »…)
+for _n, _cle in enumerate([k.strip() for k in config.GEMINI_API_KEY.split(",") if k.strip()] or [""]):
+    OPENAI_COMPATIBLES["gemini" if _n == 0 else f"gemini#{_n + 1}"] = (
+        "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", _cle, config.GEMINI_MODEL,
+    )
 HOUR = 3600
 # Fournisseurs rapides (premier mot en 1 à 2 s) : on attend quelques secondes la fin de leur pause plutôt que de passer
 # aux autres, bien plus lents
@@ -64,7 +65,9 @@ def chain():
     out = []
     for provider in config.LLM_PROVIDERS:
         if provider in OPENAI_COMPATIBLES:
-            out += [(provider, m.strip()) for m in OPENAI_COMPATIBLES[provider][2].split(",") if m.strip()]
+            # Toutes les clés du fournisseur (« gemini », puis « gemini#2 »…), chacune avec tous ses modèles
+            for nom in [n for n in OPENAI_COMPATIBLES if n == provider or n.startswith(provider + "#")]:
+                out += [(nom, m.strip()) for m in OPENAI_COMPATIBLES[nom][2].split(",") if m.strip()]
         else:
             out.append((provider, None))
     return out
@@ -237,7 +240,7 @@ async def generate(messages, hits, max_tokens=1500, deadline=None, on_token=None
             return None
 
     modeles = chain()
-    rapides = [(p, m) for p, m in modeles if p in RAPIDES]
+    rapides = [(p, m) for p, m in modeles if p.split("#")[0] in RAPIDES]
     attendu = False
     for provider, model in modeles:
         if provider == "extractif":
@@ -249,7 +252,7 @@ async def generate(messages, hits, max_tokens=1500, deadline=None, on_token=None
         remaining = deadline - (now - start)
         # Avant de passer à un fournisseur lent (OpenRouter, NVIDIA) : un modèle rapide (Groq, Mistral) dont le quota se
         # libère dans quelques secondes répond plus vite que lui
-        if provider not in RAPIDES and rapides and not attendu:
+        if provider.split("#")[0] not in RAPIDES and rapides and not attendu:
             attendu = True
             fin, p_libre, m_libre = min((max(_paused.get((p, m), 0), _paused.get((p, None), 0)), p, m) for p, m in rapides)
             if 0 < fin - now <= config.LLM_ATTENTE and remaining - (fin - now) > 3:

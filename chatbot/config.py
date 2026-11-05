@@ -19,6 +19,7 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY", "").strip()
 GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b,qwen/qwen3.8-27b,openai/gpt-oss-20b")
 # Réflexion des modèles Groq avant d'écrire : low (rapide) ; vide = réglage du modèle
 GROQ_REASONING = os.getenv("GROQ_REASONING", "low").strip()
+# Plusieurs clés possibles, séparées par des virgules : la suivante prend le relais quand une clé atteint son quota
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite,gemini-flash-lite-latest")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "").strip()
